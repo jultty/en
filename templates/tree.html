@@ -71,6 +71,6 @@
     {% endif %}
     </ul>
     {% else %}
-    <p>There are no nodes. The graph is either empty or failed to parse.</p>
+    {% include "empty.html" %}
     {% endif %}
 {%- endblock body %}

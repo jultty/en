@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{%- block body %}
+    <h1>
+        {{ title | default(value="Unknown error") }}
+    </h1>
+    {{ message | default(value="This error has not been described in detail.") }}
+    <hr>
+    <div align=right style="margin-top: 4em; margin-right: 2em">
+    <p><em>It seems you have fallen out of the circle.</em></p>
+    <p>Maybe you'd like to climb back on the <a href="/tree">tree</a>?
+    </div>
+    </p>
+{%- endblock body %}

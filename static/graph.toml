@@ -1,0 +1,72 @@
+messages = [ "Test Graph over Fetch from Actix" ]
+root_node = "Interface"
+
+[nodes.SomeNode]
+title = "Some Node"
+id = "SomeNode"
+body = "This describes some node in relation to some other node."
+
+[[nodes.SomeNode.connections]]
+anchor = "some other node"
+to = "SomeOtherNode"
+
+[nodes.SomeOtherNode]
+title = "Some Other Node"
+id = "SomeOtherNode"
+body = "This describes some other node in relation to the first node."
+
+[[nodes.SomeOtherNode.connections]]
+anchor = "the first node"
+to = "SomeNode"
+
+[nodes.Interface]
+title = "Interface"
+id = "Interface"
+body = """
+An interface is a point of contact between the inside and the outside of something. Contrast with intraface.
+"""
+
+[[nodes.Interface.connections]]
+to = "Intraface"
+
+[nodes.Intraface]
+title = "Intraface"
+id = "Intraface"
+body = """
+The intraface is the reflexive process of communicating, creating, thinking, that does not or cannot get shared with others. Contrast with interface.
+"""
+
+[[nodes.Intraface.connections]]
+to = "Interface"
+
+[[nodes.Intraface.connections]]
+to = "Thinking"
+
+[nodes.Thinking]
+title = "Thinking"
+id = "Thinking"
+body = """
+Thinking is a process by which some beings create and manipulate mental constructs.
+"""
+
+[nodes.Paradigm]
+title = "Paradigm"
+id = "Paradigm"
+body = """
+A paradigm is a cohesive set of beliefs, methods and principles that serve both as justification for a given position and as guidance for how to pursue its praxis.
+"""
+
+[[nodes.Paradigm.connections]]
+to = "Belief"
+
+[[nodes.Paradigm.connections]]
+to = "Method"
+
+[[nodes.Paradigm.connections]]
+to = "Principle"
+
+[[nodes.Paradigm.connections]]
+to = "Position"
+
+[[nodes.Paradigm.connections]]
+to = "Praxis"

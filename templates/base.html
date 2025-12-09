@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}{% endblock title %} &bullet; en</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="/static/style.css" rel="stylesheet">
+        {% block head %}
+        {% endblock head %}
+    </head>
+    <body>
+        <nav style="text-align: center;">
+            <ul style="display: inline; padding-left: 0;">
+                <li style="display: inline;"><a href="/">Index</a></li>
+                <li style="display: inline;"><a href="/about">About</a></li>
+                <li style="display: inline;"><a href="/tree">Tree</a></li>
+                <li style="display: inline;"><a href="/graph/toml">TOML Graph</a></li>
+                <li style="display: inline;"><a href="/graph/json">JSON Graph</a></li>
+            </ul>
+        <hr>
+        </nav>
+        <main>
+        {% block body %}
+        {% endblock body %}
+        </main>
+        <footer>
+        <hr>
+            <div>
+            <cite>made by <a href="https://jutty.dev">jutty</a></cite>
+            &bullet;
+            <a href="/acknowledgments">acknowledgments</a>
+            &bullet;
+            <a href="https://codeberg.org/jutty/en">source code</a>
+            <br/>
+            built
+            <time>
+                {{ now(utc=true) | date(format="%Y-%m-%d %H:%M") }} UTC
+            </time>
+            &bullet;
+            <time>{{ now(timestamp=true) }} Unix Epoch</time>
+            </div>
+        </footer>
+    </body>
+</html>

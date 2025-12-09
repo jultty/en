@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Tree{% endblock title %}
+
+{%- block body %}
+    {% if nodes or root_node %}
+    <h1>Tree</h1>
+    <p><strong>Total nodes:</strong> {{ nodes | length }}</p>
+    {% if root_node %}
+    <h2>Root node</h2>
+
+    <ul>
+    <li>
+        <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
+        <ul>
+            <li><strong>Body:</strong>
+            <ul style="display: inline; padding-left: 0;">
+            <li style="display: inline;">
+            <details style="display: inline; cursor: pointer;">
+                <summary style="display: inline;">
+                    {{root_node.body | truncate(length=120)}}
+                </summary>
+                {{root_node.body}}
+            </details>
+            </li>
+            </ul>
+        {% if root_node.connections %}
+        <li><strong>Connections</strong>
+            <ul>
+            {% for connection in root_node.connections %}
+                <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
+            {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+        </ul>
+    </li>
+    </ul>
+
+    {% endif %}
+    {% if nodes %}
+    <h2>All nodes</h2>
+    <ul>
+    {% for node in nodes %}
+    <li>
+        <a href="/node/{{node.id}}">{{node.title}}</a>
+        <ul>
+            <li><strong>Body:</strong>
+            <ul style="display: inline; padding-left: 0;">
+            <li style="display: inline;">
+            <details style="display: inline; cursor: pointer;">
+                <summary style="display: inline;">
+                    {{node.body | truncate(length=30)}}
+                </summary>
+                {{node.body}}
+            </details>
+            </li>
+            </ul>
+        {% if node.connections %}
+        <li><strong>Connections</strong>
+            <ul>
+            {% for connection in node.connections %}
+                <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
+            {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+        </ul>
+    </li>
+    {% endfor %}
+    {% endif %}
+    </ul>
+    {% else %}
+    <p>There are no nodes. The graph is either empty or failed to parse.</p>
+    {% endif %}
+{%- endblock body %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Index{% endblock title %}
+
+{%- block body %}
+    <h1>en</h1>
+    <p>
+    <em>A non-linear writing instrument.</em>
+    {% if nodes %}
+    <form method="post">
+        <label for="node">Find by ID:</label>
+        <input type="text" name="node" required/>
+        <input type="submit" value="Submit"/>
+    </form>
+    <hr>
+    <h2>Nodes</h2>
+    <nav>
+        {% if root_node %}
+        <p>
+            <strong>Root</strong>:
+            <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
+        </p>
+        {% endif %}
+        {% if nodes %}
+        <ul>
+        {% for node in nodes %}
+        {% if node.id != root_node.id %}
+        <li><a href="/node/{{node.id}}">{{node.title}}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <hr>
+    {% include "empty.html" %}
+    {% endif %}
+{%- endblock body %}

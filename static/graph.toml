@@ -1,33 +1,33 @@
 root_node = "Interface"
 
 [nodes.Interface]
-body = """
+text = """
 An interface is a point of contact between the inside and the outside of something. Contrast with intraface.
 """
 
 links = ["Intraface"]
 
 [nodes.Intraface]
-body = """
+text = """
 The intraface is the reflexive process of communicating, creating, thinking, that does not or cannot get shared with others. Contrast with interface.
 """
 
 links = ["Thinking", "Interface"]
 
 [nodes.Thinking]
-body = """
+text = """
 Thinking is a process by which some beings create and manipulate mental constructs.
 """
 
 [nodes.Paradigm]
-body = """
+text = """
 A paradigm is a cohesive set of beliefs, methods and principles that serve both as justification for a given position and as guidance for how to pursue its praxis.
 """
 
 links = [ "Principle", "Belief", "Method", "Position", "Praxis" ]
 
 [nodes.Principle]
-body = """
+text = """
 A principle is a belief that implies commitment and necessity.
 
 Principles change, but to change one's principles too constantly defeats its purpose.
@@ -44,7 +44,7 @@ anchor = "identifying"
 to = "Identity"
 
 [nodes.Religion]
-body = """
+text = """
 A religion is a paradigm that involves unfalsifiable beliefs, particularly those in the domain of morality.
 
 A reductive critique of religion dismisses it based on its dogmatic adherence to certain beliefs usually rooted in tradition.
@@ -72,7 +72,7 @@ links = [
 ]
 
 [nodes.Identity]
-body = """
+text = """
 Identity is how individuals construe their sameness and otherness from each other and from nothingness.
 """
 
@@ -83,14 +83,14 @@ anchor = "nothingness"
 to = "Emptiness"
 
 [nodes.Emptiness]
-body = """
+text = """
 Emptiness is the vacuous base in which entities exist.
 """
 
 links = [ "Entity" ]
 
 [nodes.Entity]
-body = """
+text = """
 An entity is anything except for actual emptiness. It does not have to be sentient, or physical. It can be an idea, a concept, a memory. The concept of emptiness is an entity, but emptiness itself is not.
 """
 

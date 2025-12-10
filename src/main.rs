@@ -97,7 +97,7 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
 
     context.insert("id", &id);
     context.insert("title", &node.title);
-    context.insert("body", &node.body);
+    context.insert("text", &node.text);
     context.insert("connections", &node.connections.clone());
     context.insert("incoming", &graph.incoming.get(&id));
 
@@ -107,12 +107,12 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
         500,
         &format!(
             r#"Failed to generate page for node {} (ID {}) with {} outgoing,
-            {} incoming connections and body "{}""#,
+            {} incoming connections and text "{}""#,
             node.title,
             id,
             node.connections.iter().len(),
             graph.incoming.get(&id).iter().len(),
-            node.body,
+            node.text,
         ),
     )
 }

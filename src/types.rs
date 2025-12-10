@@ -11,7 +11,7 @@ pub struct Graph {
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct Node {
-    pub body: String,
+    pub text: String,
     #[serde(default)] pub title: String,
     #[serde(default)] pub links: Vec<String>,
     #[serde(default)] pub id: String,
@@ -52,7 +52,7 @@ impl Node {
         Self {
             id: "VoidNode".to_string(),
             title: "Pure Void".to_string(),
-            body: match message {
+            text: match message {
                 Some(s) => s,
                 None => "Node is empty, missing or wasn't found.".to_string()
             },

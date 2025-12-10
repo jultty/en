@@ -13,14 +13,14 @@
     <li>
         <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
         <ul>
-            <li><strong>Body:</strong>
+            <li><strong>Text:</strong>
             <ul style="display: inline; padding-left: 0;">
             <li style="display: inline;">
             <details style="display: inline; cursor: pointer;">
                 <summary style="display: inline;">
-                    {{root_node.body | truncate(length=120)}}
+                    {{root_node.text | truncate(length=120)}}
                 </summary>
-                {{root_node.body}}
+                {{root_node.text}}
             </details>
             </li>
             </ul>
@@ -36,8 +36,8 @@
         </ul>
     </li>
     </ul>
-
     {% endif %}
+
     {% if nodes %}
     <h2>All nodes</h2>
     <ul>
@@ -45,14 +45,14 @@
     <li>
         <a href="/node/{{node.id}}">{{node.title}}</a>
         <ul>
-            <li><strong>Body:</strong>
+            <li><strong>Text:</strong>
             <ul style="display: inline; padding-left: 0;">
             <li style="display: inline;">
             <details style="display: inline; cursor: pointer;">
                 <summary style="display: inline;">
-                    {{node.body | truncate(length=30)}}
+                    {{node.text | truncate(length=30)}}
                 </summary>
-                {{node.body}}
+                {{node.text}}
             </details>
             </li>
             </ul>
@@ -72,6 +72,7 @@
     {% endfor %}
     {% endif %}
     </ul>
+
     {% else %}
     {% include "empty.html" %}
     {% endif %}

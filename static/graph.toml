@@ -1,24 +1,6 @@
 messages = [ "Test Graph over Fetch from Actix" ]
 root_node = "Interface"
 
-[nodes.SomeNode]
-title = "Some Node"
-id = "SomeNode"
-body = "This describes some node in relation to some other node."
-
-[[nodes.SomeNode.connections]]
-anchor = "some other node"
-to = "SomeOtherNode"
-
-[nodes.SomeOtherNode]
-title = "Some Other Node"
-id = "SomeOtherNode"
-body = "This describes some other node in relation to the first node."
-
-[[nodes.SomeOtherNode.connections]]
-anchor = "the first node"
-to = "SomeNode"
-
 [nodes.Interface]
 title = "Interface"
 id = "Interface"
@@ -37,10 +19,11 @@ The intraface is the reflexive process of communicating, creating, thinking, tha
 """
 
 [[nodes.Intraface.connections]]
-to = "Interface"
+to = "Thinking"
 
 [[nodes.Intraface.connections]]
-to = "Thinking"
+to = "Interface"
+
 
 [nodes.Thinking]
 title = "Thinking"
@@ -70,3 +53,80 @@ to = "Position"
 
 [[nodes.Paradigm.connections]]
 to = "Praxis"
+
+[nodes.Principle]
+title = "Principle"
+id = "Principle"
+body = """
+A principle is a belief that implies commitment and necessity.
+
+Principles change, but to change one's principles too constantly defeats its purpose.
+
+A principle is usually informed by experience or formed by cultural context, namely religion.
+
+As other beliefs, simply identifying with a principle does not mean one follows it, which can introduce a sense of dissonance and/or guilt.
+"""
+
+[[nodes.Principle.connections]]
+anchor = "identifying"
+to = "Identity"
+
+[[nodes.Principle.connections]]
+to = "Dissonance"
+
+[[nodes.Principle.connections]]
+to = "Guilt"
+
+[[nodes.Principle.connections]]
+to = "Belief"
+
+[[nodes.Principle.connections]]
+to = "Religion"
+
+[nodes.Religion]
+title = "Religion"
+id = "Religion"
+body = """
+A religion is a paradigm that involves unfalsifiable beliefs, particularly those in the domain of morality.
+
+A reductive critique of religion dismisses it based on its dogmatic adherence to certain beliefs usually rooted in tradition.
+
+As a counterpoint, consider that the fact religion carries false beliefs does not imply all of the beliefs that religion carries are false, which is an assertion that holds for any other entity. The beliefs that compose the episteme of a religion may include both falsifiable and unfalsifiable beliefs. In this sense, it does not differ from any other paradigm.
+
+Religion does not subsist solely because of its hard truths, but because it caters to various other basic human necessities: community, identity, knowledge regarding how to conduct one's life. This gives religion enormous presence in society and allows it to act as a strong political force against societal changes that contradict its positions.
+
+One poignant fact about religion is that its dogmas tend to create exclusion, segregating those who can or want to adhere to them from those who can't or don't want to. This not only means religion will create divisions, it also means that the people excluded from it will be left with less means to fulfill the previously mentioned basic human necessities that religion addresses.
+"""
+
+[[nodes.Religion.connections]]
+to = "Paradigm"
+
+[[nodes.Religion.connections]]
+to = "Truth"
+
+[[nodes.Religion.connections]]
+to = "Necessity"
+
+[[nodes.Religion.connections]]
+to = "Knowledge"
+
+[[nodes.Religion.connections]]
+to = "Community"
+
+[[nodes.Religion.connections]]
+to = "Identity"
+
+[[nodes.Religion.connections]]
+to = "Episteme"
+
+[[nodes.Religion.connections]]
+to = "Morality"
+
+[[nodes.Religion.connections]]
+to = "Dogma"
+
+[[nodes.Religion.connections]]
+to = "Tradition"
+
+[[nodes.Religion.connections]]
+to = "Reductionism"

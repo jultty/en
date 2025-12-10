@@ -28,15 +28,6 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
         let connections = node.connections.clone().unwrap_or_default();
         let mut new_edges = connections.clone();
 
-        for link in node.links.iter() {
-            new_edges.push(Edge {
-                from: key.to_string(),
-                to: link.to_string(),
-                anchor: String::new(),
-                detached: !old_nodes.contains_key(link),
-            })
-        }
-
         for (i, edge) in connections.iter().enumerate() {
 
             let mut new_edge = edge.clone();
@@ -54,8 +45,26 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
             new_edges[i] = new_edge;
         }
 
+        // Create connections for each link
+        for link in node.links.iter() {
+            new_edges.push(Edge {
+                from: key.to_string(),
+                to: link.to_string(),
+                anchor: String::new(),
+                detached: !old_nodes.contains_key(link),
+            })
+        }
+
+        // Populate empty titles with IDs
+        let new_title = if node.title.is_empty() {
+            key.clone()
+        } else {
+            node.title.clone()
+        };
+
         let new_node = Node {
             id: key.clone(),
+            title: new_title,
             connections: Some(new_edges),
             ..node.clone()
         };

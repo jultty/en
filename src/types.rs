@@ -3,34 +3,29 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct Graph {
-    pub messages: Vec<String>,
-    pub root_node: String,
     pub nodes: HashMap<String, Node>,
-    #[serde(skip)]
-    pub incoming: HashMap<String, Vec<Edge>>,
+    pub root_node: String,
+    #[serde(default)] pub messages: Vec<String>,
+    #[serde(skip)] pub incoming: HashMap<String, Vec<Edge>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct Node {
-    pub title: String,
     pub body: String,
+    #[serde(default)] pub title: String,
+    #[serde(default)] pub links: Vec<String>,
+    #[serde(default)] pub id: String,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connections: Option<Vec<Edge>>,
-    #[serde(default)]
-    pub links: Vec<String>,
-    #[serde(default)]
-    pub id: String,
 }
 
 #[derive(Serialize, Clone, Default, PartialEq, Deserialize, Debug)]
 pub struct Edge {
     pub to: String,
-    #[serde(default)]
-    pub anchor: String,
-    #[serde(default)]
-    pub from: String,
-    #[serde(default)]
-    pub detached: bool,
+    #[serde(default)] pub anchor: String,
+    #[serde(default)] pub from: String,
+    #[serde(default)] pub detached: bool,
 }
 
 impl Graph {

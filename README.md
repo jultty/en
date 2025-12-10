@@ -14,6 +14,6 @@ It works by ingesting a TOML file containing your node specification and serving
 
 ## Motivation
 
-I created en because I wanted to write a complex, long-form register of my personal worldview. I have always written a lot, but I find non-fiction essays hard to carry to fruition in the usual, linear structure which you'd commonly find in, for instance, a typical philosohpy book.
+I created en because I wanted to write a complex, long-form register of my personal worldview. I have always written a lot, but I find non-fiction essays hard to carry to fruition in the usual, linear structure which you'd commonly find in, for instance, a typical philosophy book.
 
-I call en a "writing instrument" because that's how I relate to it. I use it to write my thoughts and connect them. I like how you can write new pages easily from a single big file so that creating new pages and connecting them is efortless compared to creating a new file for each one and them handling that spread of files. With en, I can just write a few lines and I already have a new page laid out. It fits how my thoughts also spread and fork very quickly.
+I call en a "writing instrument" because that's how I relate to it. I use it to write my thoughts and connect them. I like how you can write new pages easily from a single big file so that creating new pages and connecting them is effortless compared to creating a new file for each one and them handling that spread of files. With en, I can just write a few lines and I already have a new page laid out. It fits how my thoughts also spread and fork very quickly.

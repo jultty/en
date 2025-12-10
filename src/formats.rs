@@ -26,7 +26,16 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
     for (key, node) in old_nodes.iter() {
 
         let connections = node.connections.clone().unwrap_or_default();
-        let mut vec = connections.clone();
+        let mut new_edges = connections.clone();
+
+        for link in node.links.iter() {
+            new_edges.push(Edge {
+                from: key.to_string(),
+                to: link.to_string(),
+                anchor: String::new(),
+                detached: !old_nodes.contains_key(link),
+            })
+        }
 
         for (i, edge) in connections.iter().enumerate() {
 
@@ -42,14 +51,14 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
                 new_edge.detached = true;
             }
 
-            vec[i] = new_edge;
-
+            new_edges[i] = new_edge;
         }
 
         let new_node = Node {
-            connections: Some(vec),
+            connections: Some(new_edges),
             ..node.clone()
         };
+
         nodes.insert(key.to_string(), new_node);
     }
 
@@ -64,14 +73,9 @@ fn make_incoming(nodes: HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
 
         let empty_vec: Vec<Edge> = vec![];
         for edge in node.connections.clone().unwrap_or_default().iter() {
-
-            let vec = incoming.get(&edge.to.clone()).unwrap_or(&empty_vec);
-            if vec.contains(edge) {
-                vec.clone().extend_from_slice(&[edge.clone()]);
-                incoming.insert(edge.to.clone(), vec.clone());
-            } else {
-                incoming.insert(edge.to.clone(), vec![edge.clone()]);
-            }
+            let mut edges = incoming.get(&edge.to.clone()).unwrap_or(&empty_vec).clone();
+            edges.extend_from_slice(&[edge.clone()]);
+            incoming.insert(edge.to.clone(), edges.clone());
         }
     }
 

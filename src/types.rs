@@ -28,14 +28,16 @@ pub struct Node {
     pub body: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connections: Option<Vec<Edge>>,
+    #[serde(default)]
+    pub links: Vec<String>,
 }
 
 impl Graph {
     pub fn new(message: Option<String>) -> Graph {
         Self {
             nodes: HashMap::new(),
-            incoming: HashMap::new(),
             root_node: "".to_string(),
+            incoming: HashMap::new(),
             messages: vec![message
                 .unwrap_or("This graph is empty or in error".to_string())],
         }
@@ -59,6 +61,7 @@ impl Node {
                 None => "Node is empty, missing or wasn't found.".to_string()
             },
             connections: None,
+            links: vec![],
         }
     }
 }

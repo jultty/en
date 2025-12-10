@@ -8,8 +8,7 @@ body = """
 An interface is a point of contact between the inside and the outside of something. Contrast with intraface.
 """
 
-[[nodes.Interface.connections]]
-to = "Intraface"
+links = ["Intraface"]
 
 [nodes.Intraface]
 title = "Intraface"
@@ -18,12 +17,7 @@ body = """
 The intraface is the reflexive process of communicating, creating, thinking, that does not or cannot get shared with others. Contrast with interface.
 """
 
-[[nodes.Intraface.connections]]
-to = "Thinking"
-
-[[nodes.Intraface.connections]]
-to = "Interface"
-
+links = ["Thinking", "Interface"]
 
 [nodes.Thinking]
 title = "Thinking"
@@ -39,20 +33,7 @@ body = """
 A paradigm is a cohesive set of beliefs, methods and principles that serve both as justification for a given position and as guidance for how to pursue its praxis.
 """
 
-[[nodes.Paradigm.connections]]
-to = "Belief"
-
-[[nodes.Paradigm.connections]]
-to = "Method"
-
-[[nodes.Paradigm.connections]]
-to = "Principle"
-
-[[nodes.Paradigm.connections]]
-to = "Position"
-
-[[nodes.Paradigm.connections]]
-to = "Praxis"
+links = [ "Principle", "Belief", "Method", "Position", "Praxis" ]
 
 [nodes.Principle]
 title = "Principle"
@@ -67,21 +48,11 @@ A principle is usually informed by experience or formed by cultural context, nam
 As other beliefs, simply identifying with a principle does not mean one follows it, which can introduce a sense of dissonance and/or guilt.
 """
 
+links = [ "Dissonance", "Guilt", "Belief", "Religion", ]
+
 [[nodes.Principle.connections]]
 anchor = "identifying"
 to = "Identity"
-
-[[nodes.Principle.connections]]
-to = "Dissonance"
-
-[[nodes.Principle.connections]]
-to = "Guilt"
-
-[[nodes.Principle.connections]]
-to = "Belief"
-
-[[nodes.Principle.connections]]
-to = "Religion"
 
 [nodes.Religion]
 title = "Religion"
@@ -98,35 +69,48 @@ Religion does not subsist solely because of its hard truths, but because it cate
 One poignant fact about religion is that its dogmas tend to create exclusion, segregating those who can or want to adhere to them from those who can't or don't want to. This not only means religion will create divisions, it also means that the people excluded from it will be left with less means to fulfill the previously mentioned basic human necessities that religion addresses.
 """
 
-[[nodes.Religion.connections]]
-to = "Paradigm"
+links = [
+    "Paradigm",
+    "Principle",
+    "Truth",
+    "Tradition",
+    "Morality",
+    "Episteme",
+    "Necessity",
+    "Knowledge",
+    "Community",
+    "Identity",
+    "Dogma",
+    "Reductionism",
+]
 
-[[nodes.Religion.connections]]
-to = "Truth"
+[nodes.Identity]
+title = "Identity"
+id = "Identity"
+body = """
+Identity is how individuals construe their sameness and otherness from each other and from nothingness.
+"""
 
-[[nodes.Religion.connections]]
-to = "Necessity"
+links = ["Principle"]
 
-[[nodes.Religion.connections]]
-to = "Knowledge"
+[[nodes.Identity.connections]]
+anchor = "nothingness"
+to = "Emptiness"
 
-[[nodes.Religion.connections]]
-to = "Community"
+[nodes.Emptiness]
+title = "Emptiness"
+id = "Emptiness"
+body = """
+Emptiness is the vacuous base in which entities exist.
+"""
 
-[[nodes.Religion.connections]]
-to = "Identity"
+links = [ "Entity" ]
 
-[[nodes.Religion.connections]]
-to = "Episteme"
+[nodes.Entity]
+title = "Entity"
+id = "Entity"
+body = """
+An entity is anything except for actual emptiness. It does not have to be sentient, or physical. It can be an idea, a concept, a memory. The concept of emptiness is an entity, but emptiness itself is not.
+"""
 
-[[nodes.Religion.connections]]
-to = "Morality"
-
-[[nodes.Religion.connections]]
-to = "Dogma"
-
-[[nodes.Religion.connections]]
-to = "Tradition"
-
-[[nodes.Religion.connections]]
-to = "Reductionism"
+links = [ "Emptiness" ]

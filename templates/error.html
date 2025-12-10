@@ -4,11 +4,15 @@
     <h1>
         {{ title | default(value="Unknown error") }}
     </h1>
-    {{ message | default(value="This error has not been described in detail.") }}
+    {{ message | default(value="This error has not been described in detail.") | linebreaksbr | safe }}
     <hr>
-    <div align=right style="margin-top: 4em; margin-right: 2em">
-    <p><em>It seems you have fallen out of the circle.</em></p>
-    <p>Maybe you'd like to climb back on the <a href="/tree">tree</a>?
+    <div align=right style="margin-top: 8em; margin-right: 2em">
+    <em style="font-size: 0.8em;">
+        fallen<br/>
+        out of the circle<br/>
+        you are welcome to climb<br/>
+        back onto the <a href="/tree">tree</a>
+    </em>
     </div>
     </p>
 {%- endblock body %}

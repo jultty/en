@@ -37,22 +37,39 @@ fn make_body(
     error_message: &str,
 ) -> String {
 
-    let tera = tera::Tera::new(
+    let tera = match tera::Tera::new(
         concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"),
-    ).unwrap_or(tera::Tera::default());
+    ) {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Tera parsing error: {}", e);
+            ::std::process::exit(1);
+        }
+    };
 
-    let mut error_context = tera::Context::new();
-    let error = StatusCode::from_u16(error_code)
-        .unwrap_or(StatusCode::NOT_IMPLEMENTED);
-    error_context.insert("title", &error.to_string());
-    error_context.insert(
-        "message",
-        &format!("Error while filling template {}: {}", name, error_message),
-    );
+    let render_result = match tera.render(name, &context) {
+        Ok(t) => t,
+        Err(e) => {
 
-    tera.render(name, &context)
-        .unwrap_or(tera.render("error.html", &error_context)
-            .unwrap_or(error_message.to_string()))
+            let mut error_context = tera::Context::new();
+            let error = StatusCode::from_u16(error_code)
+                .unwrap_or(StatusCode::NOT_IMPLEMENTED);
+            error_context.insert("title", &error.to_string());
+            error_context.insert(
+                "message",
+                &format!(
+                    r#"<strong>Error while filling template {name}:</strong> {}
+                    <strong>User message:</strong> {error_message}"#,
+                    e.to_string(),
+                ),
+            );
+
+            tera.render("error.html", &error_context)
+                .unwrap_or(error_message.to_string())
+        }
+    };
+
+    render_result
 }
 
 

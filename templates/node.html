@@ -6,7 +6,9 @@
     <section>
         <h1>{{ title }}</h1>
         <code style="display: inline;">ID: {{ id }}</code>
-        <p>{{ body }}</p>
+        {% for line in body | split(pat="\n") %}
+        {% if line %} <p>{{ line }}</p> {% endif %}
+        {% endfor %}
     </section>
     {% if connections or incoming %}
     <aside>

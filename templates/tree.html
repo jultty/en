@@ -60,7 +60,9 @@
         <li><strong>Connections</strong>
             <ul>
             {% for connection in node.connections %}
+            {% if not connection.detached %}
                 <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
+            {% endif %}
             {% endfor %}
             </ul>
         </li>

@@ -48,28 +48,32 @@ pub fn populate_graph() -> Graph {
     let mut new_nodes: HashMap<String, Node> = HashMap::new();
     let mut incoming: HashMap<String, Vec<Edge>> = HashMap::new();
 
-    // If an edge has no "from" ID, default to its node's ID
     for (key, node) in graph.nodes.iter() {
 
-        let mut new_node = node.clone();
         let connections = node.connections.clone().unwrap_or_default();
+        let mut vec = connections.clone();
 
         for (i, edge) in connections.iter().enumerate() {
+
+            let mut new_edge = edge.clone();
+
             if edge.from == "" {
-                let new_edge = Edge {
-                    from: key.to_string(),
-                    ..edge.clone()
-                };
-                let mut vec = connections.clone();
-                vec[i] = new_edge;
-                new_node = Node {
-                    connections: Some(vec),
-                    ..node.clone()
-                };
+                new_edge.from = key.to_string();
             }
+
+            if ! graph.nodes.contains_key(&edge.to) {
+                new_edge.detached = true;
+            }
+
+            vec[i] = new_edge;
+
         }
 
-        new_nodes.insert(key.to_string(), new_node.clone());
+        let new_node = Node {
+            connections: Some(vec),
+            ..node.clone()
+        };
+        new_nodes.insert(key.to_string(), new_node);
     }
 
     // Construct a HashMap with incoming connections (reversed edges)

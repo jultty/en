@@ -16,11 +16,18 @@
         <h2>Connections</h2>
         {% if connections %}
         <ul>
-            {% for connection in connections %}
+            {% for connection in connections | filter(attribute="detached", value=false) %}
             <li>
             <strong>{{id}}</strong>
             &#x1f86a;
             <a href="/node/{{connection.to}}">{{connection.to}}</a>
+            </li>
+            {% endfor %}
+            {% for connection in connections | filter(attribute="detached", value=true) %}
+            <li>
+            <strong>{{id}}</strong>
+            &#x1f86a;
+            <span style="filter: opacity(70%);">{{connection.to}}</span>
             </li>
             {% endfor %}
         </ul>

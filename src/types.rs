@@ -12,11 +12,13 @@ pub struct Graph {
 
 #[derive(Serialize, Clone, Default, PartialEq, Deserialize)]
 pub struct Edge {
+    pub to: String,
     #[serde(default)]
     pub anchor: String,
     #[serde(default)]
     pub from: String,
-    pub to: String,
+    #[serde(default)]
+    pub detached: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]

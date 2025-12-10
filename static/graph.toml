@@ -1,4 +1,4 @@
-messages = [ "Test Graph over Fetch from Actix" ]
+messages = []
 root_node = "Interface"
 
 [nodes.Interface]

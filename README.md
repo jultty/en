@@ -7,8 +7,9 @@ It works by ingesting a TOML file containing your node specification and serving
 ## Roadmap
 
 - [x] Array syntax for lightweight connections
+- [x] Automatic IDs
+- [ ] Automatic titles
 - [ ] Automatic anchors
-- [ ] Automatic IDs
 - [ ] Mismatch between TOML ID and provided ID
 
 ## Motivation

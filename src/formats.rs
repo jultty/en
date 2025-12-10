@@ -55,6 +55,7 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
         }
 
         let new_node = Node {
+            id: key.clone(),
             connections: Some(new_edges),
             ..node.clone()
         };

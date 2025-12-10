@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct Graph {
     pub messages: Vec<String>,
     pub root_node: String,
@@ -10,7 +10,19 @@ pub struct Graph {
     pub incoming: HashMap<String, Vec<Edge>>,
 }
 
-#[derive(Serialize, Clone, Default, PartialEq, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+pub struct Node {
+    pub title: String,
+    pub body: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub connections: Option<Vec<Edge>>,
+    #[serde(default)]
+    pub links: Vec<String>,
+    #[serde(default)]
+    pub id: String,
+}
+
+#[derive(Serialize, Clone, Default, PartialEq, Deserialize, Debug)]
 pub struct Edge {
     pub to: String,
     #[serde(default)]
@@ -21,22 +33,11 @@ pub struct Edge {
     pub detached: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
-pub struct Node {
-    pub title: String,
-    pub id: String,
-    pub body: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub connections: Option<Vec<Edge>>,
-    #[serde(default)]
-    pub links: Vec<String>,
-}
-
 impl Graph {
     pub fn new(message: Option<String>) -> Graph {
         Self {
             nodes: HashMap::new(),
-            root_node: "".to_string(),
+            root_node: "VoidNode".to_string(),
             incoming: HashMap::new(),
             messages: vec![message
                 .unwrap_or("This graph is empty or in error".to_string())],
@@ -54,8 +55,8 @@ impl Graph {
 impl Node {
     pub fn new(message: Option<String>) -> Node {
         Self {
-            title: "Empty Node".to_string(),
-            id: "EmptyNode".to_string(),
+            id: "VoidNode".to_string(),
+            title: "Pure Void".to_string(),
             body: match message {
                 Some(s) => s,
                 None => "Node is empty, missing or wasn't found.".to_string()

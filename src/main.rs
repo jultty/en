@@ -95,11 +95,11 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
 
     let node: &Node = nodes.get(&id).unwrap_or(&empty_node);
 
-    context.insert("id", &node.id);
+    context.insert("id", &id);
     context.insert("title", &node.title);
     context.insert("body", &node.body);
     context.insert("connections", &node.connections.clone());
-    context.insert("incoming", &graph.incoming.get(&node.id));
+    context.insert("incoming", &graph.incoming.get(&id));
 
     template_handler(
         "node.html",
@@ -109,9 +109,9 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
             r#"Failed to generate page for node {} (ID {}) with {} outgoing,
             {} incoming connections and body "{}""#,
             node.title,
-            node.id,
+            id,
             node.connections.iter().len(),
-            graph.incoming.get(&node.id).iter().len(),
+            graph.incoming.get(&id).iter().len(),
             node.body,
         ),
     )
@@ -121,7 +121,7 @@ async fn index() -> Html<String> {
 
     let mut context = tera::Context::new();
     let graph = populate_graph();
-    let root_node = graph.get_root();
+    let root_node = graph.get_root().unwrap_or_default();
     let nodes: Vec<Node> = graph.nodes.into_values().collect();
 
     context.insert("nodes", &nodes);
@@ -134,7 +134,7 @@ async fn tree() -> Html<String> {
 
     let mut context = tera::Context::new();
     let graph = populate_graph();
-    let root_node = graph.get_root();
+    let root_node = graph.get_root().unwrap_or_default();
     let nodes: Vec<Node> = graph.nodes.into_values().collect();
 
     context.insert("nodes", &nodes);

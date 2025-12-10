@@ -3,7 +3,6 @@ root_node = "Interface"
 
 [nodes.Interface]
 title = "Interface"
-id = "Interface"
 body = """
 An interface is a point of contact between the inside and the outside of something. Contrast with intraface.
 """
@@ -12,7 +11,6 @@ links = ["Intraface"]
 
 [nodes.Intraface]
 title = "Intraface"
-id = "Intraface"
 body = """
 The intraface is the reflexive process of communicating, creating, thinking, that does not or cannot get shared with others. Contrast with interface.
 """
@@ -21,14 +19,12 @@ links = ["Thinking", "Interface"]
 
 [nodes.Thinking]
 title = "Thinking"
-id = "Thinking"
 body = """
 Thinking is a process by which some beings create and manipulate mental constructs.
 """
 
 [nodes.Paradigm]
 title = "Paradigm"
-id = "Paradigm"
 body = """
 A paradigm is a cohesive set of beliefs, methods and principles that serve both as justification for a given position and as guidance for how to pursue its praxis.
 """
@@ -37,7 +33,6 @@ links = [ "Principle", "Belief", "Method", "Position", "Praxis" ]
 
 [nodes.Principle]
 title = "Principle"
-id = "Principle"
 body = """
 A principle is a belief that implies commitment and necessity.
 
@@ -56,7 +51,6 @@ to = "Identity"
 
 [nodes.Religion]
 title = "Religion"
-id = "Religion"
 body = """
 A religion is a paradigm that involves unfalsifiable beliefs, particularly those in the domain of morality.
 
@@ -86,7 +80,6 @@ links = [
 
 [nodes.Identity]
 title = "Identity"
-id = "Identity"
 body = """
 Identity is how individuals construe their sameness and otherness from each other and from nothingness.
 """
@@ -99,7 +92,6 @@ to = "Emptiness"
 
 [nodes.Emptiness]
 title = "Emptiness"
-id = "Emptiness"
 body = """
 Emptiness is the vacuous base in which entities exist.
 """
@@ -108,7 +100,6 @@ links = [ "Entity" ]
 
 [nodes.Entity]
 title = "Entity"
-id = "Entity"
 body = """
 An entity is anything except for actual emptiness. It does not have to be sentient, or physical. It can be an idea, a concept, a memory. The concept of emptiness is an entity, but emptiness itself is not.
 """

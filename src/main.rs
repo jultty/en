@@ -1,7 +1,7 @@
 use axum::{
     extract::Path,
     http::{header, StatusCode},
-    response::{ Html, IntoResponse, Redirect },
+    response::{IntoResponse, Redirect},
     routing::get,
     Form,
     Router,
@@ -74,40 +74,62 @@ fn make_body(
         }
     };
 
-    let render_result = match tera.render(name, &context) {
-        Ok(t) => t,
+    match tera.render(name, context) {
+        Ok(t) => (t, 200),
         Err(e) => {
 
             let mut error_context = tera::Context::new();
-            let error = StatusCode::from_u16(error_code)
-                .unwrap_or(StatusCode::NOT_IMPLEMENTED);
-            error_context.insert("title", &error.to_string());
-            error_context.insert(
-                "message",
-                &format!(
-                    r#"<strong>Error while filling template {name}:</strong> {}
-                    <strong>User message:</strong> {error_message}"#,
-                    e.to_string(),
+
+            let out_error_message = match error_message {
+                Some(s) => &format!(
+                    "Template render failed.\n\
+                    User message: {s},
+                    Engine message:\n<pre>{e:#?}</pre>\n\
+                    Context:\n<pre>{context:#?}</pre>"
                 ),
-            );
+                None => {
+                    &format!(
+                        "Template render failed.\n\
+                        Engine message:\n<pre>{e:#?}</pre>\n\
+                        Context:\n<pre>{context:#?}</pre>"
+                    )
+                }
+            };
 
-            tera.render("error.html", &error_context)
-                .unwrap_or(error_message.to_string())
+            error_context.insert("message", out_error_message);
+            error_context.insert("title",
+                &StatusCode::INTERNAL_SERVER_ERROR.to_string());
+
+            (tera.render("error.html", &error_context)
+                .unwrap_or(out_error_message.clone()), 500)
         }
-    };
-
-    render_result
+    }
 }
-
 
 fn template_handler(
     name: &str,
     context: tera::Context,
     error_code: u16,
-    error_message: &str,
-) -> Html<String> {
-    let body = make_body(name, context, error_code, error_message);
-    Html(body)
+    error_message: Option<String>,
+    is_error: bool,
+) -> impl IntoResponse {
+
+    let (body, render_status) = make_body(
+        name, &context, error_message.as_deref());
+
+    let status_code = if render_status != 200 {
+        StatusCode::from_u16(render_status)
+            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+    } else if is_error {
+        StatusCode::from_u16(error_code)
+            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+    } else { StatusCode::OK  };
+
+    (
+        status_code,
+        [(header::CONTENT_TYPE, "text/html")],
+        body.clone(),
+    )
 }
 
 async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
@@ -128,23 +150,22 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
     context.insert("connections", &node.connections.clone());
     context.insert("incoming", &graph.incoming.get(&id));
 
+    let not_found = node.clone() == empty_node;
+
     template_handler(
         "node.html",
         context,
-        500,
-        &format!(
-            r#"Failed to generate page for node {} (ID {}) with {} outgoing,
-            {} incoming connections and text "{}""#,
-            node.title,
-            id,
-            node.connections.iter().len(),
-            graph.incoming.get(&id).iter().len(),
-            node.text,
-        ),
+        if not_found { 404 } else { 500 },
+        Some(format!(
+            "Failed to generate page for node {} (ID {}).\n\
+            Node struct: <pre>{:#?}</pre>",
+            node.title, id, node
+        ).to_owned()),
+        not_found,
     )
 }
 
-async fn index() -> Html<String> {
+async fn index() -> impl IntoResponse {
 
     let mut context = tera::Context::new();
     let graph = populate_graph();
@@ -154,10 +175,10 @@ async fn index() -> Html<String> {
     context.insert("nodes", &nodes);
     context.insert("root_node", &root_node);
 
-    template_handler("index.html", context, 500, "Failed to render template.")
+    template_handler("index.html", context.clone(), 500, None, false)
 }
 
-async fn tree() -> Html<String> {
+async fn tree() -> impl IntoResponse {
 
     let mut context = tera::Context::new();
     let graph = populate_graph();
@@ -167,7 +188,8 @@ async fn tree() -> Html<String> {
     context.insert("nodes", &nodes);
     context.insert("root_node", &root_node);
 
-    template_handler("tree.html", context, 500, "Failed to render template")
+    template_handler("tree.html", context, 500, None, false)
+}
 
 #[expect(clippy::unused_async)]
 async fn static_template_handler(name: &str) -> impl IntoResponse {

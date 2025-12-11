@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Graph {
     pub nodes: HashMap<String, Node>,
     pub root_node: String,
@@ -9,7 +9,7 @@ pub struct Graph {
     #[serde(skip)] pub incoming: HashMap<String, Vec<Edge>>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Node {
     pub text: String,
     #[serde(default)] pub title: String,
@@ -20,7 +20,7 @@ pub struct Node {
     pub connections: Option<Vec<Edge>>,
 }
 
-#[derive(Serialize, Clone, Default, PartialEq, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Edge {
     pub to: String,
     #[serde(default)] pub anchor: String,

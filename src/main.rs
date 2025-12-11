@@ -12,9 +12,24 @@ mod formats;
 
 use formats::*;
 use types::*;
+static ONSET: std::sync::LazyLock<std::time::Instant> =
+    std::sync::LazyLock::new(std::time::Instant::now);
 
 #[tokio::main]
 async fn main() {
+
+    std::panic::set_hook(Box::new(|info| {
+
+        let payload = info.payload_as_str().unwrap_or(
+            "No string payload. Is edition > 2021?");
+
+        let location = info.location().map_or_else(
+                || "location unavailable".to_string(),
+                |s| format!("{}:{}:{}", s.file(), s.line(), s.column()));
+
+        eprintln!(" P! [{:?}] {}: {}", ONSET.elapsed(), location, payload);
+
+    }));
 
     let app = Router::new()
         .route("/", get(index).post(query))
@@ -26,8 +41,17 @@ async fn main() {
         .fallback(not_found)
     ;
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    if let Ok(listener) = tokio::net::TcpListener::bind("0.0.0.0:3000").await
+        .or(Err("Failed to instantiate Tokio listener")) {
+
+        match axum::serve(listener, app).await {
+            Ok(()) => (),
+            Err(e) => {
+                eprintln!("Failed to serve application with axum::serve: {e:#?}");
+                std::process::exit(1);
+            },
+        }
+    }
 }
 
 fn make_body(

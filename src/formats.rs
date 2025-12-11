@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::types::*;
+use crate::types::{Graph, Node, Edge};
 
 pub fn populate_graph() -> Graph {
 
@@ -8,22 +8,22 @@ pub fn populate_graph() -> Graph {
         Ok(s) => s,
         Err(e) => format!("Error: {e}"),
     };
-    let graph = deserialize_graph(Format::Toml, &toml_source);
+    let graph = deserialize_graph(&Format::Toml, &toml_source);
 
-    let nodes = modulate_nodes(graph.nodes.clone());
+    let nodes = modulate_nodes(&graph.nodes);
 
     Graph {
         nodes: nodes.clone(),
-        incoming: make_incoming(nodes.clone()),
+        incoming: make_incoming(&nodes),
         ..graph
     }
 }
 
-fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
+fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
 
     let mut nodes: HashMap<String, Node> = HashMap::new();
 
-    for (key, node) in old_nodes.iter() {
+    for (key, node) in old_nodes {
 
         let connections = node.connections.clone().unwrap_or_default();
         let mut new_edges = connections.clone();
@@ -33,8 +33,8 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
             let mut new_edge = edge.clone();
 
             // Populate empty "from" IDs in edges with node's ID
-            if edge.from == "" {
-                new_edge.from = key.to_string();
+            if edge.from.is_empty() {
+                new_edge.from.clone_from(key);
             }
 
             // Flag detached edges
@@ -42,17 +42,17 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
                 new_edge.detached = true;
             }
 
-            new_edges[i] = new_edge;
+            if let Some(e) = new_edges.get_mut(i) { *e = new_edge; }
         }
 
         // Create connections for each link
-        for link in node.links.iter() {
+        for link in &node.links {
             new_edges.push(Edge {
-                from: key.to_string(),
-                to: link.to_string(),
+                from: key.clone(),
+                to: link.clone(),
                 anchor: String::new(),
                 detached: !old_nodes.contains_key(link),
-            })
+            });
         }
 
         // Populate empty titles with IDs
@@ -69,22 +69,22 @@ fn modulate_nodes(old_nodes: HashMap<String, Node>) -> HashMap<String, Node> {
             ..node.clone()
         };
 
-        nodes.insert(key.to_string(), new_node);
+        nodes.insert(key.clone(), new_node);
     }
 
     nodes
 }
 
 // Construct a HashMap with incoming connections (reversed edges)
-fn make_incoming(nodes: HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
+fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
 
     let mut incoming: HashMap<String, Vec<Edge>> = HashMap::new();
     for node in nodes.clone().into_values() {
 
         let empty_vec: Vec<Edge> = vec![];
-        for edge in node.connections.clone().unwrap_or_default().iter() {
+        for edge in &node.connections.clone().unwrap_or_default() {
             let mut edges = incoming.get(&edge.to.clone()).unwrap_or(&empty_vec).clone();
-            edges.extend_from_slice(&[edge.clone()]);
+            edges.extend_from_slice(std::slice::from_ref(edge));
             incoming.insert(edge.to.clone(), edges.clone());
         }
     }
@@ -97,9 +97,9 @@ pub enum Format {
     Json
 }
 
-pub fn serialize_graph(out_format: Format, graph: &Graph) -> String {
+pub fn serialize_graph(out_format: &Format, graph: &Graph) -> String {
 
-    match out_format {
+    match *out_format {
         Format::Toml => {
             match toml::to_string(graph) {
                 Ok(s) => s,
@@ -115,14 +115,14 @@ pub fn serialize_graph(out_format: Format, graph: &Graph) -> String {
     }
 }
 
-pub fn deserialize_graph(in_format: Format, serial: &String) -> Graph {
+pub fn deserialize_graph(in_format: &Format, serial: &str) -> Graph {
 
-    match in_format {
-        Format::Toml => { match toml::from_str(&serial) {
+    match *in_format {
+        Format::Toml => { match toml::from_str(serial) {
             Ok(g) => g,
             Err(error) => Graph::new(Some(error.to_string()))
         }},
-        Format::Json => { match serde_json::from_str(&serial) {
+        Format::Json => { match serde_json::from_str(serial) {
             Ok(g) => g,
             Err(error) => Graph::new(Some(error.to_string()))
         }}

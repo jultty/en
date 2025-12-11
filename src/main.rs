@@ -7,11 +7,12 @@ use axum::{
     Router,
 };
 
-mod types;
-mod formats;
+use formats::{populate_graph, serialize_graph, Format};
+use types::Node;
 
-use formats::*;
-use types::*;
+mod formats;
+mod types;
+
 static ONSET: std::sync::LazyLock<std::time::Instant> =
     std::sync::LazyLock::new(std::time::Instant::now);
 
@@ -59,18 +60,17 @@ async fn main() {
 
 fn make_body(
     name: &str,
-    context: tera::Context,
-    error_code: u16,
-    error_message: &str,
-) -> String {
+    context: &tera::Context,
+    error_message: Option<&str>,
+) -> (String, u16) {
 
     let tera = match tera::Tera::new(
         concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"),
     ) {
         Ok(t) => t,
         Err(e) => {
-            println!("Tera parsing error: {}", e);
-            ::std::process::exit(1);
+            println!("Tera parsing error: {e:#?}");
+            panic!("{e}")
         }
     };
 
@@ -139,7 +139,7 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
     let graph = populate_graph();
     let nodes = graph.nodes;
     let empty_node = Node::new(
-        Some(format!("Could not find node with ID {}.", id)),
+        Some(format!("Could not find node with ID {id}.")),
     );
 
     let node: &Node = nodes.get(&id).unwrap_or(&empty_node);
@@ -205,14 +205,14 @@ async fn query(Form(query): Form<Query>) -> Redirect {
 
 async fn json_graph() -> impl IntoResponse {
     let graph = populate_graph();
-    let body = serialize_graph(Format::Json, &graph);
+    let body = serialize_graph(&Format::Json, &graph);
 
     ([(header::CONTENT_TYPE, "application/json")], body)
 }
 
 async fn toml_graph() -> impl IntoResponse {
     let graph = populate_graph();
-    let body = serialize_graph(Format::Toml, &graph);
+    let body = serialize_graph(&Format::Toml, &graph);
 
     ([(header::CONTENT_TYPE, "text/plain")], body)
 }
@@ -242,19 +242,17 @@ fn make_error_body(
 
     let mut context = tera::Context::new();
 
-    let code = code.unwrap_or(501);
-    let message = &message.unwrap_or("Unknown error");
+    let out_code = code.unwrap_or(500);
+    let out_message = &message.unwrap_or("Unknown error");
 
-    context.insert("title", &StatusCode::from_u16(code)
+    context.insert("title", &StatusCode::from_u16(out_code)
         .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR).to_string());
-    context.insert("message", message);
-    context.insert("status_code", &code.to_string());
+    context.insert("message", out_message);
+    context.insert("status_code", &out_code.to_string());
 
-    make_body("error.html", context, 500, &format!(
-            "Failed to render template for Error {}: {}",
-            code,
-            message,
-        ))
+    make_body("error.html", &context, Some(&format!(
+        "Failed to render template for Error {out_code}: {out_message}"
+    ))).0
 }
 
 fn make_error_response(
@@ -262,15 +260,16 @@ fn make_error_response(
     message: Option<&str>,
 ) -> impl IntoResponse {
 
-    let code = code.unwrap_or(501);
-    let message = &message.unwrap_or("Unknown error");
+    let out_code = code.unwrap_or(500);
+    let out_message = &message.unwrap_or("Unknown error");
 
-    let body = make_error_body(Some(code), Some(message));
+    let body = make_error_body(Some(out_code), Some(out_message));
 
     (
-        StatusCode::from_u16(code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+        StatusCode::from_u16(out_code)
+            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
         [(header::CONTENT_TYPE, "text/html")],
-        body.to_string(),
+        body.clone(),
     )
 }
 

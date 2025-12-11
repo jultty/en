@@ -1,5 +1,6 @@
-use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
+
+use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Graph {
@@ -40,10 +41,7 @@ impl Graph {
     }
 
     pub fn get_root(&self) -> Option<Node> {
-        match self.nodes.get(&self.root_node) {
-            Some(n) => Some(n.clone()),
-            None => None,
-        }
+        self.nodes.get(&self.root_node).cloned()
     }
 }
 

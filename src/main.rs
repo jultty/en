@@ -36,8 +36,11 @@ async fn main() {
         .route("/graph/toml", get(toml_graph))
         .route("/graph/json", get(json_graph))
         .route("/static/style.css", get(stylesheet))
+        .route("/static/favicon.svg", get(favicon))
         .route("/node/{node_id}", get(node_view).post(node_view))
         .route("/tree", get(tree))
+        .route("/about", get(|| static_template_handler("about.html")))
+        .route("/acknowledgments", get(|| static_template_handler("acknowledgments.html")))
         .fallback(not_found)
     ;
 
@@ -165,6 +168,10 @@ async fn tree() -> Html<String> {
     context.insert("root_node", &root_node);
 
     template_handler("tree.html", context, 500, "Failed to render template")
+
+#[expect(clippy::unused_async)]
+async fn static_template_handler(name: &str) -> impl IntoResponse {
+    template_handler(name, tera::Context::new(), 500, None, false)
 }
 
 #[derive(serde::Deserialize)]
@@ -189,12 +196,21 @@ async fn toml_graph() -> impl IntoResponse {
 }
 
 async fn stylesheet() -> impl IntoResponse {
-    let body = match std::fs::read_to_string("./static/style.css") {
+    let content = match std::fs::read_to_string("./static/style.css") {
         Ok(s) => s,
         Err(e) => format!("Error: {e}"),
     };
 
-    ([(header::CONTENT_TYPE, "text/css")], body)
+    ([(header::CONTENT_TYPE, "text/css")], content)
+}
+
+async fn favicon() -> impl IntoResponse {
+    let content = match std::fs::read("./static/favicon.svg") {
+        Ok(b) => b,
+        Err(e) => { eprintln!("Error: {e}"); vec![] }
+    };
+
+    ([(header::CONTENT_TYPE, "image/svg+xml")], content)
 }
 
 fn make_error_body(

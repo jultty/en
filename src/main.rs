@@ -1,7 +1,8 @@
 use axum::{
+    body::Body,
     extract::Path,
-    http::{header, StatusCode},
-    response::{IntoResponse, Redirect},
+    http::{ header, HeaderValue, Response, StatusCode },
+    response::{ Redirect },
     routing::get,
     Form,
     Router,
@@ -36,12 +37,16 @@ async fn main() {
         .route("/", get(index).post(query))
         .route("/graph/toml", get(toml_graph))
         .route("/graph/json", get(json_graph))
-        .route("/static/style.css", get(stylesheet))
-        .route("/static/favicon.svg", get(favicon))
+        .route("/static/style.css", get(
+            || { file_handler("./static/style.css", "text/css") }))
+        .route("/static/favicon.svg", get(
+            || { file_handler("./static/favicon.svg", "image/svg+xml") }))
         .route("/node/{node_id}", get(node_view).post(node_view))
         .route("/tree", get(tree))
         .route("/about", get(|| static_template_handler("about.html")))
-        .route("/acknowledgments", get(|| static_template_handler("acknowledgments.html")))
+        .route("/acknowledgments", get(|| {
+            static_template_handler("acknowledgments.html")
+        }))
         .fallback(not_found)
     ;
 
@@ -61,7 +66,7 @@ async fn main() {
 fn make_body(
     name: &str,
     context: &tera::Context,
-    error_message: Option<&str>,
+    error_message: Option<String>,
 ) -> (String, u16) {
 
     let tera = match tera::Tera::new(
@@ -106,33 +111,52 @@ fn make_body(
     }
 }
 
+fn make_response(
+    body: &str,
+    status_code: u16,
+    headers: &[(header::HeaderName, &str)]
+) -> Response<Body> {
+
+    let mut response = Response::new(Body::from(body.to_owned()));
+
+    *response.status_mut() = StatusCode::from_u16(status_code)
+            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+
+    for header in headers {
+        if let Ok(wrapped) = HeaderValue::from_str(header.1) {
+            if let Some(overwritten) = response.headers_mut().insert(
+                header.0.clone(),
+                wrapped,
+            ) { eprintln!("[make_response] Overwrote header {overwritten:?} \
+                    because another for key {} already existed", header.0);
+            }
+        } else {
+            eprintln!("[make_response] Failed to wrap header value {}",
+                header.1);
+        }
+    }
+
+    response
+}
+
 fn template_handler(
     name: &str,
-    context: tera::Context,
+    context: &tera::Context,
     error_code: u16,
     error_message: Option<String>,
     is_error: bool,
-) -> impl IntoResponse {
+) -> Response<Body> {
 
     let (body, render_status) = make_body(
-        name, &context, error_message.as_deref());
+        name, context, error_message);
 
-    let status_code = if render_status != 200 {
-        StatusCode::from_u16(render_status)
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-    } else if is_error {
-        StatusCode::from_u16(error_code)
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
-    } else { StatusCode::OK  };
+    let status_code = if is_error { error_code } else { render_status };
 
-    (
-        status_code,
-        [(header::CONTENT_TYPE, "text/html")],
-        body.clone(),
-    )
+    make_response(&body, status_code,
+        &[(header::CONTENT_TYPE, "text/html")])
 }
 
-async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
+async fn node_view(Path(id): Path<String>) -> Response<Body>  {
 
     let mut context = tera::Context::new();
 
@@ -151,10 +175,11 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
     context.insert("incoming", &graph.incoming.get(&id));
 
     let not_found = node.clone() == empty_node;
+    let template_name = "node.html".to_string();
 
     template_handler(
-        "node.html",
-        context,
+        &template_name,
+        &context,
         if not_found { 404 } else { 500 },
         Some(format!(
             "Failed to generate page for node {} (ID {}).\n\
@@ -165,7 +190,7 @@ async fn node_view(Path(id): Path<String>) -> impl IntoResponse  {
     )
 }
 
-async fn index() -> impl IntoResponse {
+async fn index() -> Response<Body> {
 
     let mut context = tera::Context::new();
     let graph = populate_graph();
@@ -175,10 +200,10 @@ async fn index() -> impl IntoResponse {
     context.insert("nodes", &nodes);
     context.insert("root_node", &root_node);
 
-    template_handler("index.html", context.clone(), 500, None, false)
+    template_handler("index.html", &context, 500, None, false)
 }
 
-async fn tree() -> impl IntoResponse {
+async fn tree() -> Response<Body> {
 
     let mut context = tera::Context::new();
     let graph = populate_graph();
@@ -188,12 +213,38 @@ async fn tree() -> impl IntoResponse {
     context.insert("nodes", &nodes);
     context.insert("root_node", &root_node);
 
-    template_handler("tree.html", context, 500, None, false)
+    template_handler("tree.html", &context, 500, None, false)
 }
 
 #[expect(clippy::unused_async)]
-async fn static_template_handler(name: &str) -> impl IntoResponse {
-    template_handler(name, tera::Context::new(), 500, None, false)
+async fn static_template_handler(name: &str) -> Response<Body> {
+    template_handler(name, &tera::Context::new(), 500, None, false)
+}
+
+#[expect(clippy::unused_async)]
+async fn file_handler(
+    file_path: &str,
+    content_type: &str,
+) -> Response<Body> {
+
+    let content = match std::fs::read(file_path) {
+        Ok(s) => s,
+        Err(e) => panic!("[static_file_handler] Failed to read file contents: {e}"),
+    };
+
+    let mut response = Response::new(Body::from(content));
+    *response.status_mut() = StatusCode::OK;
+    let header = header::CONTENT_TYPE;
+
+    if let Ok(header_value) = HeaderValue::from_str(content_type) {
+        if let Some(h) = response.headers_mut().insert(header, header_value) {
+            eprintln!("[static_file_handler] Overwrote existing header {h:?} \
+                because a header for the same key existed");
+        }
+    } else { eprintln!("[static_file_handler] Failed to create content type \
+        header value from {content_type}"); }
+
+    response
 }
 
 #[derive(serde::Deserialize)]
@@ -203,36 +254,18 @@ async fn query(Form(query): Form<Query>) -> Redirect {
     Redirect::permanent(format!("/node/{}", query.node).as_str())
 }
 
-async fn json_graph() -> impl IntoResponse {
+async fn json_graph() -> Response<Body> {
     let graph = populate_graph();
     let body = serialize_graph(&Format::Json, &graph);
 
-    ([(header::CONTENT_TYPE, "application/json")], body)
+    make_response(&body, 200, &[(header::CONTENT_TYPE, "application/json")])
 }
 
-async fn toml_graph() -> impl IntoResponse {
+async fn toml_graph() -> Response<Body> {
     let graph = populate_graph();
     let body = serialize_graph(&Format::Toml, &graph);
 
-    ([(header::CONTENT_TYPE, "text/plain")], body)
-}
-
-async fn stylesheet() -> impl IntoResponse {
-    let content = match std::fs::read_to_string("./static/style.css") {
-        Ok(s) => s,
-        Err(e) => format!("Error: {e}"),
-    };
-
-    ([(header::CONTENT_TYPE, "text/css")], content)
-}
-
-async fn favicon() -> impl IntoResponse {
-    let content = match std::fs::read("./static/favicon.svg") {
-        Ok(b) => b,
-        Err(e) => { eprintln!("Error: {e}"); vec![] }
-    };
-
-    ([(header::CONTENT_TYPE, "image/svg+xml")], content)
+    make_response(&body, 200, &[(header::CONTENT_TYPE, "text/plain")])
 }
 
 fn make_error_body(
@@ -252,28 +285,27 @@ fn make_error_body(
 
     make_body("error.html", &context, Some(&format!(
         "Failed to render template for Error {out_code}: {out_message}"
-    ))).0
+    )).cloned()).0
 }
 
 fn make_error_response(
     code: Option<u16>,
     message: Option<&str>,
-) -> impl IntoResponse {
+) -> Response<Body> {
 
     let out_code = code.unwrap_or(500);
     let out_message = &message.unwrap_or("Unknown error");
 
     let body = make_error_body(Some(out_code), Some(out_message));
 
-    (
-        StatusCode::from_u16(out_code)
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-        [(header::CONTENT_TYPE, "text/html")],
-        body.clone(),
+    make_response(
+        &body,
+        out_code,
+        &[(header::CONTENT_TYPE, "text/html")],
     )
 }
 
-async fn not_found() -> impl IntoResponse {
+async fn not_found() -> Response<Body> {
     make_error_response(
         Some(404),
         Some("The page you tried to access could not be found."),

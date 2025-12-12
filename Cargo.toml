@@ -10,12 +10,11 @@ edition = "2024"
 rust-version= "1.91.1"
 
 [package.metadata.bacon.jobs.fmt-check]
-command = [
-    "cargo", "fmt",
-    "--check",
-    "--",
-    "--color=always",
-]
+command = [ "cargo", "fmt", "--check", "--", "--color=always" ]
+need_stdout = true
+
+[package.metadata.bacon.jobs.fmt]
+command = [ "cargo", "fmt" ]
 need_stdout = true
 
 [lints.rust]
@@ -130,7 +129,7 @@ str_split_at_newline = "warn"
 struct_excessive_bools = "warn"
 struct_field_names = "warn"
 trivially_copy_pass_by_ref = "warn"
-unchecked_duration_subtraction = "warn"
+unchecked_time_subtraction = "warn"
 unicode_not_nfc = "warn"
 uninlined_format_args = "warn"
 unnecessary_box_returns = "warn"

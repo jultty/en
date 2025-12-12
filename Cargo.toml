@@ -9,6 +9,15 @@ repository = "https://codeberg.org/jutty/en"
 edition = "2024"
 rust-version= "1.91.1"
 
+[package.metadata.bacon.jobs.fmt-check]
+command = [
+    "cargo", "fmt",
+    "--check",
+    "--",
+    "--color=always",
+]
+need_stdout = true
+
 [lints.rust]
 # levels: allow, expect, warn, force-warn, deny, forbid
 unsafe_code = { level = "forbid", priority = 99 }

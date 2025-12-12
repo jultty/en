@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use crate::types::{Graph, Node, Edge};
 
 pub fn populate_graph() -> Graph {
-
     let toml_source = match std::fs::read_to_string("./static/graph.toml") {
         Ok(s) => s,
         Err(e) => format!("Error: {e}"),
@@ -20,16 +19,13 @@ pub fn populate_graph() -> Graph {
 }
 
 fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
-
     let mut nodes: HashMap<String, Node> = HashMap::new();
 
     for (key, node) in old_nodes {
-
         let connections = node.connections.clone().unwrap_or_default();
         let mut new_edges = connections.clone();
 
         for (i, edge) in connections.iter().enumerate() {
-
             let mut new_edge = edge.clone();
 
             // Populate empty "from" IDs in edges with node's ID
@@ -38,11 +34,13 @@ fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
             }
 
             // Flag detached edges
-            if ! old_nodes.contains_key(&edge.to) {
+            if !old_nodes.contains_key(&edge.to) {
                 new_edge.detached = true;
             }
 
-            if let Some(e) = new_edges.get_mut(i) { *e = new_edge; }
+            if let Some(e) = new_edges.get_mut(i) {
+                *e = new_edge;
+            }
         }
 
         // Create connections for each link
@@ -77,13 +75,13 @@ fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
 
 // Construct a HashMap with incoming connections (reversed edges)
 fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
-
     let mut incoming: HashMap<String, Vec<Edge>> = HashMap::new();
-    for node in nodes.clone().into_values() {
 
+    for node in nodes.clone().into_values() {
         let empty_vec: Vec<Edge> = vec![];
         for edge in &node.connections.clone().unwrap_or_default() {
-            let mut edges = incoming.get(&edge.to.clone()).unwrap_or(&empty_vec).clone();
+            let mut edges =
+                incoming.get(&edge.to.clone()).unwrap_or(&empty_vec).clone();
             edges.extend_from_slice(std::slice::from_ref(edge));
             incoming.insert(edge.to.clone(), edges.clone());
         }
@@ -94,39 +92,31 @@ fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
 
 pub enum Format {
     Toml,
-    Json
+    Json,
 }
 
 pub fn serialize_graph(out_format: &Format, graph: &Graph) -> String {
-
     match *out_format {
-        Format::Toml => {
-            match toml::to_string(graph) {
-                Ok(s) => s,
-                Err(e) => e.to_string(),
-            }
+        Format::Toml => match toml::to_string(graph) {
+            Ok(s) => s,
+            Err(e) => e.to_string(),
         },
-        Format::Json => {
-            match serde_json::to_string(graph) {
-                Ok(s) => s,
-                Err(e) => e.to_string(),
-            }
+        Format::Json => match serde_json::to_string(graph) {
+            Ok(s) => s,
+            Err(e) => e.to_string(),
         },
     }
 }
 
 pub fn deserialize_graph(in_format: &Format, serial: &str) -> Graph {
-
     match *in_format {
-        Format::Toml => { match toml::from_str(serial) {
+        Format::Toml => match toml::from_str(serial) {
             Ok(g) => g,
-            Err(error) => Graph::new(Some(error.to_string()))
-        }},
-        Format::Json => { match serde_json::from_str(serial) {
+            Err(error) => Graph::new(Some(error.to_string())),
+        },
+        Format::Json => match serde_json::from_str(serial) {
             Ok(g) => g,
-            Err(error) => Graph::new(Some(error.to_string()))
-        }}
+            Err(error) => Graph::new(Some(error.to_string())),
+        },
     }
 }
-
-

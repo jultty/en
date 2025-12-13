@@ -84,11 +84,3 @@ async fn main() {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn fail() {
-        assert_eq!(0_i32, 1_i32);
-    }
-}

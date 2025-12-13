@@ -8,14 +8,11 @@ jobs:
       - name: checkout code
         run: |
           apt --update -y install git
-          pwd; ls -la
           git clone https://codeberg.org/jutty/en .
-          ls -la
+      - name: setup toolchain
+        run: rustup component add rustfmt clippy
       - name: formatting
-        run: |
-          pwd; ls -la
-          rustup component add rustfmt
-          cargo fmt -- --check
+        run: cargo fmt -- --check
       - name: lints
         run: cargo clippy -- -Dwarnings
       - name: cargo

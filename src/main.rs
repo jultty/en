@@ -1,12 +1,5 @@
 use axum::{routing::get, Router};
 
-use handlers::{
-    graph::node,
-    navigation::{nexus, search},
-    fixed::{file, serial},
-    template::static_template_handler,
-    error::not_found,
-};
 use formats::Format;
 
 mod formats;
@@ -32,25 +25,27 @@ async fn main() {
     }));
 
     let app = Router::new()
-        .route("/", get(|| nexus("index.html")).post(search))
-        .route("/graph/toml", get(|| serial(&Format::Toml)))
-        .route("/graph/json", get(|| serial(&Format::Json)))
+        .route("/", get(|| handlers::navigation::nexus("index.html"))
+            .post(handlers::navigation::search))
+        .route("/graph/toml", get(|| handlers::fixed::serial(&Format::Toml)))
+        .route("/graph/json", get(|| handlers::fixed::serial(&Format::Json)))
         .route(
             "/static/style.css",
-            get(|| file("./static/style.css", "text/css")),
+            get(|| handlers::fixed::file("./static/style.css", "text/css")),
         )
         .route(
             "/static/favicon.svg",
-            get(|| file("./static/favicon.svg", "image/svg+xml")),
+            get(|| handlers::fixed::file("./static/favicon.svg", "image/svg+xml")),
         )
-        .route("/node/{node_id}", get(node).post(node))
-        .route("/tree", get(|| nexus("tree.html")))
-        .route("/about", get(|| static_template_handler("about.html")))
+        .route("/node/{node_id}", get(handlers::graph::node)
+            .post(handlers::graph::node))
+        .route("/tree", get(|| handlers::navigation::nexus("tree.html")))
+        .route("/about", get(|| handlers::template::fixed("about.html")))
         .route(
             "/acknowledgments",
-            get(|| static_template_handler("acknowledgments.html")),
+            get(|| handlers::template::fixed("acknowledgments.html")),
         )
-        .fallback(not_found);
+        .fallback(handlers::error::not_found);
 
     if let Ok(listener) = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await

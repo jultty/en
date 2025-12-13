@@ -19,7 +19,7 @@ pub(super) fn by_filename(
     make_response(&body, status_code, &[(header::CONTENT_TYPE, "text/html")])
 }
 
-pub async fn static_template_handler(name: &str) -> Response<Body> {
+pub async fn fixed(name: &str) -> Response<Body> {
     by_filename(name, &tera::Context::new(), 500, None, false)
 }
 

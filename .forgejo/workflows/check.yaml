@@ -10,8 +10,11 @@ jobs:
           apt --update -y install git
           git clone https://codeberg.org/jutty/en
           cd en
+          ls
       - name: formatting
         run: |
+          pwd
+          ls
           rustup component add rustfmt
           cargo fmt -- --check
       - name: lints

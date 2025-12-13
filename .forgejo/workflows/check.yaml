@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: checkout code
         run: |
-          apt --update -y install git
+          apt --update --no-install-recommends -y install git
           git clone https://codeberg.org/jutty/en .
       - name: setup toolchain
         run: rustup component add rustfmt clippy

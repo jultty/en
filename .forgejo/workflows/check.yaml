@@ -5,16 +5,16 @@ jobs:
     container:
       image: rust:slim
     steps:
-      - name: checkout code
-        run: |
-          apt --update --no-install-recommends -y install git
-          git clone https://codeberg.org/jutty/en .
+      - name: install action dependencies
+        run: apt install --no-install-recommends --update -y nodejs
       - name: setup toolchain
         run: rustup component add rustfmt clippy
+      - name: checkout code
+        uses: actions/checkout@v6
       - name: install dependencies
         run: cargo install --path .
       - name: formatting
-        run: cargo fmt -- --check
+        run: cargo fmt -- --check --files-with-diff
       - name: lints
         run: cargo clippy -- -Dwarnings
       - name: cargo

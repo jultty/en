@@ -8,13 +8,12 @@ jobs:
       - name: checkout code
         run: |
           apt --update -y install git
-          git clone https://codeberg.org/jutty/en
-          cd en
-          ls
+          pwd; ls -la
+          git clone https://codeberg.org/jutty/en .
+          ls -la
       - name: formatting
         run: |
-          pwd
-          ls
+          pwd; ls -la
           rustup component add rustfmt
           cargo fmt -- --check
       - name: lints

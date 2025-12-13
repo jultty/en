@@ -21,7 +21,13 @@ async fn main() {
             |s| format!("{}:{}:{}", s.file(), s.line(), s.column()),
         );
 
-        eprintln!(" P! [{:?}] {}: {}", ONSET.elapsed(), location, payload);
+        eprintln!(" P! [{:?}] {location}: {payload}", ONSET.elapsed());
+
+        let trace = std::backtrace::Backtrace::capture();
+        if trace.status() == std::backtrace::BacktraceStatus::Captured {
+            eprintln!("\n  Stack trace:\n{trace:#?}");
+        }
+
     }));
 
     let app = Router::new()

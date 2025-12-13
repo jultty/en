@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: checkout code
         run: |
-          apt install git
+          apt --update install git
           git clone https://codeberg.org/jutty/en
           cd en
       - name: formatting

@@ -11,7 +11,9 @@ jobs:
           git clone https://codeberg.org/jutty/en
           cd en
       - name: formatting
-        run: cargo fmt -- --check
+        run: |
+          rustup component add rustfmt
+          cargo fmt -- --check
       - name: lints
         run: cargo clippy -- -Dwarnings
       - name: cargo

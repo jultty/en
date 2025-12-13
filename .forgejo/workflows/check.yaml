@@ -1,0 +1,15 @@
+on: [push]
+jobs:
+  print-content:
+    runs-on: docker
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+      - name: formatting
+        run: cargo fmt -- --check
+      - name: lints
+        run: cargo clippy -- -Dwarnings
+      - name: cargo
+        run: cargo check --all-targets
+      - name: test
+        run: cargo test

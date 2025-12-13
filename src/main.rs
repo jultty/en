@@ -28,24 +28,36 @@ async fn main() {
         if trace.status() == std::backtrace::BacktraceStatus::Captured {
             eprintln!("\n  Stack trace:\n{trace:#?}");
         }
-
     }));
 
     let app = Router::new()
-        .route("/", get(|| handlers::navigation::nexus("index.html"))
-            .post(handlers::navigation::search))
-        .route("/graph/toml", get(|| handlers::fixed::serial(&Format::Toml)))
-        .route("/graph/json", get(|| handlers::fixed::serial(&Format::Json)))
+        .route(
+            "/",
+            get(|| handlers::navigation::nexus("index.html"))
+                .post(handlers::navigation::search),
+        )
+        .route(
+            "/graph/toml",
+            get(|| handlers::fixed::serial(&Format::Toml)),
+        )
+        .route(
+            "/graph/json",
+            get(|| handlers::fixed::serial(&Format::Json)),
+        )
         .route(
             "/static/style.css",
             get(|| handlers::fixed::file("./static/style.css", "text/css")),
         )
         .route(
             "/static/favicon.svg",
-            get(|| handlers::fixed::file("./static/favicon.svg", "image/svg+xml")),
+            get(|| {
+                handlers::fixed::file("./static/favicon.svg", "image/svg+xml")
+            }),
         )
-        .route("/node/{node_id}", get(handlers::graph::node)
-            .post(handlers::graph::node))
+        .route(
+            "/node/{node_id}",
+            get(handlers::graph::node).post(handlers::graph::node),
+        )
         .route("/tree", get(|| handlers::navigation::nexus("tree.html")))
         .route("/about", get(|| handlers::template::fixed("about.html")))
         .route(
@@ -65,7 +77,7 @@ async fn main() {
                     &main,
                     &format!(
                         "Failed to serve application with axum::serve: {e:#?}"
-                    )
+                    ),
                 );
                 std::process::exit(1);
             },

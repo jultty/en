@@ -5,4 +5,3 @@ pub fn log<F>(function: &F, message: &str) {
         std::any::type_name_of_val(function).replace("en::", ""),
     );
 }
-

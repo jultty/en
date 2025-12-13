@@ -20,15 +20,17 @@ pub fn make_response(
             {
                 crate::dev::log(
                     &make_response,
-                    &format!("Overwrote header {overwritten:?} \
+                    &format!(
+                        "Overwrote header {overwritten:?} \
                         because another for key {} already existed",
-                    header.0)
+                        header.0
+                    ),
                 );
             }
         } else {
             crate::dev::log(
                 &make_response,
-                &format!("Failed to wrap header value {}", header.1)
+                &format!("Failed to wrap header value {}", header.1),
             );
         }
     }

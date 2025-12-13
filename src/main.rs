@@ -24,7 +24,7 @@ async fn main() {
 
         eprintln!(" P! [{:?}] {location}: {payload}", ONSET.elapsed());
 
-        let trace = std::backtrace::Backtrace::capture();
+        // let trace = std::backtrace::Backtrace::capture();
         if trace.status() == std::backtrace::BacktraceStatus::Captured {
             eprintln!("\n  Stack trace:\n{trace:#?}");
         }

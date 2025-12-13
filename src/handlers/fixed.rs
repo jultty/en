@@ -41,7 +41,6 @@ pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
     response
 }
 
-#[expect(clippy::unused_async)]
 pub async fn serial(format: &Format) -> Response<Body> {
     let graph = populate_graph();
     let body = serialize_graph(format, &graph);

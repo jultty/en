@@ -6,7 +6,10 @@ jobs:
       image: rust:slim
     steps:
       - name: checkout code
-        uses: actions/checkout@v4
+        run: |
+          apt install git
+          git clone https://codeberg.org/jutty/en
+          cd en
       - name: formatting
         run: cargo fmt -- --check
       - name: lints

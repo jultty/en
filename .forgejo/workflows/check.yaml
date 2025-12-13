@@ -12,7 +12,7 @@ jobs:
       - name: setup toolchain
         run: rustup component add rustfmt clippy
       - name: install dependencies
-        run: cargo install
+        run: cargo install --path .
       - name: formatting
         run: cargo fmt -- --check
       - name: lints

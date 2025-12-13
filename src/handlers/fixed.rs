@@ -6,6 +6,7 @@ use axum::{
 use crate::formats::{Format, populate_graph, serialize_graph};
 use crate::handlers;
 
+#[expect(clippy::unused_async)]
 pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
     let content = match std::fs::read(file_path) {
         Ok(s) => s,
@@ -20,21 +21,24 @@ pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
 
     if let Ok(header_value) = HeaderValue::from_str(content_type) {
         if let Some(h) = response.headers_mut().insert(header, header_value) {
-            eprintln!(
-                "[file_handler] Overwrote existing header {h:?} \
-                    because a header for the same key existed"
+            crate::dev::log(
+                &file,
+                &format!("Overwrote existing header {h:?} because a header for \
+                    the same key existed")
             );
         }
     } else {
-        eprintln!(
-            "[file_handler] Failed to create content type \
-                header value from {content_type}"
+        crate::dev::log(
+            &file,
+            &format!("[file_handler] Failed to create content type \
+                header value from {content_type}")
         );
     }
 
     response
 }
 
+#[expect(clippy::unused_async)]
 pub async fn serial(format: &Format) -> Response<Body> {
     let graph = populate_graph();
     let body = serialize_graph(format, &graph);

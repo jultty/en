@@ -7,6 +7,7 @@ use axum::{
 
 use crate::{formats::populate_graph, types::Node, handlers};
 
+#[expect(clippy::unused_async)]
 pub async fn nexus(template: &str) -> Response<Body> {
     let mut context = tera::Context::new();
     let graph = populate_graph();

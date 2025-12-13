@@ -5,6 +5,7 @@ use formats::Format;
 mod formats;
 mod types;
 mod handlers;
+mod dev;
 
 static ONSET: std::sync::LazyLock<std::time::Instant> =
     std::sync::LazyLock::new(std::time::Instant::now);
@@ -60,8 +61,11 @@ async fn main() {
         match axum::serve(listener, app).await {
             Ok(()) => (),
             Err(e) => {
-                eprintln!(
-                    "Failed to serve application with axum::serve: {e:#?}"
+                dev::log(
+                    &main,
+                    &format!(
+                        "Failed to serve application with axum::serve: {e:#?}"
+                    )
                 );
                 std::process::exit(1);
             },

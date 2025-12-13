@@ -13,11 +13,11 @@ jobs:
         uses: actions/checkout@v6
       - name: install dependencies
         run: cargo install --path .
-      - name: formatting
-        run: cargo fmt -- --check --files-with-diff
-      - name: lints
-        run: cargo clippy -- -Dwarnings
-      - name: cargo
+      - name: cargo check
         run: cargo check --all-targets
+      - name: format
+        run: cargo fmt -- --check
+      - name: lint
+        run: cargo clippy -- -Dwarnings
       - name: test
         run: cargo test

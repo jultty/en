@@ -31,7 +31,9 @@ async fn main() {
     }));
 
     let app = Router::new()
-        .route("/", get(|| handlers::navigation::nexus("index.html"))
+        .route(
+            "/",
+            get(|| handlers::navigation::nexus("index.html"))
                 .post(handlers::navigation::search),
         )
         .route(

@@ -6,7 +6,7 @@ _default:
 # Build on changes
 [group('dev')]
 serve-watch:
-    bacon --job run-long -- -- --host localhost --port 3003
+    bacon --job run-long -- -- --hostname localhost --port 3003
 
 alias sw := serve-watch
 alias dev := serve-watch

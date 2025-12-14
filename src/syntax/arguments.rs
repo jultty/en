@@ -37,7 +37,7 @@ fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
 
     for arg in filtered_args.chunks(2) {
         if let Some(argument) = arg.first()
-            && let Some(parameter) = arg.last()
+            && let Some(parameter) = arg.get(1)
         {
             if argument.eq("-h") || argument.eq("--hostname") {
                 out_args.hostname = String::from(parameter);
@@ -52,11 +52,7 @@ fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
                 );
             }
         } else {
-            crate::dev::log(
-                &parse,
-                "Dropped: Couldn't pair either one of or
-                both argument \"{argument}\", parameter \"{parameter}\"",
-            );
+            panic!("Argument {arg:?} has no corresponding value")
         }
     }
     out_args

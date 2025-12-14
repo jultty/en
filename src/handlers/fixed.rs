@@ -12,7 +12,7 @@ pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
     let content = match std::fs::read(file_path) {
         Ok(s) => s,
         Err(e) => {
-            panic!("[file_handler] Failed to read file contents: {e}")
+            panic!("Failed to read {file_path} contents: {e}")
         },
     };
 

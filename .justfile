@@ -6,7 +6,7 @@ _default:
 # Build on changes
 [group('dev')]
 serve-watch:
-    bacon --job run-long -- localhost:3003
+    bacon --job run-long -- -- --host localhost --port 3003
 
 alias sw := serve-watch
 alias dev := serve-watch
@@ -37,7 +37,7 @@ push: check
 # Start server
 [group('run')]
 serve:
-    cargo run localhost:3003
+    cargo run -- --hostname localhost --port 3003
 
 alias s := serve
 

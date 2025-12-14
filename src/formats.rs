@@ -1,9 +1,13 @@
 use std::collections::HashMap;
 
-use crate::types::{Graph, Node, Edge};
+use crate::{
+    syntax::arguments::Arguments,
+    types::{Edge, Graph, Node},
+};
 
 pub fn populate_graph() -> Graph {
-    let toml_source = match std::fs::read_to_string("./static/graph.toml") {
+    let args = Arguments::new().parse();
+    let toml_source = match std::fs::read_to_string(args.graph_path) {
         Ok(s) => s,
         Err(e) => format!("Error: {e}"),
     };

@@ -1,4 +1,4 @@
-use std::{backtrace, env, io, panic, sync, time};
+use std::{backtrace, io, panic, sync, time};
 
 use axum::{routing::get, Router};
 
@@ -7,6 +7,7 @@ use formats::Format;
 mod formats;
 mod types;
 mod handlers;
+mod syntax;
 mod dev;
 
 static ONSET: sync::LazyLock<time::Instant> =
@@ -14,9 +15,8 @@ static ONSET: sync::LazyLock<time::Instant> =
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
-    let args: Vec<String> = env::args().collect();
-    let default_address = "0.0.0.0:0".to_string();
-    let address: &String = args.get(1).unwrap_or(&default_address);
+    let args = syntax::arguments::Arguments::new().parse();
+    let address = args.make_address();
 
     panic::set_hook(Box::new(|info| {
         let payload = info
@@ -73,7 +73,7 @@ async fn main() -> io::Result<()> {
         .fallback(handlers::error::not_found);
 
     let listener =
-        tokio::net::TcpListener::bind(address).await.map_err(|e| {
+        tokio::net::TcpListener::bind(&address).await.map_err(|e| {
             dev::log(
                 &main,
                 &format!("Failed to create listener at {address}: {e:#?}"),

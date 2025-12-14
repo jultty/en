@@ -3,7 +3,9 @@ use axum::{
     http::{Response, StatusCode, header, HeaderValue},
 };
 
-use crate::formats::{Format, populate_graph, serialize_graph};
+use crate::{
+    formats::{Format, populate_graph, serialize_graph},
+};
 use crate::handlers;
 
 pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {

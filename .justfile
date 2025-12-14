@@ -74,9 +74,16 @@ alias rb := release-build
 
 # Lint, check formatting and run tests
 [group('checks')]
-check: lint format-check test
+check: format-check lint cargo-check test
 
 alias c := check
+
+# Run cargo check
+[group('checks')]
+cargo-check:
+    cargo check --workspace
+
+alias cc := cargo-check
 
 # Lint with Clippy
 [group('checks')]
@@ -94,7 +101,7 @@ alias fc := format-check
 
 # Run tests
 [group('checks')]
-test: build
+test:
     cargo test
 
 alias t := test

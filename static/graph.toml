@@ -1,97 +1,28 @@
-root_node = "Interface"
+root_node = "en"
 
-[nodes.Interface]
+[nodes.en]
 text = """
-An interface is a point of contact between the inside and the outside of something. Contrast with intraface.
+en is a tool to write non-linear, connected pieces of text and have their references mapped out as a graph of connected information.
+
+It works by ingesting a TOML file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
 """
 
-links = ["Intraface"]
+links = [ "Graph", "TOML" ]
 
-[nodes.Intraface]
+[nodes.Graph]
 text = """
-The intraface is the reflexive process of communicating, creating, thinking, that does not or cannot get shared with others. Contrast with interface.
+A graph is a data structure composed of connected (and disconnected) nodes.
+
+A familiar example is that of a social network. Each account can be thought of as a node and the "follow" and "follower" relationships can be thought of as edges (connections). A node may have many or few connections, and the nodes it is connected to are meaningful to understand how it fits into the whole.
+
+en uses this concept to create a writing tool, allowing you to map out complex thoughts as a web connected texts.
 """
 
-links = ["Thinking", "Interface"]
-
-[nodes.Thinking]
+[nodes.TOML]
 text = """
-Thinking is a process by which some beings create and manipulate mental constructs.
+TOML is a configuration format that can be easily read and understood by humans and machines alike.
+
+To learn more about TOML, you can visit its website at <toml.io>.
+
+To see the TOML declaration that translates into the rendered graph you are reading right now, visit the "TOML Graph" link on the top navigation bar.
 """
-
-[nodes.Paradigm]
-text = """
-A paradigm is a cohesive set of beliefs, methods and principles that serve both as justification for a given position and as guidance for how to pursue its praxis.
-"""
-
-links = [ "Principle", "Belief", "Method", "Position", "Praxis" ]
-
-[nodes.Principle]
-text = """
-A principle is a belief that implies commitment and necessity.
-
-Principles change, but to change one's principles too constantly defeats its purpose.
-
-A principle is usually informed by experience or formed by cultural context, namely religion.
-
-As other beliefs, simply identifying with a principle does not mean one follows it, which can introduce a sense of dissonance and/or guilt.
-"""
-
-links = [ "Dissonance", "Guilt", "Belief", "Religion", ]
-
-[[nodes.Principle.connections]]
-anchor = "identifying"
-to = "Identity"
-
-[nodes.Religion]
-text = """
-A religion is a paradigm that involves unfalsifiable beliefs, particularly those in the domain of morality.
-
-A reductive critique of religion dismisses it based on its dogmatic adherence to certain beliefs usually rooted in tradition.
-
-As a counterpoint, consider that the fact religion carries false beliefs does not imply all of the beliefs that religion carries are false, which is an assertion that holds for any other entity. The beliefs that compose the episteme of a religion may include both falsifiable and unfalsifiable beliefs. In this sense, it does not differ from any other paradigm.
-
-Religion does not subsist solely because of its hard truths, but because it caters to various other basic human necessities: community, identity, knowledge regarding how to conduct one's life. This gives religion enormous presence in society and allows it to act as a strong political force against societal changes that contradict its positions.
-
-One poignant fact about religion is that its dogmas tend to create exclusion, segregating those who can or want to adhere to them from those who can't or don't want to. This not only means religion will create divisions, it also means that the people excluded from it will be left with less means to fulfill the previously mentioned basic human necessities that religion addresses.
-"""
-
-links = [
-    "Paradigm",
-    "Principle",
-    "Truth",
-    "Tradition",
-    "Morality",
-    "Episteme",
-    "Necessity",
-    "Knowledge",
-    "Community",
-    "Identity",
-    "Dogma",
-    "Reductionism",
-]
-
-[nodes.Identity]
-text = """
-Identity is how individuals construe their sameness and otherness from each other and from nothingness.
-"""
-
-links = ["Principle"]
-
-[[nodes.Identity.connections]]
-anchor = "nothingness"
-to = "Emptiness"
-
-[nodes.Emptiness]
-text = """
-Emptiness is the vacuous base in which entities exist.
-"""
-
-links = [ "Entity" ]
-
-[nodes.Entity]
-text = """
-An entity is anything except for actual emptiness. It does not have to be sentient, or physical. It can be an idea, a concept, a memory. The concept of emptiness is an entity, but emptiness itself is not.
-"""
-
-links = [ "Emptiness" ]

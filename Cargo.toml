@@ -5,6 +5,8 @@ description = "A non-linear writing instrument."
 license = "AGPL-3.0-only"
 
 repository = "https://codeberg.org/jutty/en"
+homepage = "https://en.jutty.dev"
+documentation = "https://en.jutty.dev/node/Documentation"
 
 edition = "2024"
 rust-version= "1.91.1"

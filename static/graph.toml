@@ -1,4 +1,84 @@
-root_node = "en"
+root_node = "Documentation"
+
+[nodes.Documentation]
+text = """
+
+Installation
+
+For now, if you want to try en, you must build it yourself.
+
+In an environment with a Rust toolchain and Git installed, run:
+
+git clone https://codeberg.org/jutty/en
+cd en
+cargo build --release
+
+The en binary will be in target/release/en.
+
+Graph Syntax
+
+The graph is a TOML file. You can create nodes by adding text such as:
+
+[nodes.Computer]
+text = "A computer is a machine capable of executing user-supplied instructions."
+
+If you need longer text, it's more convenient to use triple-quoted syntax:
+
+[nodes.Computer]
+text = \"""
+A computer is a machine capable of executing user-supplied instructions.
+\"""
+
+Nodes can have connections between each other.
+
+To add a simple connection without any associated properties, you can simply add links:
+
+[nodes.Quark]
+text = "A subatomic particle that forms hadrons."
+
+links = [ "Particle", "Hadron" ]
+
+This will create two outgoing connections from Quark: to Particle and to Hadron. It will also list Quark as an incoming connection in these nodes' pages.
+
+ If you want to add properties to the connection, you can use the connection syntax:
+
+[[nodes.Quark.connections]]
+to = "Particle physics"
+anchor = "particle"
+
+This will create a connection from Quark to "Particle physics", and the first occurrence of the word "particle" in the text of Quark gets anchored to this connection.
+
+CLI Options
+
+You can set the hostname, port and graph file path using CLI options:
+
+For the hostname, use -h or --hostname:
+
+en -h localhost
+en --hostname 10.120.0.5
+
+If unspecified, the default is 0.0.0.0.
+
+For the port, use -p or --port:
+
+en -p 3003
+en --port 3000
+
+If unspecified, the default is to use a random port assigned by the operating system.
+
+For the graph path, use -g or --graph:
+
+en -g graph.toml
+en --g ./static/my-graph.toml
+
+If unspecified, the default is ./static/graph.toml.
+
+You can combine these options as you wish:
+
+en -h localhost -p 3000
+en --host localhost -p 3003 --graph ./graph.toml
+
+"""
 
 [nodes.en]
 text = """

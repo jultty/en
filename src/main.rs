@@ -1,17 +1,8 @@
-use std::{backtrace, io, panic, sync, time};
+use std::{backtrace, io, panic};
 
 use axum::{routing::get, Router};
 
-use formats::Format;
-
-mod formats;
-mod types;
-mod handlers;
-mod syntax;
-mod dev;
-
-static ONSET: sync::LazyLock<time::Instant> =
-    sync::LazyLock::new(time::Instant::now);
+use en::{ONSET, handlers, syntax, dev, formats::Format};
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -98,4 +89,13 @@ async fn main() -> io::Result<()> {
     })?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn smoke() {
+        let e = true;
+        assert!(e);
+    }
 }

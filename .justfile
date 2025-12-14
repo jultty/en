@@ -19,12 +19,26 @@ test-watch:
 
 alias tw := test-watch
 
+# Run cargo check on changes
+[group('dev')]
+check-watch:
+    bacon --job check
+
+alias cw := check-watch
+
 # Format check on changes
 [group('dev')]
 format-watch:
     bacon --job fmt-check
 
 alias fw := format-watch
+
+# Lint on changes
+[group('dev')]
+lint-watch:
+    bacon --job clippy-all
+
+alias lw := lint-watch
 
 # Check before push
 [group('dev')]

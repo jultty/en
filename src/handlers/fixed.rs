@@ -8,6 +8,8 @@ use crate::{
 };
 use crate::handlers;
 
+/// # Panics
+/// Will panic if file read fails.
 pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
     let content = match std::fs::read(file_path) {
         Ok(s) => s,

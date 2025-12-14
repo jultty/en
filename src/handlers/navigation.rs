@@ -20,6 +20,7 @@ pub async fn nexus(template: &str) -> Response<Body> {
     handlers::template::by_filename(template, &context, 500, None, false)
 }
 
+#[expect(clippy::unused_async)]
 pub async fn search(Form(query): Form<Query>) -> Redirect {
     Redirect::permanent(format!("/node/{}", query.node).as_str())
 }

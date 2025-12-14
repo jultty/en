@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Arguments {
     pub hostname: String,
     pub port: u16,
@@ -20,6 +20,7 @@ impl Arguments {
         }
     }
 
+    #[must_use]
     pub fn parse(&self) -> Arguments {
         let args: Vec<String> = std::env::args().collect();
         parse(self, &args)

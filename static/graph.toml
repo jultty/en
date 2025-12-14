@@ -20,7 +20,7 @@ Graph Syntax
 The graph is a TOML file. You can create nodes by adding text such as:
 
 [nodes.Computer]
-text = "A computer is a machine capable of executing user-supplied instructions."
+text = "A computer is a machine capable of executing arbitrary instructions."
 
 If you need longer text, it's more convenient to use triple-quoted syntax:
 

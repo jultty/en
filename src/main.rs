@@ -1,3 +1,5 @@
+use std::{backtrace, env, io, panic, sync, time};
+
 use axum::{routing::get, Router};
 
 use formats::Format;
@@ -7,12 +9,16 @@ mod types;
 mod handlers;
 mod dev;
 
-static ONSET: std::sync::LazyLock<std::time::Instant> =
-    std::sync::LazyLock::new(std::time::Instant::now);
+static ONSET: sync::LazyLock<time::Instant> =
+    sync::LazyLock::new(time::Instant::now);
 
 #[tokio::main]
-async fn main() {
-    std::panic::set_hook(Box::new(|info| {
+async fn main() -> io::Result<()> {
+    let args: Vec<String> = env::args().collect();
+    let default_address = "0.0.0.0:0".to_string();
+    let address: &String = args.get(1).unwrap_or(&default_address);
+
+    panic::set_hook(Box::new(|info| {
         let payload = info
             .payload_as_str()
             .unwrap_or("No string payload. Is edition > 2021?");
@@ -24,8 +30,8 @@ async fn main() {
 
         eprintln!(" P! [{:?}] {location}: {payload}", ONSET.elapsed());
 
-        let trace = std::backtrace::Backtrace::capture();
-        if trace.status() == std::backtrace::BacktraceStatus::Captured {
+        let trace = backtrace::Backtrace::capture();
+        if trace.status() == backtrace::BacktraceStatus::Captured {
             eprintln!("\n  Stack trace:\n{trace:#?}");
         }
     }));
@@ -66,21 +72,30 @@ async fn main() {
         )
         .fallback(handlers::error::not_found);
 
-    if let Ok(listener) = tokio::net::TcpListener::bind("0.0.0.0:3000")
-        .await
-        .or(Err("Failed to instantiate Tokio listener"))
-    {
-        match axum::serve(listener, app).await {
-            Ok(()) => (),
-            Err(e) => {
-                dev::log(
-                    &main,
-                    &format!(
-                        "Failed to serve application with axum::serve: {e:#?}"
-                    ),
-                );
-                std::process::exit(1);
-            },
-        }
-    }
+    let listener =
+        tokio::net::TcpListener::bind(address).await.map_err(|e| {
+            dev::log(
+                &main,
+                &format!("Failed to create listener at {address}: {e:#?}"),
+            );
+            e
+        })?;
+
+    dev::log(
+        &main,
+        &format!(
+            "Listening on {}",
+            listener
+                .local_addr()
+                .map(|s| s.to_string())
+                .unwrap_or("<unknown>".to_string())
+        ),
+    );
+
+    axum::serve(listener, app).await.map_err(|e| {
+        dev::log(&main, &format!("Failed to serve application: {e:#?}"));
+        io::Error::other(e)
+    })?;
+
+    Ok(())
 }

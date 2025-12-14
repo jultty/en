@@ -11,13 +11,16 @@ jobs:
         run: rustup component add rustfmt clippy
       - name: checkout code
         uses: actions/checkout@v6
+
       - name: install dependencies
         run: cargo install --path .
-      - name: cargo check
-        run: cargo check --all-targets
+      - name: cargo build
+        run: cargo build --all-targets
+
       - name: format
         run: cargo fmt -- --check
       - name: lint
         run: cargo clippy -- -Dwarnings
       - name: test
         run: cargo test
+

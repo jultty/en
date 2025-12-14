@@ -6,8 +6,9 @@ It works by ingesting a TOML file containing your node specification and serving
 
 ## Roadmap
 
-- [ ] Anchor rendering
-    - [ ] Automatic anchors
+- [ ] Richer text formatting
+    - [ ] Anchor rendering
+        - [ ] Automatic anchors
 - [ ] Connection kinds
 - [ ] Reduce O(n) calls in the formats module
 - [ ] Add tests

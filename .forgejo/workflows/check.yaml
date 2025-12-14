@@ -1,4 +1,7 @@
 on: [push]
+env:
+  RUST_LOG: info
+  CARGO_LOG: info
 jobs:
   print-content:
     runs-on: docker

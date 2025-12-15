@@ -26,7 +26,7 @@ If you need longer text, it's more convenient to use triple-quoted syntax:
 
 [nodes.Computer]
 text = \"""
-A computer is a machine capable of executing user-supplied instructions.
+A computer is a machine capable of executing arbitrary instructions.
 \"""
 
 Nodes can have connections between each other.
@@ -76,7 +76,8 @@ If unspecified, the default is ./static/graph.toml.
 You can combine these options as you wish:
 
 en -h localhost -p 3000
-en --host localhost -p 3003 --graph ./graph.toml
+en -p 3003 --host localhost --graph ./graph.toml
+en --g ./graph.toml -p 1312
 
 """
 

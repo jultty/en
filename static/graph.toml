@@ -3,7 +3,7 @@ root_node = "Documentation"
 [nodes.Documentation]
 text = """
 
-Installation
+## Installation
 
 For now, if you want to try en, you must build it yourself.
 
@@ -15,7 +15,7 @@ cargo build --release
 
 The en binary will be in target/release/en.
 
-Graph Syntax
+## Graph Syntax
 
 The graph is a TOML file. You can create nodes by adding text such as:
 
@@ -31,7 +31,8 @@ A computer is a machine capable of executing arbitrary instructions.
 
 Nodes can have connections between each other.
 
-To add a simple connection without any associated properties, you can simply add links:
+To add a simple connection without any associated properties, you can simply
+add links:
 
 [nodes.Quark]
 text = "A subatomic particle that forms hadrons."
@@ -40,7 +41,7 @@ links = [ "Particle", "Hadron" ]
 
 This will create two outgoing connections from Quark: to Particle and to Hadron. It will also list Quark as an incoming connection in these nodes' pages.
 
- If you want to add properties to the connection, you can use the connection syntax:
+If you want to add properties to the connection, you can use the connection syntax:
 
 [[nodes.Quark.connections]]
 to = "Particle physics"
@@ -48,7 +49,7 @@ anchor = "particle"
 
 This will create a connection from Quark to "Particle physics", and the first occurrence of the word "particle" in the text of Quark gets anchored to this connection.
 
-CLI Options
+## CLI Options
 
 You can set the hostname, port and graph file path using CLI options:
 

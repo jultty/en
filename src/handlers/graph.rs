@@ -12,9 +12,12 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
 
     context.insert("id", &id);
     context.insert("title", &node.title);
-    context.insert("text", &node.text);
     context.insert("connections", &node.connections.clone());
     context.insert("incoming", &graph.incoming.get(&id));
+
+    let escaped_text = tera::escape_html(&node.text);
+    let out_text = crate::syntax::content::parse(&escaped_text);
+    context.insert("text", &out_text);
 
     let not_found = node.clone() == empty_node;
     let template_name = "node.html".to_string();

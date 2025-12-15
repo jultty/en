@@ -36,7 +36,7 @@ alias fw := format-watch
 # Lint on changes
 [group('dev')]
 lint-watch:
-    bacon --job clippy-all
+    bacon --job clippy
 
 alias lw := lint-watch
 

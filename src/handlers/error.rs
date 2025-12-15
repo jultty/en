@@ -45,7 +45,6 @@ fn make_body(code: Option<u16>, message: Option<&str>) -> String {
     .0
 }
 
-#[expect(clippy::unused_async)]
 pub async fn not_found() -> Response<Body> {
     by_code(
         Some(404),

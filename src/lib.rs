@@ -2,6 +2,7 @@ use std::{sync, time};
 
 pub mod formats;
 pub mod types;
+pub mod router;
 pub mod handlers;
 pub mod syntax;
 pub mod dev;

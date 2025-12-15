@@ -2,7 +2,6 @@ use axum::{body::Body, extract::Path, http::Response};
 
 use crate::{formats::populate_graph, handlers, types::Node};
 
-#[expect(clippy::unused_async)]
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let mut context = tera::Context::new();
 

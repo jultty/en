@@ -31,8 +31,7 @@ A computer is a machine capable of executing arbitrary instructions.
 
 Nodes can have connections between each other.
 
-To add a simple connection without any associated properties, you can simply
-add links:
+To add a simple connection without any associated properties, you can simply add links:
 
 [nodes.Quark]
 text = "A subatomic particle that forms hadrons."
@@ -65,7 +64,7 @@ For the port, use -p or --port:
 en -p 3003
 en --port 3000
 
-If unspecified, the default is to use a random port assigned by the operating system.
+If unspecified, the default is to use a random available port assigned by the operating system.
 
 For the graph path, use -g or --graph:
 
@@ -80,6 +79,8 @@ en -h localhost -p 3000
 en -p 3003 --host localhost --graph ./graph.toml
 en --g ./graph.toml -p 1312
 
+If an option is specified more than once, the last use will override any previous ones.
+
 """
 
 [nodes.en]
@@ -87,9 +88,22 @@ text = """
 en is a tool to write non-linear, connected pieces of text and have their references mapped out as a graph of connected information.
 
 It works by ingesting a TOML file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
+
+## Motivation
+
+en was created out of the desire to write complex, long-form descriptions of a personal worldview without being constrained or getting stuck trying to mimic the linearity of a typical philosophy book.
+
+It's described as a "writing instrument" because it's not so much about the presentation or even the web format. While that's the medium for this particular implementation, you can notice en serves its raw data in both TOML and JSON. It's first and foremost about mapping out and structuring written thoughts.
+
+Because en is defined in simple configuration files, you can add new pages easily from a few lines and start connecting them. Instead of having to create a dedicated file or resource for each new entry you find deserving of observation, with its own beginning and end, its own "I'm empty, fill me to completion" demeanor, you can stay in the flow of your sprawling thoughts. This is meant to fit the specific wiring of minds whose thoughts spread and fork quickly and often, whether to great depth or across wide expanses.
+
 """
 
-links = [ "Graph", "TOML" ]
+links = [ "Graph" ]
+
+[[nodes.en.connections]]
+to = "TOML"
+anchor = "TOML"
 
 [nodes.Graph]
 text = """
@@ -97,7 +111,7 @@ A graph is a data structure composed of connected (and disconnected) nodes.
 
 A familiar example is that of a social network. Each account can be thought of as a node and the "follow" and "follower" relationships can be thought of as edges (connections). A node may have many or few connections, and the nodes it is connected to are meaningful to understand how it fits into the whole.
 
-en uses this concept to create a writing tool, allowing you to map out complex thoughts as a web connected texts.
+en uses this concept to create a writing tool, allowing you to map out complex thoughts as a web of connected texts.
 """
 
 [nodes.TOML]

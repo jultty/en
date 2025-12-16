@@ -2,6 +2,9 @@
 
 {% block title %}Tree{% endblock title %}
 
+<!-- TODO Tera has macros, which could considerably simplify this template -->
+<!-- See: https://keats.github.io/tera/docs/#macros -->
+
 {%- block body %}
     {% if nodes or root_node %}
     <h1>Tree</h1>
@@ -12,7 +15,9 @@
     <ul>
     <li>
         <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
+        {% if root_node.connections or config.tree_node_text %}
         <ul>
+            {% if config.tree_node_text %}
             <li><strong>Text:</strong>
             <ul style="display: inline; padding-left: 0;">
             <li style="display: inline;">
@@ -24,16 +29,18 @@
             </details>
             </li>
             </ul>
-        {% if root_node.connections %}
-        <li><strong>Connections</strong>
-            <ul>
-            {% for connection in root_node.connections %}
-                <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
-            {% endfor %}
-            </ul>
-        </li>
-        {% endif %}
+            {% endif %}
+            {% if root_node.connections %}
+            {% if config.tree_node_text %}<li><strong>Connections</strong>
+                <ul>{% endif %}
+                {% for connection in root_node.connections %}
+                    <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
+                {% endfor %}
+                {% if config.tree_node_text %}</ul>
+            </li>{% endif %}
+            {% endif %}
         </ul>
+        {% endif %}
     </li>
     </ul>
     {% endif %}
@@ -44,7 +51,9 @@
     {% for node in nodes %}
     <li>
         <a href="/node/{{node.id}}">{{node.title}}</a>
+        {% if node.connections or config.tree_node_text %}
         <ul>
+            {% if config.tree_node_text %}
             <li><strong>Text:</strong>
             <ul style="display: inline; padding-left: 0;">
             <li style="display: inline;">
@@ -56,18 +65,20 @@
             </details>
             </li>
             </ul>
-        {% if node.connections %}
-        <li><strong>Connections</strong>
-            <ul>
-            {% for connection in node.connections %}
-            {% if not connection.detached %}
-                <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
             {% endif %}
-            {% endfor %}
-            </ul>
-        </li>
-        {% endif %}
+            {% if node.connections %}
+            {% if config.tree_node_text %}<li><strong>Connections</strong>
+                <ul>{% endif %}
+                {% for connection in node.connections %}
+                {% if not connection.detached %}
+                    <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if config.tree_node_text %}</ul>
+            </li>{% endif %}
+            {% endif %}
         </ul>
+        {% endif %}
     </li>
     {% endfor %}
     {% endif %}

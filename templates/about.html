@@ -5,6 +5,9 @@
 {%- block body %}
 <h1>About</h1>
 
+{% if config.about_text %}
+{{ config.about_text | safe }}
+{% else %}
 <p>en is a program to create a connected collection of texts.</p>
 
 <p>You define your graph using a plain-text configuration file, en reads this file and generates a website like the one you are browsing right now.</p>
@@ -17,5 +20,6 @@
     <li><a href="https://en.jutty.dev/node/Documentation">Documentation</a></li>
     <li><a href="https://codeberg.org/jutty/en">Source code repository</a></li>
 </ul>
+{% endif %}
 
 {%- endblock body %}

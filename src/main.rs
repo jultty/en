@@ -1,6 +1,6 @@
 use std::{backtrace, io, panic};
 
-use en::{ONSET, syntax, dev};
+use en::{ONSET, dev, formats::populate_graph, syntax};
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -25,7 +25,8 @@ async fn main() -> io::Result<()> {
         }
     }));
 
-    let app = en::router::new();
+    let graph = populate_graph();
+    let app = en::router::new(&graph);
 
     let listener =
         tokio::net::TcpListener::bind(&address).await.map_err(|e| {

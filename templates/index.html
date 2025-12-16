@@ -3,15 +3,24 @@
 {% block title %}Index{% endblock title %}
 
 {%- block body %}
-    <h1>en</h1>
+    <h1>{%if config.site_title %}{{ config.site_title }}{% else %}en{%endif%}</h1>
     <p>
-    <em>A non-linear writing instrument.</em>
+    <em>
+        {% if config.site_description %}
+        {{config.site_description}}
+        {% else %}
+        A non-linear writing instrument.
+        {% endif %}
+    </em>
     {% if nodes %}
+    {% if config.index_search %}
     <form method="post">
         <label for="node">Find by ID:</label>
         <input type="text" name="node" required/>
         <input type="submit" value="Submit"/>
     </form>
+    {% endif %}
+    {% if config.index_node_list %}
     <hr>
     <h2>Nodes</h2>
     <nav>
@@ -31,6 +40,7 @@
         {% endif %}
         </ul>
     </nav>
+    {% endif %}
     {% else %}
     <hr>
     {% include "empty.html" %}

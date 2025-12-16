@@ -26,7 +26,7 @@ impl Display for Level {
     }
 }
 
-pub(in crate::syntax::content) struct Header {
+pub struct Header {
     level: Level,
     text: String,
 }
@@ -70,6 +70,7 @@ impl Parseable for Header {
         format!("<h{}>{}</h{0}>", &self.level, self.text)
     }
 }
+
 impl Display for Header {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Level {} Header: <{}>", &self.level, self.text)

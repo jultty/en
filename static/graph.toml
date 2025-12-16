@@ -122,3 +122,23 @@ To learn more about TOML, you can visit its website at <toml.io>.
 
 To see the TOML declaration that translates into the rendered graph you are reading right now, visit the "TOML Graph" link on the top navigation bar.
 """
+
+[nodes.Acknowledgments]
+text = """
+en is only possible thanks to a number of projects and people:
+
+- [The Rust Programing Language](https://rust-lang.org/)
+- [Tokio](https://tokio.rs/)
+- [Axum](https://github.com/tokio-rs/axum)
+- [Tera](https://keats.github.io/tera/)
+- [Serde](https://serde.rs/) and the [toml crate](https://github.com/toml-rs/toml)
+- [Bacon](https://dystroy.org/bacon/config/)
+"""
+
+[meta.config]
+footer_credits = false
+footer_text = """
+made by jutty • acknowledgements • source code
+"""
+
+

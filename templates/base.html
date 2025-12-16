@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
+        {% if config.site_title %}
+        <title>{% block title %}{% endblock title %} &bullet; {{config.site_title}}</title>
+        {% else %}
         <title>{% block title %}{% endblock title %} &bullet; en</title>
+        {% endif %}
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="/static/style.css" rel="stylesheet">
@@ -13,10 +17,20 @@
         <nav style="text-align: center;">
             <ul style="display: inline; padding-left: 0;">
                 <li style="display: inline;"><a href="/">Index</a></li>
+                {% if config.about %}
                 <li style="display: inline;"><a href="/about">About</a></li>
+                {% endif %}
+                {% if config.tree %}
                 <li style="display: inline;"><a href="/tree">Tree</a></li>
+                {% endif %}
+                {% if config.raw %}
+                {% if config.raw_toml %}
                 <li style="display: inline;"><a href="/graph/toml">TOML Graph</a></li>
+                {% endif %}
+                {% if config.raw_json %}
                 <li style="display: inline;"><a href="/graph/json">JSON Graph</a></li>
+                {% endif %}
+                {% endif %}
             </ul>
         <hr>
         </nav>
@@ -24,22 +38,30 @@
         {% block body %}
         {% endblock body %}
         </main>
+        {% if config.footer %}
         <footer>
         <hr>
             <div>
-            <cite>made by <a href="https://jutty.dev">jutty</a></cite>
-            &bullet;
-            <a href="/acknowledgments">acknowledgments</a>
-            &bullet;
-            <a href="https://codeberg.org/jutty/en">source code</a>
+            {% if config.footer_text %}{{ config.footer_text | safe }}{% endif %}
+            {% if config.footer_text and (config.footer_credits or config.footer_date) %}
             <br/>
+            {% endif %}
+            {% if config.footer_credits %}
+            <cite>made with <a href="https://en.jutty.dev">en</a></cite>, a non-linear writing instrument
+            {% endif %}
+            {% if config.footer_credits and config.footer_date %}
+            <br/>
+            {% endif %}
+            {% if config.footer_date %}
             built
             <time>
                 {{ now(utc=true) | date(format="%Y-%m-%d %H:%M") }} UTC
             </time>
             &bullet;
             <time>{{ now(timestamp=true) }} Unix Epoch</time>
+            {% endif %}
             </div>
         </footer>
+        {% endif %}
     </body>
 </html>

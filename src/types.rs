@@ -6,10 +6,10 @@ use serde::{Serialize, Deserialize};
 pub struct Graph {
     pub nodes: HashMap<String, Node>,
     pub root_node: String,
-    #[serde(default)]
-    pub messages: Vec<String>,
     #[serde(skip_deserializing)]
     pub incoming: HashMap<String, Vec<Edge>>,
+    #[serde(default)]
+    pub meta: Meta,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
@@ -37,16 +37,87 @@ pub struct Edge {
     pub detached: bool,
 }
 
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+pub struct Meta {
+    pub config: Config,
+    #[serde(default = "mkversion")]
+    pub version: (u8, u8, u8),
+    #[serde(default)]
+    pub messages: Vec<String>,
+}
+
+// See: https://github.com/serde-rs/serde/issues/368
+fn mkversion() -> (u8, u8, u8) {
+    (0, 0, 0)
+}
+
+#[expect(clippy::struct_excessive_bools)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+pub struct Config {
+    #[serde(default)]
+    pub site_title: String,
+    #[serde(default)]
+    pub site_description: String,
+    #[serde(default = "mktrue")]
+    pub footer: bool,
+    #[serde(default = "mktrue")]
+    pub footer_credits: bool,
+    #[serde(default = "mktrue")]
+    pub footer_date: bool,
+    #[serde(default)]
+    pub footer_text: String,
+    #[serde(default = "mktrue")]
+    pub about: bool,
+    #[serde(default)]
+    pub about_text: String,
+    #[serde(default = "mktrue")]
+    pub tree: bool,
+    #[serde(default = "mktrue")]
+    pub raw: bool,
+    #[serde(default = "mktrue")]
+    pub raw_toml: bool,
+    #[serde(default = "mktrue")]
+    pub raw_json: bool,
+    #[serde(default = "mktrue")]
+    pub index_search: bool,
+    #[serde(default = "mktrue")]
+    pub index_node_list: bool,
+    #[serde(default = "mktrue")]
+    pub tree_node_text: bool,
+}
+
+// See: https://github.com/serde-rs/serde/issues/368
+fn mktrue() -> bool {
+    true
+}
+
 impl Graph {
     pub fn new(message: Option<String>) -> Graph {
         Self {
             nodes: HashMap::new(),
             root_node: "VoidNode".to_string(),
             incoming: HashMap::new(),
-            messages: vec![
-                message
-                    .unwrap_or("This graph is empty or in error".to_string()),
-            ],
+            meta: Meta {
+                config: Config {
+                    site_title: String::new(),
+                    site_description: String::new(),
+                    footer: true,
+                    footer_credits: true,
+                    footer_date: true,
+                    footer_text: String::new(),
+                    about: true,
+                    about_text: String::new(),
+                    tree: true,
+                    raw: true,
+                    raw_toml: true,
+                    raw_json: true,
+                    index_search: true,
+                    index_node_list: true,
+                    tree_node_text: true,
+                },
+                version: (0, 1, 0),
+                messages: message.map_or(vec![], |m| vec![m]),
+            },
         }
     }
 

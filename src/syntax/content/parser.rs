@@ -7,11 +7,7 @@ pub fn read(text: &str) -> String {
 fn lex(text: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
 
-    for line in text
-        .lines()
-        .filter(|x| !x.is_empty())
-        .filter(|x| !x.replace(" ", "").is_empty())
-    {
+    for line in text.lines().filter(|x| !x.trim().is_empty()) {
         let lexeme = Lexeme::new(line);
 
         for &(ref matcher, lexer) in LEXMAP {

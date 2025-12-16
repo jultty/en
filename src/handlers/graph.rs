@@ -16,7 +16,9 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     context.insert("incoming", &graph.incoming.get(&id));
 
     let escaped_text = tera::escape_html(&node.text);
-    let out_text = crate::syntax::content::parse(&escaped_text);
+    let out_text = crate::syntax::content::parse(&crate::syntax::content::lex(
+        &escaped_text,
+    ));
     context.insert("text", &out_text);
 
     let not_found = node.clone() == empty_node;

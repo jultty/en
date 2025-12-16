@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use crate::syntax::content::{Parseable, Lexeme};
 
-pub(in crate::syntax::content) struct Paragraph {
+pub struct Paragraph {
     text: String,
 }
 

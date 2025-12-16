@@ -1,16 +1,17 @@
-use super::{Parseable as _, Token, Lexeme, LEXMAP};
+use crate::syntax::content::{Parseable, Token, Lexeme, make_lexmap};
 
-pub fn read(text: &str) -> String {
-    parse(&lex(text))
+pub fn read<DefaultToken: Parseable>(text: &str) -> String {
+    let escaped_text = tera::escape_html(text);
+    parse(&lex(&escaped_text, &make_lexmap::<DefaultToken>()))
 }
 
-fn lex(text: &str) -> Vec<Token> {
-    let mut tokens = Vec::new();
+fn lex(text: &str, map: super::LexMap) -> Vec<Token> {
+    let mut tokens: Vec<Token> = Vec::new();
 
     for line in text.lines().filter(|x| !x.trim().is_empty()) {
         let lexeme = Lexeme::new(line);
 
-        for &(ref matcher, lexer) in LEXMAP {
+        for &(ref matcher, lexer) in map {
             if matcher(&lexeme) {
                 tokens.push(lexer(&lexeme));
                 break;
@@ -22,13 +23,9 @@ fn lex(text: &str) -> Vec<Token> {
 }
 
 fn parse(tokens: &[Token]) -> String {
-    let mut out_text: Vec<String> = Vec::new();
-    for token in tokens {
-        out_text.push(match *token {
-            Token::Paragraph(ref d) => d.render(),
-            Token::Header(ref d) => d.render(),
-        });
-    }
-
-    out_text.join("\n")
+    tokens
+        .iter()
+        .map(Token::render)
+        .collect::<Vec<_>>()
+        .join("\n")
 }

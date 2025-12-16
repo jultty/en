@@ -1,2 +1,3 @@
-pub(super) mod paragraph;
-pub(super) mod header;
+pub mod header;
+pub mod paragraph;
+pub mod span;

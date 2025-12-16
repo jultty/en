@@ -1,43 +1,31 @@
-use elements::{paragraph::Paragraph, header::Header};
+use elements::{header::Header};
+use units::{Token, Lexeme};
 
-mod elements;
+mod units;
+pub mod elements;
 pub mod parser;
 
-enum Token {
-    Paragraph(Paragraph),
-    Header(Header),
-}
-
-struct Lexeme<'l> {
-    pub raw: &'l str,
-    pub first: &'l str,
-}
-
-impl<'l> Lexeme<'l> {
-    pub fn new(text: &'l str) -> Lexeme<'l> {
-        let vec: Vec<&'l str> = text.split(" ").collect();
-
-        Self {
-            raw: text,
-            first: vec.first().unwrap_or_else(|| unreachable!()),
-        }
-    }
-}
-
-trait Parseable {
+pub trait Parseable: Into<Token> {
     fn probe(lexeme: &Lexeme) -> bool;
-    fn lex(lexeme: &Lexeme) -> Self
-    where
-        Self: Sized;
+    fn lex(lexeme: &Lexeme) -> Self;
     fn render(&self) -> String;
 }
 
-type Matcher = fn(&Lexeme) -> bool;
-type Constructor = fn(&Lexeme) -> Token;
+type Probe = fn(&Lexeme) -> bool;
+type Lexer = fn(&Lexeme) -> Token;
+type LexEntry = (Probe, Lexer);
+type LexMap<'lm> = &'lm [LexEntry];
 
-static LEXMAP: &[(Matcher, Constructor)] = &[
-    (Header::probe, |lexeme| Token::Header(Header::lex(lexeme))),
-    (Paragraph::probe, |lexeme| {
-        Token::Paragraph(Paragraph::lex(lexeme))
-    }),
-];
+const LEXMAP: LexMap =
+    &[(Header::probe, |lexeme| Token::Header(Header::lex(lexeme)))];
+
+fn make_lexmap<DefaultToken: Parseable>() -> Vec<LexEntry> {
+    let mut vector: Vec<(Probe, Lexer)> = LEXMAP.to_vec();
+
+    fn adapter<D: Parseable>(lex: &Lexeme) -> Token {
+        D::lex(lex).into()
+    }
+
+    vector.push((DefaultToken::probe, adapter::<DefaultToken>));
+    vector
+}

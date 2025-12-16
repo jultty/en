@@ -18,9 +18,12 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
         - [ ] Automatic anchors
     - [ ] External anchors
     - [ ] Bold, italics, underline, strikethrough
+    - [ ] Lists
     - [ ] Checkboxes
         - [ ] Move this roadmap to en
-    - [ ] Lists
+- [ ] Begin centralizing state
+- [ ] Render to filesystem
+- [ ] Full-text search
 - [ ] Connection kinds
     - [ ] Category <-> Membership
     - [ ] Opposite <-> Equivalent

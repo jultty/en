@@ -5,7 +5,7 @@ use axum::{
 
 use crate::handlers::raw::make_response;
 
-pub(super) fn by_filename(
+pub(in crate::handlers) fn by_filename(
     name: &str,
     context: &tera::Context,
     error_code: u16,
@@ -24,7 +24,7 @@ pub async fn fixed(name: &str) -> Response<Body> {
     by_filename(name, &tera::Context::new(), 500, None, false)
 }
 
-pub(super) fn render(
+pub(in crate::handlers) fn render(
     name: &str,
     // TODO take Option, skip context if None,
     // then template_handler can replace static_template_handler

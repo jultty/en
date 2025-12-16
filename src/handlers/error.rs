@@ -5,7 +5,10 @@ use axum::{
 
 use crate::handlers;
 
-pub fn by_code(code: Option<u16>, message: Option<&str>) -> Response<Body> {
+pub(in crate::handlers) fn by_code(
+    code: Option<u16>,
+    message: Option<&str>,
+) -> Response<Body> {
     let out_code = code.unwrap_or(500);
     let out_message = &message.unwrap_or("Unknown error");
 

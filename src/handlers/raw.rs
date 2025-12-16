@@ -3,7 +3,7 @@ use axum::{
     http::{header, HeaderValue, Response, StatusCode},
 };
 
-pub fn make_response(
+pub(in crate::handlers) fn make_response(
     body: &str,
     status_code: u16,
     headers: &[(header::HeaderName, &str)],

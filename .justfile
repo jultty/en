@@ -45,6 +45,7 @@ alias lw := lint-watch
 push: check
     git push
 
+alias p := push
 
 # RUN
 

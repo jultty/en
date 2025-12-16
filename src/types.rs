@@ -8,7 +8,7 @@ pub struct Graph {
     pub root_node: String,
     #[serde(default)]
     pub messages: Vec<String>,
-    #[serde(skip)]
+    #[serde(skip_deserializing)]
     pub incoming: HashMap<String, Vec<Edge>>,
 }
 

@@ -31,15 +31,16 @@ pub(in crate::handlers) fn render(
     context: &tera::Context,
     error_message: Option<String>,
 ) -> (String, u16) {
-    // TODO just return an Option<String> here
+    // TODO just return an Option/String> here
     let tera = match tera::Tera::new(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/templates/**/*"
     )) {
         Ok(t) => t,
         Err(e) => {
-            println!("Tera parsing error: {e:#?}");
-            panic!("{e}")
+            let early_error_message = format!("{e:#?}");
+            crate::dev::log(&by_filename, &early_error_message);
+            return (emergency_wrap(&e), 500)
         },
     };
 
@@ -75,4 +76,34 @@ pub(in crate::handlers) fn render(
             )
         },
     }
+}
+
+fn emergency_wrap(message: &tera::Error) -> String {
+    format!(r#"<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Pre-Templating Error</title>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                @media (prefers-color-scheme: dark) {{
+                    * {{ background-color: #222222;
+                        color: #f1e9e5; }} }}
+                * {{ line-height: 1.6em; }}
+                pre {{ overflow: auto; }}
+            </style>
+        </head>
+        <body>
+            <h2><strong>Early Pre-Templating Error</strong></h2>
+            <p>This normally indicates a malformed template.</p>
+            <pre>
+            {message}
+            </pre>
+            <p>
+                If you haven't modified templates, plese consider
+                <a href="https://codeberg.org/jutty/en/issues">reporting it</a>.
+            </p>
+        </body>
+        </html>
+    "#)
 }

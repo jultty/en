@@ -12,7 +12,7 @@ use crate::{
         self,
         parsers::{
             line::elements::{paragraph::Paragraph, span::Span},
-            word::elements::literal::Literal,
+            compound::elements::literal::Literal,
         },
     },
     types::{Config, Node},
@@ -27,18 +27,7 @@ pub async fn page(template: &str) -> Response<Body> {
 
     context.insert("nodes", &nodes);
     context.insert("root_node", &root_node);
-
-    let text_parsed_config = Config {
-        footer_text: content::parse::<Span, Literal>(
-            &graph.meta.config.footer_text,
-        ),
-        about_text: content::parse::<Paragraph, Literal>(
-            &graph.meta.config.about_text,
-        ),
-        ..graph.meta.config
-    };
-
-    context.insert("config", &text_parsed_config);
+    context.insert("config", &graph.meta.config.parse_text());
 
     handlers::template::by_filename(template, &context, 500, None, false)
 }

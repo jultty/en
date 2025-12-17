@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
 
+use crate::syntax::content::parsers::{compound::elements::literal::Literal, line::elements::{paragraph::Paragraph, span::Span}};
+
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Graph {
     pub nodes: HashMap<String, Node>,
@@ -146,6 +148,22 @@ impl Node {
             },
             connections: None,
             links: vec![],
+        }
+    }
+}
+
+impl Config {
+    #[must_use]
+    pub fn parse_text(self) -> Config {
+
+        Config {
+            footer_text: crate::syntax::content::parse::<Span, Literal>(
+                &self.footer_text,
+            ),
+            about_text: crate::syntax::content::parse::<Paragraph, Literal>(
+                &self.about_text,
+            ),
+            ..self
         }
     }
 }

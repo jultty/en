@@ -2,7 +2,7 @@ use axum::{body::Body, extract::Path, http::Response};
 use crate::syntax::content::parsers::line::elements::paragraph::Paragraph;
 use crate::syntax::content;
 
-use crate::syntax::content::parsers::word::elements::literal::Literal;
+use crate::syntax::content::parsers::compound::elements::literal::Literal;
 use crate::{formats::populate_graph, handlers, types::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
@@ -15,7 +15,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     context.insert("title", &node.title);
     context.insert("connections", &node.connections.clone());
     context.insert("incoming", &graph.incoming.get(&id));
-    context.insert("config", &graph.meta.config);
+    context.insert("config", &graph.meta.config.parse_text());
 
     let out_text = content::parse::<Paragraph, Literal>(&node.text);
     context.insert("text", &out_text);

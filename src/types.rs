@@ -82,6 +82,10 @@ pub struct Config {
     pub index_search: bool,
     #[serde(default = "mktrue")]
     pub index_node_list: bool,
+    #[serde(default = "mk8")]
+    pub index_node_count: u16,
+    #[serde(default = "mktrue")]
+    pub index_root_node: bool,
     #[serde(default = "mktrue")]
     pub tree_node_text: bool,
 }
@@ -89,6 +93,9 @@ pub struct Config {
 // See: https://github.com/serde-rs/serde/issues/368
 fn mktrue() -> bool {
     true
+}
+fn mk8() -> u16 {
+    8
 }
 
 impl Graph {
@@ -113,6 +120,8 @@ impl Graph {
                     raw_json: true,
                     index_search: true,
                     index_node_list: true,
+                    index_node_count: 8,
+                    index_root_node: true,
                     tree_node_text: true,
                 },
                 version: (0, 1, 0),

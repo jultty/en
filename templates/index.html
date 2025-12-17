@@ -20,25 +20,36 @@
         <input type="submit" value="Submit"/>
     </form>
     {% endif %}
-    {% if config.index_node_list %}
+    {% if config.index_node_list or config.index_root_node %}
     <hr>
+    {% if config.index_node_list %}
     <h2>Nodes</h2>
+    {% endif %}
     <nav>
-        {% if root_node %}
+        {% if root_node and config.index_root_node %}
         <p>
             <strong>Root</strong>:
             <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
         </p>
         {% endif %}
-        {% if nodes %}
+        {% if nodes and config.index_node_list %}
         <ul>
-        {% for node in nodes %}
+        {% for node in nodes | slice(end=config.index_node_count) %}
         {% if node.id != root_node.id %}
         <li><a href="/node/{{node.id}}">{{node.title}}</a></li>
         {% endif %}
         {% endfor %}
-        {% endif %}
         </ul>
+        {% if config.index_node_count < nodes | length %}
+        <br/>
+        <em style="font-size:0.9em"">
+           Listing {{ config.index_node_count }} of {{ nodes | length }} nodes, {{ nodes | length - config.index_node_count }} not shown in this sample.
+           {% if config.tree %}
+           See the <a href="/tree">tree</a> for a full list.
+           {% endif %}
+        </em>
+        {% endif %}
+        {% endif %}
     </nav>
     {% endif %}
     {% else %}

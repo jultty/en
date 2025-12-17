@@ -93,7 +93,7 @@ fn mktrue() -> bool {
 
 impl Graph {
     pub fn new(message: Option<String>) -> Graph {
-        Self {
+        Graph {
             nodes: HashMap::new(),
             root_node: "VoidNode".to_string(),
             incoming: HashMap::new(),
@@ -128,7 +128,7 @@ impl Graph {
 
 impl Node {
     pub fn new(message: Option<String>) -> Node {
-        Self {
+        Node {
             id: "VoidNode".to_string(),
             title: "Pure Void".to_string(),
             text: match message {

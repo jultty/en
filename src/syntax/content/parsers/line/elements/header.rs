@@ -32,8 +32,8 @@ pub struct Header {
 }
 
 impl Header {
-    fn new(level: usize, text: &str) -> Self {
-        Self {
+    fn new(level: usize, text: &str) -> Header {
+        Header {
             level: match level {
                 1 => Level::One,
                 2 => Level::Two,
@@ -52,18 +52,20 @@ impl Header {
 
 impl Parseable for Header {
     fn probe(lexeme: &Lexeme) -> bool {
-        !lexeme.first.trim().is_empty()
-            && lexeme.first.replace("#", "").is_empty()
-            && lexeme.first.len() <= 6
+        let first = lexeme.clone().first().unwrap_or_default();
+        !first.trim().is_empty()
+            && first.replace("#", "").is_empty()
+            && first.len() <= 6
     }
 
-    fn lex(lexeme: &Lexeme) -> Self {
-        let header_level = lexeme.first.len();
-        log(&Self::lex, &format!("Header level is {header_level}"));
+    fn lex(lexeme: &Lexeme) -> Header {
+        let first = lexeme.clone().first().unwrap_or_else(|| unreachable!());
+        let header_level = &first.len();
+        log(&Header::lex, &format!("Header level is {header_level}"));
 
-        let header_text = lexeme.raw.replace(lexeme.first, "");
+        let header_text = lexeme.to_raw().replace(&first, "");
 
-        Self::new(header_level, &header_text)
+        Header::new(*header_level, &header_text)
     }
 
     fn render(&self) -> String {

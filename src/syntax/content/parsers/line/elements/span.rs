@@ -1,5 +1,5 @@
 use std::fmt::Display;
-use crate::syntax::content::{Parseable, Lexeme};
+use crate::syntax::content::{Parseable, lexeme::Lexeme};
 
 pub struct Span {
     text: String,
@@ -7,12 +7,12 @@ pub struct Span {
 
 impl Parseable for Span {
     fn probe(lexeme: &Lexeme) -> bool {
-        !lexeme.raw.trim().is_empty()
+        !lexeme.to_raw().trim().is_empty()
     }
 
-    fn lex(lexeme: &Lexeme) -> Self {
-        Self {
-            text: lexeme.raw.trim().to_owned(),
+    fn lex(lexeme: &Lexeme) -> Span {
+        Span {
+            text: lexeme.to_raw().trim().to_owned(),
         }
     }
 

@@ -8,9 +8,14 @@ use axum::{
 use crate::{
     formats::populate_graph,
     handlers,
-    syntax::content::parser,
+    syntax::content::{
+        self,
+        parsers::{
+            line::elements::{paragraph::Paragraph, span::Span},
+            word::elements::literal::Literal,
+        },
+    },
     types::{Config, Node},
-    syntax::content::elements::{span::Span, paragraph::Paragraph},
 };
 
 #[expect(clippy::unused_async)]
@@ -24,8 +29,12 @@ pub async fn page(template: &str) -> Response<Body> {
     context.insert("root_node", &root_node);
 
     let text_parsed_config = Config {
-        footer_text: parser::read::<Span>(&graph.meta.config.footer_text),
-        about_text: parser::read::<Paragraph>(&graph.meta.config.about_text),
+        footer_text: content::parse::<Span, Literal>(
+            &graph.meta.config.footer_text,
+        ),
+        about_text: content::parse::<Paragraph, Literal>(
+            &graph.meta.config.about_text,
+        ),
         ..graph.meta.config
     };
 

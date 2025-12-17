@@ -1,5 +1,6 @@
-use crate::syntax::content::Parseable as _;
-use crate::syntax::content::elements::{
+use super::Parseable as _;
+use super::parsers::word::elements::{literal::Literal};
+use super::parsers::line::elements::{
     paragraph::Paragraph, header::Header, span::Span,
 };
 
@@ -7,6 +8,7 @@ pub enum Token {
     Paragraph(Paragraph),
     Header(Header),
     Span(Span),
+    Literal(Literal),
 }
 
 impl Token {
@@ -15,40 +17,31 @@ impl Token {
             Token::Paragraph(ref d) => d.render(),
             Token::Header(ref d) => d.render(),
             Token::Span(ref d) => d.render(),
+            Token::Literal(ref d) => d.render(),
         }
     }
 }
 
 impl From<Paragraph> for Token {
-    fn from(d: Paragraph) -> Self {
+    fn from(d: Paragraph) -> Token {
         Token::Paragraph(d)
     }
 }
 
 impl From<Header> for Token {
-    fn from(d: Header) -> Self {
+    fn from(d: Header) -> Token {
         Token::Header(d)
     }
 }
 
 impl From<Span> for Token {
-    fn from(d: Span) -> Self {
+    fn from(d: Span) -> Token {
         Token::Span(d)
     }
 }
 
-pub struct Lexeme<'l> {
-    pub raw: &'l str,
-    pub first: &'l str,
-}
-
-impl<'l> Lexeme<'l> {
-    pub fn new(text: &'l str) -> Lexeme<'l> {
-        let vec: Vec<&'l str> = text.split(" ").collect();
-
-        Self {
-            raw: text,
-            first: vec.first().unwrap_or_else(|| unreachable!()),
-        }
+impl From<Literal> for Token {
+    fn from(d: Literal) -> Token {
+        Token::Literal(d)
     }
 }

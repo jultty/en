@@ -48,11 +48,17 @@ impl Parseable for Anchor {
         assert!(parts.len() == 2, "Parts should always be 2: {parts:?}");
 
         let text = parts.first().unwrap_or_else(|| unreachable!());
-        let destination = parts.get(1).unwrap_or_else(|| unreachable!());
+        let raw_destination = parts.get(1).unwrap_or_else(|| unreachable!());
+        let destination =
+            if raw_destination.contains(":") || raw_destination.contains("/") {
+                raw_destination.to_owned()
+            } else {
+                format!("/node/{raw_destination}")
+            };
 
         Anchor {
             text: text.to_owned(),
-            destination: destination.to_owned(),
+            destination,
         }
     }
 

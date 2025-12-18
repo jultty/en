@@ -3,6 +3,7 @@ use axum::{
     http::{Response, StatusCode, header, HeaderValue},
 };
 
+use crate::prelude::*;
 use crate::{
     formats::{Format, populate_graph, serialize_graph},
 };
@@ -24,22 +25,12 @@ pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
 
     if let Ok(header_value) = HeaderValue::from_str(content_type) {
         if let Some(h) = response.headers_mut().insert(header, header_value) {
-            crate::dev::log(
-                &file,
-                &format!(
-                    "Overwrote existing header {h:?} because a header for \
-                    the same key existed"
-                ),
+            log!(
+                "Overwrote existing header {h:?} because a header for the same key existed"
             );
         }
     } else {
-        crate::dev::log(
-            &file,
-            &format!(
-                "Failed to create content type \
-                header value from {content_type}"
-            ),
-        );
+        log!("Failed to create content type header value from {content_type}");
     }
 
     response

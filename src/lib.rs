@@ -1,5 +1,9 @@
 use std::{sync, time};
 
+pub mod prelude {
+    pub use crate::log;
+}
+
 pub mod formats;
 pub mod types;
 pub mod router;

@@ -1,6 +1,6 @@
 use std::{backtrace, io, panic};
 
-use en::{ONSET, dev, formats::populate_graph, syntax};
+use en::{prelude::*, ONSET, formats::populate_graph, syntax};
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -30,26 +30,20 @@ async fn main() -> io::Result<()> {
 
     let listener =
         tokio::net::TcpListener::bind(&address).await.map_err(|e| {
-            dev::log(
-                &main,
-                &format!("Failed to create listener at {address}: {e:#?}"),
-            );
+            log!("Failed to create listener at {address}: {e:#?}");
             e
         })?;
 
-    dev::log(
-        &main,
-        &format!(
-            "Listening on {}",
-            listener
-                .local_addr()
-                .map(|s| s.to_string())
-                .unwrap_or("<unknown>".to_string())
-        ),
+    log!(
+        "Listening on {}",
+        listener
+            .local_addr()
+            .map(|s| s.to_string())
+            .unwrap_or("<unknown>".to_string())
     );
 
     axum::serve(listener, app).await.map_err(|e| {
-        dev::log(&main, &format!("Failed to serve application: {e:#?}"));
+        log!("Failed to serve application: {e:#?}");
         io::Error::other(e)
     })?;
 

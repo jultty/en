@@ -3,6 +3,8 @@ use axum::{
     http::{header, HeaderValue, Response, StatusCode},
 };
 
+use crate::prelude::*;
+
 pub(in crate::handlers) fn make_response(
     body: &str,
     status_code: u16,
@@ -18,20 +20,14 @@ pub(in crate::handlers) fn make_response(
             if let Some(overwritten) =
                 response.headers_mut().insert(header.0.clone(), wrapped)
             {
-                crate::dev::log(
-                    &make_response,
-                    &format!(
-                        "Overwrote header {overwritten:?} \
+                log!(
+                    "Overwrote header {overwritten:?} \
                         because another for key {} already existed",
-                        header.0
-                    ),
+                    header.0
                 );
             }
         } else {
-            crate::dev::log(
-                &make_response,
-                &format!("Failed to wrap header value {}", header.1),
-            );
+            log!("Failed to wrap header value {}", header.1);
         }
     }
 

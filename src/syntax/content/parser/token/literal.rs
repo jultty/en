@@ -1,18 +1,18 @@
 use std::fmt::Display;
-use crate::syntax::content::{Parseable, lexeme::Lexeme};
+use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
 pub struct Literal {
     text: String,
 }
 
 impl Parseable for Literal {
-    fn probe(lexeme: &Lexeme) -> bool {
-        !lexeme.to_raw().is_empty()
+    fn probe(_lexeme: &Lexeme) -> bool {
+        true
     }
 
     fn lex(lexeme: &Lexeme) -> Literal {
         Literal {
-            text: lexeme.to_raw().trim().to_owned(),
+            text: lexeme.to_raw(),
         }
     }
 

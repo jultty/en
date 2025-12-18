@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
 
-use crate::syntax::content::parsers::{compound::elements::literal::Literal, line::elements::{paragraph::Paragraph, span::Span}};
+use crate::syntax::content;
 
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Graph {
@@ -155,14 +155,9 @@ impl Node {
 impl Config {
     #[must_use]
     pub fn parse_text(self) -> Config {
-
         Config {
-            footer_text: crate::syntax::content::parse::<Span, Literal>(
-                &self.footer_text,
-            ),
-            about_text: crate::syntax::content::parse::<Paragraph, Literal>(
-                &self.about_text,
-            ),
+            footer_text: content::parse(&self.footer_text),
+            about_text: content::parse(&self.about_text),
             ..self
         }
     }

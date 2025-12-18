@@ -3,7 +3,7 @@ use axum::{
     http::{header, Response, StatusCode},
 };
 
-use crate::handlers::raw::make_response;
+use crate::{prelude::*, handlers::raw::make_response};
 
 pub(in crate::handlers) fn by_filename(
     name: &str,
@@ -39,8 +39,8 @@ pub(in crate::handlers) fn render(
         Ok(t) => t,
         Err(e) => {
             let early_error_message = format!("{e:#?}");
-            crate::dev::log(&by_filename, &early_error_message);
-            return (emergency_wrap(&e), 500)
+            log!("{}", early_error_message);
+            return (emergency_wrap(&e), 500);
         },
     };
 
@@ -79,7 +79,8 @@ pub(in crate::handlers) fn render(
 }
 
 fn emergency_wrap(message: &tera::Error) -> String {
-    format!(r#"<!DOCTYPE html>
+    format!(
+        r#"<!DOCTYPE html>
         <html>
         <head>
             <title>Pre-Templating Error</title>
@@ -105,5 +106,6 @@ fn emergency_wrap(message: &tera::Error) -> String {
             </p>
         </body>
         </html>
-    "#)
+    "#
+    )
 }

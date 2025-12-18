@@ -5,18 +5,7 @@ use axum::{
     Form,
 };
 
-use crate::{
-    formats::populate_graph,
-    handlers,
-    syntax::content::{
-        self,
-        parsers::{
-            line::elements::{paragraph::Paragraph, span::Span},
-            compound::elements::literal::Literal,
-        },
-    },
-    types::{Config, Node},
-};
+use crate::{formats::populate_graph, handlers, types::Node};
 
 #[expect(clippy::unused_async)]
 pub async fn page(template: &str) -> Response<Body> {

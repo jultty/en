@@ -1,8 +1,6 @@
 use axum::{body::Body, extract::Path, http::Response};
-use crate::syntax::content::parsers::line::elements::paragraph::Paragraph;
 use crate::syntax::content;
 
-use crate::syntax::content::parsers::compound::elements::literal::Literal;
 use crate::{formats::populate_graph, handlers, types::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
@@ -17,7 +15,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     context.insert("incoming", &graph.incoming.get(&id));
     context.insert("config", &graph.meta.config.parse_text());
 
-    let out_text = content::parse::<Paragraph, Literal>(&node.text);
+    let out_text = content::parse(&node.text);
     context.insert("text", &out_text);
 
     let not_found = *node == empty_node;

@@ -10,13 +10,14 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
 
 ## Roadmap
 
+- [ ] Strip/render some syntax in Tree text preview
 - [ ] Richer text formatting
     - [x] Headers
-    - [ ] Code blocks
+    - [x] Preformatted blocks
     - [ ] Inline code
-    - [ ] Anchor rendering
+    - [x] Anchor rendering
         - [ ] Automatic anchors
-    - [ ] External anchors
+    - [x] External anchors
     - [ ] Bold, italics, underline, strikethrough
     - [ ] Lists
     - [ ] Checkboxes
@@ -34,8 +35,8 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
 - [ ] Reduce O(n) calls in the formats module
 - [ ] Add tests
 - [ ] Multi-file graphs
-- [ ] Themes
 - [ ] Multi-graph
+- [ ] Themes
 - [x] Array syntax for lightweight connections
 - [x] Automatic IDs
 - [x] Automatic titles

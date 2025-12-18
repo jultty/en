@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use crate::prelude::*;
+
 #[derive(Clone, Debug, Default)]
 pub struct Arguments {
     pub hostname: String,
@@ -47,10 +49,7 @@ fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
             } else if argument.eq("-g") || argument.eq("--graph") {
                 out_args.graph_path = PathBuf::from(parameter);
             } else {
-                crate::dev::log(
-                    &parse,
-                    &format!("Dropped unrecognized argument {argument}"),
-                );
+                log!("Dropped unrecognized argument {argument}");
             }
         } else {
             panic!("Argument {arg:?} has no corresponding value")

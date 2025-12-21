@@ -24,10 +24,33 @@ pub fn cluster(text: &str) -> Vec<String> {
         }
 
         let Some(delimiter) = delimiter::match_delimiter(&word) else {
-            log!("Skip: {word:?} does not start with a delimiter");
+            log!("Skip: {word:?} does not have a delimiter");
             clusters.push(word);
             continue;
         };
+
+        if !delimiter.leading && !word.starts_with(delimiter.char) {
+            clusters.push(word);
+            continue;
+        }
+
+        if (!delimiter.greedy
+            && !delimiter.triple
+            && word.matches(delimiter.char).count() == 2)
+            || (delimiter.triple
+                && (2..=3).contains(&word.matches(delimiter.char).count()))
+        {
+            log!("Skip: {word:?} is almost atomic, but must be split");
+            match word.rsplit_once(delimiter.char) {
+                Some((head, tail)) => {
+                    log!("Pushing head {head:?}, tail {tail:?} into clusters");
+                    clusters.push(format!("{head}{}", delimiter.char));
+                    clusters.push(tail.to_string());
+                    continue;
+                },
+                None => unreachable!(),
+            }
+        }
 
         if let Some(next) = iterator.peek()
             && next == "\n"
@@ -44,23 +67,6 @@ pub fn cluster(text: &str) -> Vec<String> {
             log!("Skip: {word:?} is atomically-delimited");
             clusters.push(word);
             continue;
-        }
-
-        if (!delimiter.greedy
-            && !delimiter.triple
-            && word.matches(delimiter.char).count() == 2)
-            || (delimiter.triple && word.matches(delimiter.char).count() == 3)
-        {
-            log!("Skip: {word:?} is almost atomic, but must be split");
-            match word.rsplit_once(delimiter.char) {
-                Some((head, tail)) => {
-                    log!("Pushing head {head:?}, tail {tail:?} into clusters");
-                    clusters.push(format!("{head}{}", delimiter.char));
-                    clusters.push(tail.to_string());
-                    continue;
-                },
-                None => unreachable!(),
-            }
         }
 
         log!("Found cluster from {delimiter:?} in {word:?}");
@@ -138,30 +144,49 @@ mod delimiter {
         pub string: String,
         pub greedy: bool,
         pub triple: bool,
+        pub leading: bool,
     }
 
-    fn make_delimiters() -> Vec<Delimiter> {
-        vec![
+    fn make_delimiters() -> (Vec<Delimiter>, Vec<Delimiter>) {
+        let delimiters = [
             Delimiter {
                 char: '|',
                 string: "|".to_string(),
                 greedy: true,
                 triple: true,
+                leading: false,
             },
             Delimiter {
                 char: '`',
                 string: "`".to_string(),
                 greedy: false,
                 triple: false,
+                leading: true,
             },
-        ]
+        ];
+
+        (
+            delimiters.iter().filter(|d| d.leading).cloned().collect(),
+            delimiters.iter().filter(|d| !d.leading).cloned().collect(),
+        )
     }
 
     pub fn match_delimiter(word: &str) -> Option<Delimiter> {
+        let (leading, nonleading) = make_delimiters();
+
         let first_char = word.chars().next()?;
-        make_delimiters()
-            .iter()
-            .find(|d| d.char == first_char)
-            .cloned()
+
+        if let Some(leading_match) =
+            leading.iter().find(|d| d.char == first_char).cloned()
+        {
+            Some(leading_match)
+        } else {
+            for delimiter in nonleading {
+                if word.contains(delimiter.char) {
+                    return Some(delimiter);
+                }
+            }
+            None
+        }
     }
 }

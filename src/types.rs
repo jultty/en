@@ -10,6 +10,8 @@ pub struct Graph {
     pub root_node: String,
     #[serde(skip_deserializing)]
     pub incoming: HashMap<String, Vec<Edge>>,
+    #[serde(skip_deserializing)]
+    pub lowercase_keymap: HashMap<String, String>,
     #[serde(default)]
     pub meta: Meta,
 }
@@ -113,6 +115,7 @@ impl Graph {
             nodes: HashMap::new(),
             root_node: "VoidNode".to_string(),
             incoming: HashMap::new(),
+            lowercase_keymap: HashMap::new(),
             meta: Meta {
                 config: Config {
                     site_title: String::new(),
@@ -138,6 +141,15 @@ impl Graph {
                 messages: message.map_or(vec![], |m| vec![m]),
             },
         }
+    }
+
+    pub fn find_node(&self, query: &str) -> Option<Node> {
+        self.nodes.get(query).cloned().or_else(|| {
+            self.lowercase_keymap
+                .get(query)
+                .and_then(|lower_key| self.nodes.get(lower_key))
+                .cloned()
+        })
     }
 
     pub fn get_root(&self) -> Option<Node> {

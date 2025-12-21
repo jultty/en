@@ -18,8 +18,20 @@ pub fn populate_graph() -> Graph {
     Graph {
         nodes: nodes.clone(),
         incoming: make_incoming(&nodes),
+        lowercase_keymap: map_lowercase_keys(&nodes),
         ..graph
     }
+}
+
+fn map_lowercase_keys(
+    source_map: &HashMap<String, Node>,
+) -> HashMap<String, String> {
+    let mut out_map: HashMap<String, String> = HashMap::new();
+    let keys = source_map.keys();
+    for key in keys {
+        out_map.insert(key.clone().to_lowercase(), key.clone());
+    }
+    out_map
 }
 
 fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {

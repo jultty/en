@@ -2,7 +2,6 @@ root_node = "Documentation"
 
 [nodes.Documentation]
 text = """
-
 ## Installation
 
 For now, if you want to try en, you must build it yourself.
@@ -17,6 +16,15 @@ cargo build --release
 
 The en binary will be in `target/release/en`.
 
+You can start it and point it to an address, port and graph:
+
+`
+en --host localhost --port 3003 --graph ./graph.toml
+`
+
+See |CLI| for defaults and details on the CLI options.
+
+
 ## Graph Syntax
 
 The graph is a TOML file. You can create nodes by adding text such as:
@@ -26,7 +34,7 @@ The graph is a TOML file. You can create nodes by adding text such as:
 text = "A computer is a machine capable of executing arbitrary instructions."
 `
 
-If you need longer text, it's more convenient to use triple-quoted syntax:
+If you need longer text, it's more convenient to use triple quotes:
 
 `
 [nodes.Computer]
@@ -61,9 +69,11 @@ anchor = "particle"
 `
 
 This will create a connection from Quark to "Particle physics", and the first occurrence of the word "particle" in the text of Quark gets anchored to this connection.
+"""
 
-## CLI Options
-
+[nodes.CLI]
+title = "CLI Options"
+text = """
 You can set the hostname, port and graph file path using CLI options:
 
 For the hostname, use `-h` or `--hostname`:
@@ -113,20 +123,19 @@ text= """
 Anchors follow the following syntax:
 
 `
-|anchor|destination
+anchor|destination
 `
 
 For example:
 
 `
+docs|/node/Documentation
+`
+
+If the left side contains spaces, you need a leading `|` character. In this case, the space on the left side is mandatory:
+
+`
 |en docs|https://en.jutty.dev/node/Documentation
-|docs|/node/Documentation
-`
-
-If the left side doesn't contain spaces, you can ommit the first `|` character.
-
-`
-en|https://en.jutty.dev
 `
 
 If you have a trailing character that you don't want to be considered as part of the destination, you can separate it with a third `|`:
@@ -135,7 +144,9 @@ If you have a trailing character that you don't want to be considered as part of
 This |gem|PreciousStone|, though green, was not an emerald.
 `
 
-This is currently supported for punctuation only.
+Which renders as:
+
+This |gem|PreciousStone|, though green, was not an emerald.
 
 ### Node anchors
 
@@ -159,16 +170,16 @@ In summary, all of the anchors below are valid and lead to the same page:
 
 `
 |en Syntax|https://en.jutty.dev/node/Syntax
-|Syntax|https://en.jutty.dev/node/Syntax
 Syntax|https://en.jutty.dev/node/Syntax
 
 |en Syntax|/node/Syntax
-|Syntax|/node/Syntax
 Syntax|/node/Syntax
 
-|Syntax|Syntax
 Syntax|Syntax
+syntax|syntax
+
 |Syntax|
+|syntax|
 `
 """
 
@@ -224,12 +235,6 @@ en is only possible thanks to a number of projects and people:
 - Bacon|https://dystroy.org/bacon/config/
 """
 
-[meta.config]
-footer_credits = false
-footer_text = """
-made by jutty|https://jutty.dev • acknowledgements|Acknowledgments • |source code|https://codeberg.org/jutty/en
-"""
-
 [nodes.Test]
 hidden = true
 text = """
@@ -238,7 +243,6 @@ This node is just for testing syntax rendering, but I appreciate your curiosity.
 
 `
 |en purple|https://purple.en/n/purple
-|green|https://green.en/n/green
 cyan|https://cyan.en/n/cyan
 
 |en Giraffe|/node/Giraffe
@@ -251,14 +255,11 @@ Circle|Circle
 `
 
 |en purple|https://purple.en/n/purple
-|green|https://green.en/n/green
 cyan|https://cyan.en/n/cyan
 
 |en Giraffe|/node/Giraffe
-|Gorilla|/node/Gorilla
 Crow|/node/Crow
 
-|Circle|Circle
 Circle|Circle
 |Circle|
 
@@ -279,12 +280,12 @@ This inline code is `at the end of a line with a period`.
 For trailing characters you don't want as part of destination, add a third `|`:
 
 `
-This |gem|PreciousStone|, though green, was not an emerald.
+This gem|PreciousStone|, though green, was not an emerald.
 `
 
 Which renders as:
 
-This |gem|PreciousStone|, though green, was not an emerald.
+This gem|PreciousStone|, though green, was not an emerald.
 
 Supported for punctuation only.
 
@@ -292,4 +293,42 @@ Supported for punctuation only.
 
 We saw example `docs|/node/Documentation`, but shorter syntax exists.
 
+## Green
+## Green
+## Green
+## Purple
+## Purple
+## Purple
+## Cyan
+### Cyan
+#### Cyan
+### Cyan
+## Cyan
+## Épistème
+## Épistème
+## Epistème
+## Epistēmē
+### Epistēmē
+#### Epistēmē
+#### Epistēmē
+
+|en Syntax|https://en.jutty.dev/node/Syntax
+Syntax|https://en.jutty.dev/node/Syntax
+
+|en Syntax|/node/Syntax
+Syntax|/node/Syntax
+
+Syntax|Syntax
+syntax|syntax
+
+|Syntax|
+|syntax|
 """
+
+[meta.config]
+footer_credits = false
+footer_text = """
+made by jutty|https://jutty.dev • acknowledgements|Acknowledgments • |source code|https://codeberg.org/jutty/en
+"""
+
+

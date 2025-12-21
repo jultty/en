@@ -7,9 +7,11 @@ pub mod paragraph;
 pub mod span;
 pub mod header;
 pub mod preformat;
+pub mod code;
 
 pub enum Token {
     Anchor(anchor::Anchor),
+    Code(code::Code),
     Header(header::Header),
     LineBreak(linebreak::LineBreak),
     Literal(literal::Literal),
@@ -22,6 +24,7 @@ impl Token {
     pub fn render(&self) -> String {
         match *self {
             Token::Anchor(ref d) => d.render(),
+            Token::Code(ref d) => d.render(),
             Token::Header(ref d) => d.render(),
             Token::LineBreak(ref d) => d.render(),
             Token::Literal(ref d) => d.render(),
@@ -71,5 +74,11 @@ impl From<linebreak::LineBreak> for Token {
 impl From<preformat::PreFormat> for Token {
     fn from(d: preformat::PreFormat) -> Token {
         Token::PreFormat(d)
+    }
+}
+
+impl From<code::Code> for Token {
+    fn from(d: code::Code) -> Token {
+        Token::Code(d)
     }
 }

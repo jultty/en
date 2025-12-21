@@ -12,12 +12,17 @@ impl Parseable for Literal {
 
     fn lex(lexeme: &Lexeme) -> Literal {
         Literal {
-            text: lexeme.to_raw(),
+            text: lexeme.text(),
         }
     }
 
     fn render(&self) -> String {
-        self.text.clone()
+        let non_sticky = [" ", "\n"];
+        if non_sticky.contains(&self.text.as_str()) {
+            self.text.clone()
+        } else {
+            format!("{} ", self.text.clone())
+        }
     }
 }
 

@@ -7,7 +7,7 @@ pub struct LineBreak {}
 
 impl Parseable for LineBreak {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.to_raw() == "\n"
+        lexeme.text() == "\n"
     }
 
     fn lex(_lexeme: &Lexeme) -> LineBreak {

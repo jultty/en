@@ -1,69 +1,93 @@
+use crate::prelude::*;
+
 use std::fmt::Display;
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
 pub struct Anchor {
     text: String,
     destination: String,
+    sticky: bool,
 }
 
 impl Parseable for Anchor {
     fn probe(lexeme: &Lexeme) -> bool {
         let pipe_count = lexeme.count_char('|');
-        let chars = lexeme.split_chars();
-        let c1 = *match chars.first() {
-            Some(c) => c,
-            None => return false,
-        };
-        let cn = *match chars.last() {
-            Some(c) => c,
-            None => return false,
-        };
+        log!("{lexeme:?} has {pipe_count} pipes");
 
-        if !(1_i32..=3_i32).contains(&pipe_count) {
+        if !(1..=3).contains(&pipe_count) {
+            log!("Negative: Bad pipe count {pipe_count} in {lexeme:?}");
             return false;
         }
-        if lexeme.to_raw().matches("||").count() > 0 {
+        if lexeme.text().matches("||").count() > 0 {
+            log!("Negative: Contiguous pipes in {lexeme:?}");
             return false;
         }
 
-        if pipe_count == 1 {
-            c1 != '|' && cn != '|'
-        } else if pipe_count == 2 {
-            c1 == '|' && cn != '|'
-        } else if pipe_count == 3 {
-            c1 == '|' && cn == '|'
+        let parts = Anchor::split_parts(lexeme);
+        if (1..=2).contains(&parts.len()) {
+            log!("Positive: Parts {parts:?} with length {}", parts.len());
+            true
         } else {
+            log!("Negative: {parts:?} have length {}", parts.len());
             false
         }
     }
 
     fn lex(lexeme: &Lexeme) -> Anchor {
-        let parts: Vec<String> = lexeme
-            .to_raw()
-            .split('|')
-            .filter(|s| !s.is_empty())
-            .map(str::to_string)
-            .collect();
-
-        assert!(parts.len() == 2, "Parts should always be 2: {parts:?}");
+        let parts = Anchor::split_parts(lexeme);
+        log!("Lexing anchor {parts:?}");
 
         let text = parts.first().unwrap_or_else(|| unreachable!());
-        let raw_destination = parts.get(1).unwrap_or_else(|| unreachable!());
-        let destination =
-            if raw_destination.contains(":") || raw_destination.contains("/") {
-                raw_destination.to_owned()
-            } else {
-                format!("/node/{raw_destination}")
-            };
 
+        fn try_node_anchor(anchor: &str) -> String {
+            if anchor.contains(":") || anchor.contains("/") {
+                anchor.to_owned()
+            } else {
+                format!("/node/{anchor}")
+            }
+        }
+
+        let destination = match parts.get(1) {
+            Some(d) => try_node_anchor(d),
+            None => try_node_anchor(text),
+        };
+
+        let sticky = [
+            ",", ".", ":", ";", "!", "?", "/", "(", ")", "%", "*", "&", r#"""#,
+            "'",
+        ];
+
+        log!("Lexed anchor: {text} -> {destination}");
         Anchor {
             text: text.to_owned(),
             destination,
+            sticky: sticky.contains(&lexeme.next.as_str()),
         }
     }
 
     fn render(&self) -> String {
-        format!(r#"<a href="{}">{}</a>"#, &self.destination, &self.text)
+        let space = if self.sticky {
+            String::new()
+        } else {
+            String::from(" ")
+        };
+        format!(
+            r#"<a href="{}">{}</a>{space}"#,
+            &self.destination, &self.text
+        )
+    }
+}
+
+impl Anchor {
+    fn split_parts(lexeme: &Lexeme) -> Vec<String> {
+        lexeme
+            .text()
+            .trim_start_matches('|')
+            .trim_end_matches('|')
+            .split('|')
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+            .collect()
     }
 }
 

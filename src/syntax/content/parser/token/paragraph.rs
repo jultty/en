@@ -14,7 +14,7 @@ impl Paragraph {
 impl Parseable for Paragraph {
     fn probe(lexeme: &Lexeme) -> bool {
         // lexeme for paragraph is any non-whitespace, parser knows the context
-        let raw = lexeme.to_raw();
+        let raw = lexeme.text();
         let trimmed = raw.trim();
         !trimmed.is_empty() && trimmed != "\n"
     }

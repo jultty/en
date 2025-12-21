@@ -45,7 +45,7 @@ impl Parseable for Header {
             .count()
             == 0
         {
-            let level = lexeme.to_raw().len();
+            let level = lexeme.text().len();
             lexeme.clone().split_words().len() == 1 && level > 0 && level <= 6
         } else {
             false
@@ -53,7 +53,7 @@ impl Parseable for Header {
     }
 
     fn lex(lexeme: &Lexeme) -> Header {
-        Header::new(lexeme.to_raw().len().into(), true)
+        Header::new(lexeme.text().len().into(), true)
     }
 
     fn render(&self) -> String {
@@ -116,7 +116,7 @@ impl From<usize> for Level {
             Ok(u) => u,
             Err(e) => {
                 log!("Truncating header level {z} to 6: {e:?}");
-                6_u8
+                6
             },
         };
         Level::from_u8(u8)

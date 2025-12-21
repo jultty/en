@@ -90,13 +90,16 @@ pub struct Config {
     pub index_node_count: u16,
     #[serde(default = "mktrue")]
     pub index_root_node: bool,
-    #[serde(default = "mktrue")]
+    #[serde(default = "mkfalse")]
     pub tree_node_text: bool,
 }
 
 // See: https://github.com/serde-rs/serde/issues/368
 fn mktrue() -> bool {
     true
+}
+fn mkfalse() -> bool {
+    false
 }
 fn mk8() -> u16 {
     8
@@ -126,7 +129,7 @@ impl Graph {
                     index_node_list: true,
                     index_node_count: 8,
                     index_root_node: true,
-                    tree_node_text: true,
+                    tree_node_text: false,
                 },
                 version: (0, 1, 0),
                 messages: message.map_or(vec![], |m| vec![m]),

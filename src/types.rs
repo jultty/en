@@ -161,9 +161,21 @@ impl Node {
 impl Config {
     #[must_use]
     pub fn parse_text(self) -> Config {
+        let footer_text = if self.footer_text.is_empty() {
+            self.footer_text
+        } else {
+            content::parse(&self.footer_text)
+        };
+
+        let about_text = if self.about_text.is_empty() {
+            self.about_text
+        } else {
+            content::parse(&self.about_text)
+        };
+
         Config {
-            footer_text: content::parse(&self.footer_text),
-            about_text: content::parse(&self.about_text),
+            footer_text,
+            about_text,
             ..self
         }
     }

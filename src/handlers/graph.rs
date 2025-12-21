@@ -9,14 +9,10 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let node: &Node = graph.nodes.get(&id).unwrap_or(&empty_node);
 
     let mut context = tera::Context::new();
-    context.insert("id", &id);
-    context.insert("title", &node.title);
-    context.insert("connections", &node.connections.clone());
+    context.insert("node", &node);
+    context.insert("text", &content::parse(&node.text));
     context.insert("incoming", &graph.incoming.get(&id));
     context.insert("config", &graph.meta.config.parse_text());
-
-    let out_text = content::parse(&node.text);
-    context.insert("text", &out_text);
 
     let not_found = *node == empty_node;
     let template_name = "node.html".to_string();

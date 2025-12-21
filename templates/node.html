@@ -1,30 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }}{% endblock title %}
+{% block title %}{{ node.title }}{% endblock title %}
 
 {%- block body %}
     <section>
-        <h1>{{ title }}</h1>
-        <code style="display: inline;">ID: {{ id }}</code>
+        <div class="header-row">
+            <h1 class="node-title">{{ node.title }}</h1>
+            <div class="labels">
+                <span class="label id-label">ID: {{ node.id }}</span>
+                {% if node.hidden %}<span class="label hidden-label">Hidden</span>{% endif %}
+            </div>
+        </div>
         {{ text | safe }}
     </section>
-    {% if connections or incoming %}
+    {% if node.connections or incoming %}
     <aside>
         <hr>
         <h2>Connections</h2>
-        {% if connections %}
+        {% if node.connections %}
         <ul>
-            {% for connection in connections | filter(attribute="detached", value=false) %}
+            {% for connection in node.connections | filter(attribute="detached", value=false) %}
             <li>
-            <strong>{{id}}</strong>
-            &#x1f86a;
+            <strong>{{node.id}}</strong>
+            &raquo;
             <a href="/node/{{connection.to}}">{{connection.to}}</a>
             </li>
             {% endfor %}
-            {% for connection in connections | filter(attribute="detached", value=true) %}
+            {% for connection in node.connections | filter(attribute="detached", value=true) %}
             <li>
-            <strong>{{id}}</strong>
-            &#x1f86a;
+            <strong>{{node.id}}</strong>
+            &raquo;
             <span style="filter: opacity(70%);">{{connection.to}}</span>
             </li>
             {% endfor %}
@@ -38,7 +43,7 @@
             {% for connection in incoming %}
             <li>
             <strong>{{connection.to}}</strong>
-            &#x1F868;
+            &laquo;
             <a href="/node/{{connection.from}}">{{connection.from}}</a>
             </li>
             {% endfor %}

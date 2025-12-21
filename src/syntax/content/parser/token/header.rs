@@ -7,20 +7,23 @@ use std::fmt::Display;
 pub struct Header {
     open: Option<bool>,
     level: Level,
+    pub dom_id: Option<String>,
 }
 
 impl Header {
-    pub fn new(level: Level, open: bool) -> Header {
+    pub fn new(level: Level, open: bool, dom_id: Option<&str>) -> Header {
         Header {
-            level,
             open: Some(open),
+            level,
+            dom_id: dom_id.map(std::borrow::ToOwned::to_owned),
         }
     }
 
-    pub fn from_u8(level: u8, open: bool) -> Header {
+    pub fn from_u8(level: u8, open: bool, dom_id: Option<&str>) -> Header {
         Header {
             level: Level::from_u8(level),
             open: Some(open),
+            dom_id: dom_id.map(std::borrow::ToOwned::to_owned),
         }
     }
 
@@ -53,15 +56,21 @@ impl Parseable for Header {
     }
 
     fn lex(lexeme: &Lexeme) -> Header {
-        Header::new(lexeme.text().len().into(), true)
+        Header::new(
+            lexeme.text().len().into(),
+            true,
+            Some(&lexeme.next.to_ascii_lowercase()),
+        )
     }
 
     fn render(&self) -> String {
         if let Some(open) = self.open {
-            if open {
-                format!("<h{}>", &self.level)
+            if open && let Some(ref id) = self.dom_id {
+                format!(r#"<h{} id="{}">"#, self.level, id)
+            } else if open {
+                format!("<h{}>", self.level)
             } else {
-                format!("</h{}>", &self.level)
+                format!("</h{}>", self.level)
             }
         } else {
             panic!("Attempt to render a header tag while open state is unknown")

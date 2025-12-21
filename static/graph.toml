@@ -15,7 +15,7 @@ cd en
 cargo build --release
 `
 
-The en binary will be in target/release/en.
+The en binary will be in `target/release/en`.
 
 ## Graph Syntax
 
@@ -34,6 +34,10 @@ text = \"""
 A computer is a machine capable of executing arbitrary instructions.
 \"""
 `
+
+Some special syntax is allowed inside the node text. See |Syntax| for supported features.
+
+## Connections
 
 Nodes can have connections between each other.
 
@@ -62,16 +66,16 @@ This will create a connection from Quark to "Particle physics", and the first oc
 
 You can set the hostname, port and graph file path using CLI options:
 
-For the hostname, use -h or --hostname:
+For the hostname, use `-h` or `--hostname`:
 
 `
 en -h localhost
 en --hostname 10.120.0.5
 `
 
-If unspecified, the default is 0.0.0.0.
+If unspecified, the default is `0.0.0.0`.
 
-For the port, use -p or --port:
+For the port, use `-p` or `--port`:
 
 `
 en -p 3003
@@ -80,14 +84,14 @@ en --port 3000
 
 If unspecified, the default is to use a random available port assigned by the operating system.
 
-For the graph path, use -g or --graph:
+For the graph path, use `-g` or `--graph`:
 
 `
 en -g graph.toml
 en --g ./static/my-graph.toml
 `
 
-If unspecified, the default is ./static/graph.toml.
+If unspecified, the default is `./static/graph.toml`.
 
 You can combine these options as you wish:
 
@@ -99,6 +103,73 @@ en --g ./graph.toml -p 1312
 
 If an option is specified more than once, the last use will override any previous ones.
 
+"""
+
+[nodes.Syntax]
+text= """
+
+## Anchors
+
+Anchors follow the following syntax:
+
+`
+|anchor|destination
+`
+
+For example:
+
+`
+|en docs|https://en.jutty.dev/node/Documentation
+|docs|/node/Documentation
+`
+
+If the left side doesn't contain spaces, you can ommit the first `|` character.
+
+`
+en|https://en.jutty.dev
+`
+
+If you have a trailing character that you don't want to be considered as part of the destination, you can separate it with a third `|`:
+
+`
+This |gem|PreciousStone|, though green, was not an emerald.
+`
+
+This is currently supported for punctuation only.
+
+### Node anchors
+
+We saw above an example like `docs|/node/Documentation`, but there is a shorter syntax for node anchors.
+
+If the address doesn't contain any `/` or `:` characters, it will be interpreted as a node ID:
+
+`
+particles|ParticlePhysics
+`
+
+This allows you to specify what to display as the anchor text, but just the ID wrapped inside two `|` characters also works:
+
+`
+|Documentation|
+`
+
+Because en can resolve IDs case insensitively (with priority to case-sensitive matches), you can also write the above anchor as `|documentation|`.
+
+In summary, all of the anchors below are valid and lead to the same page:
+
+`
+|en Syntax|https://en.jutty.dev/node/Syntax
+|Syntax|https://en.jutty.dev/node/Syntax
+Syntax|https://en.jutty.dev/node/Syntax
+
+|en Syntax|/node/Syntax
+|Syntax|/node/Syntax
+Syntax|/node/Syntax
+
+|Syntax|Syntax
+Syntax|Syntax
+|Syntax|
+`
 """
 
 [nodes.en]
@@ -157,4 +228,68 @@ en is only possible thanks to a number of projects and people:
 footer_credits = false
 footer_text = """
 made by jutty|https://jutty.dev • acknowledgements|Acknowledgments • |source code|https://codeberg.org/jutty/en
+"""
+
+[nodes.Test]
+hidden = true
+text = """
+
+This node is just for testing syntax rendering, but I appreciate your curiosity.
+
+`
+|en purple|https://purple.en/n/purple
+|green|https://green.en/n/green
+cyan|https://cyan.en/n/cyan
+
+|en Giraffe|/node/Giraffe
+|Gorilla|/node/Gorilla
+Crow|/node/Crow
+
+|Circle|Circle
+Circle|Circle
+|Circle|
+`
+
+|en purple|https://purple.en/n/purple
+|green|https://green.en/n/green
+cyan|https://cyan.en/n/cyan
+
+|en Giraffe|/node/Giraffe
+|Gorilla|/node/Gorilla
+Crow|/node/Crow
+
+|Circle|Circle
+Circle|Circle
+|Circle|
+
+These `|anchors|` are inside `|backticks|Backtick` and should `|not render|https://test.com` as backticks but as `|raw text|` instead. This `|syntax is|` now `being demonstrated|https://test.com` here.
+
+Well |have I ever found such a long anchor in my entire life|Nowhere|, have I?
+
+This failed to parse due to a misunderstanding about what `parts.push(peaker.next().unwrap_or_else(|| unreachable!() ));` really meant.
+
+This greedy anchor is |at the end of a line|Somewhere
+This greedy anchor is |at the end of a line|Somewhere|
+This greedy anchor is |at the end of a line with a period|Somewhere|.
+This inline code is `at the end of a line`
+This inline code is `at the end of a line with a period`.
+
+---
+
+For trailing characters you don't want as part of destination, add a third `|`:
+
+`
+This |gem|PreciousStone|, though green, was not an emerald.
+`
+
+Which renders as:
+
+This |gem|PreciousStone|, though green, was not an emerald.
+
+Supported for punctuation only.
+
+### Node anchors
+
+We saw example `docs|/node/Documentation`, but shorter syntax exists.
+
 """

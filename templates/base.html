@@ -44,10 +44,9 @@
             <div>
             {% if config.footer_text %}{{ config.footer_text | safe }}{% endif %}
             {% if config.footer_text and (config.footer_credits or config.footer_date) %}
-            <br/>
             {% endif %}
             {% if config.footer_credits %}
-            <cite>made with <a href="https://en.jutty.dev">en</a></cite>, a non-linear writing instrument
+            <cite>made with <a href="https://en.jutty.dev">en</a>, a non-linear writing instrument</cite>
             {% endif %}
             {% if config.footer_credits and config.footer_date %}
             <br/>

@@ -35,7 +35,7 @@
         {% if nodes and config.index_node_list %}
         <ul>
         {% for node in nodes | slice(end=config.index_node_count) %}
-        {% if node.id != root_node.id %}
+        {% if node.id != root_node.id and not node.hidden %}
         <li><a href="/node/{{node.id}}">{{node.title}}</a></li>
         {% endif %}
         {% endfor %}

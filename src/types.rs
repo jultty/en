@@ -23,6 +23,8 @@ pub struct Node {
     pub links: Vec<String>,
     #[serde(default)]
     pub id: String,
+    #[serde(default)]
+    pub hidden: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connections: Option<Vec<Edge>>,
@@ -148,6 +150,7 @@ impl Node {
             },
             connections: None,
             links: vec![],
+            hidden: false,
         }
     }
 }

@@ -48,7 +48,7 @@
     {% if nodes %}
     <h2>All nodes</h2>
     <ul>
-    {% for node in nodes %}
+    {% for node in nodes | filter(attribute="hidden", value=false)%}
     <li>
         <a href="/node/{{node.id}}">{{node.title}}</a>
         {% if node.connections or config.tree_node_text %}

@@ -7,7 +7,7 @@
         <div class="header-row">
             <h1 class="node-title">{{ node.title }}</h1>
             <div class="labels">
-                <span class="label id-label">ID: {{ node.id }}</span>
+                {% if node.title != node.id %}<span class="label id-label">ID: {{ node.id }}</span>{% endif %}
                 {% if node.hidden %}<span class="label hidden-label">Hidden</span>{% endif %}
             </div>
         </div>

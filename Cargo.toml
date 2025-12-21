@@ -11,13 +11,13 @@ documentation = "https://en.jutty.dev/node/Documentation"
 edition = "2024"
 rust-version= "1.91.1"
 
-[package.metadata.bacon.jobs.fmt-check]
-command = [ "cargo", "fmt", "--check", "--", "--color=always" ]
-need_stdout = true
-
-[package.metadata.bacon.jobs.fmt]
-command = [ "cargo", "fmt" ]
-need_stdout = true
+[dependencies]
+axum = "0.8.7"
+tokio = { version = "1.48.0", features = ["rt-multi-thread"] }
+tera = { version = "1.20.1", features = ["builtins"] }
+serde_json = "1.0.145"
+serde = { version = "1.0.228", features = ["derive"] }
+toml = "0.9.8"
 
 [lints.rust]
 # levels: allow, expect, warn, force-warn, deny, forbid
@@ -27,14 +27,6 @@ let_underscore= { level = "warn", priority = 10 }
 nonstandard-style = "warn"
 future-incompatible = "warn"
 keyword-idents = "warn"
-
-[dependencies]
-axum = "0.8.7"
-tokio = { version = "1.48.0", features = ["rt-multi-thread"] }
-tera = { version = "1.20.1", features = ["builtins"] }
-serde_json = "1.0.145"
-serde = { version = "1.0.228", features = ["derive"] }
-toml = "0.9.8"
 
 [lints.clippy]
 # levels: allow, warn, deny, forbid
@@ -154,7 +146,6 @@ arithmetic_side_effects = "warn"
 as_conversions = "warn"
 as_pointer_underscore = "warn"
 as_underscore = "warn"
-default_numeric_fallback = "warn"
 deref_by_slicing = "warn"
 empty_drop = "warn"
 empty_enum_variants_with_brackets = "warn"
@@ -210,3 +201,11 @@ wildcard_enum_match_arm = "warn"
 # cargo
 negative_feature_names = "warn"
 redundant_feature_names = "warn"
+
+[package.metadata.bacon.jobs.fmt-check]
+command = [ "cargo", "fmt", "--check", "--", "--color=always" ]
+need_stdout = true
+
+[package.metadata.bacon.jobs.fmt]
+command = [ "cargo", "fmt" ]
+need_stdout = true

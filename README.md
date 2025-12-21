@@ -10,11 +10,11 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
 
 ## Roadmap
 
-- [ ] Strip/render some syntax in Tree text preview
+- [ ] Add tests
 - [ ] Richer text formatting
     - [x] Headers
     - [x] Preformatted blocks
-    - [ ] Inline code
+    - [x] Inline code
     - [x] Anchor rendering
         - [ ] Automatic anchors
     - [x] External anchors
@@ -22,18 +22,19 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
     - [ ] Lists
     - [ ] Checkboxes
         - [ ] Move this roadmap to en
-- [ ] Begin centralizing state
-- [ ] Render to filesystem
-- [ ] Full-text search
 - [ ] Connection kinds
+    - [ ] Mutual
     - [ ] Category <-> Membership
     - [ ] Opposite <-> Equivalent
     - [ ] Contrast <-> Similar
     - [ ] Cognate <-> Unrelated
     - [ ] Specialization <-> Generalization
     - [ ] Custom connection kinds
+- [ ] Strip/render some syntax in Tree text preview
+- [ ] Begin centralizing state
+- [ ] Full-text search
+- [ ] Render to filesystem
 - [ ] Reduce O(n) calls in the formats module
-- [ ] Add tests
 - [ ] Multi-file graphs
 - [ ] Multi-graph
 - [ ] Themes

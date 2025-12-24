@@ -3,7 +3,7 @@ use axum::{body::Body, extract::Path, http::Response, response::Redirect};
 
 use crate::syntax::content;
 
-use crate::{formats::populate_graph, handlers, types::Node};
+use crate::{syntax::serial::populate_graph, router::handlers, types::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let graph = populate_graph();

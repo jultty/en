@@ -1,6 +1,6 @@
 use std::collections::{HashMap};
 
-use crate::{formats::populate_graph, types::Config};
+use crate::{syntax::serial::populate_graph, types::Config};
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,

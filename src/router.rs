@@ -1,6 +1,8 @@
 use axum::{routing::get, Router};
 
-use crate::{formats::Format, handlers, types::Graph};
+use crate::{syntax::serial::Format, types::Graph};
+
+mod handlers;
 
 pub fn new(graph: &Graph) -> Router {
     let mut router = Router::new()

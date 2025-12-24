@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    syntax::arguments::Arguments,
+    syntax::command::Arguments,
     types::{Edge, Graph, Node},
 };
 

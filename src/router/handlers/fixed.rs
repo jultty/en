@@ -5,9 +5,9 @@ use axum::{
 
 use crate::prelude::*;
 use crate::{
-    formats::{Format, populate_graph, serialize_graph},
+    router::handlers,
+    syntax::serial::{Format, populate_graph, serialize_graph},
 };
-use crate::handlers;
 
 /// # Panics
 /// Will panic if file read fails.

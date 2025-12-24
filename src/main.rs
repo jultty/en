@@ -1,10 +1,10 @@
 use std::{backtrace, io, panic};
 
-use en::{prelude::*, ONSET, formats::populate_graph, syntax};
+use en::{prelude::*, ONSET, syntax::serial::populate_graph, syntax};
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
-    let args = syntax::arguments::Arguments::new().parse();
+    let args = syntax::command::Arguments::new().parse();
     let address = args.make_address();
 
     panic::set_hook(Box::new(|info| {

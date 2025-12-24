@@ -5,7 +5,7 @@ use axum::{
 
 use crate::prelude::*;
 
-pub(in crate::handlers) fn make_response(
+pub(in crate::router::handlers) fn make_response(
     body: &str,
     status_code: u16,
     headers: &[(header::HeaderName, &str)],

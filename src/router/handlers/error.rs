@@ -3,9 +3,9 @@ use axum::{
     http::{Response, StatusCode, header},
 };
 
-use crate::{formats::populate_graph, handlers};
+use crate::{syntax::serial::populate_graph, router::handlers};
 
-pub(in crate::handlers) fn by_code(
+pub(in crate::router::handlers) fn by_code(
     code: Option<u16>,
     message: Option<&str>,
 ) -> Response<Body> {

@@ -3,9 +3,9 @@ use axum::{
     http::{header, Response, StatusCode},
 };
 
-use crate::{prelude::*, handlers::raw::make_response};
+use crate::{prelude::*, router::handlers::raw::make_response};
 
-pub(in crate::handlers) fn by_filename(
+pub(in crate::router::handlers) fn by_filename(
     name: &str,
     context: &tera::Context,
     error_code: u16,
@@ -19,12 +19,7 @@ pub(in crate::handlers) fn by_filename(
     make_response(&body, status_code, &[(header::CONTENT_TYPE, "text/html")])
 }
 
-#[expect(clippy::unused_async)]
-pub async fn fixed(name: &str) -> Response<Body> {
-    by_filename(name, &tera::Context::new(), 500, None, false)
-}
-
-pub(in crate::handlers) fn render(
+pub(in crate::router::handlers) fn render(
     name: &str,
     // TODO take Option, skip context if None,
     // then template_handler can replace static_template_handler

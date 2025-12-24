@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
+#[derive(Debug)]
 pub struct Span {
     open: Option<bool>,
 }

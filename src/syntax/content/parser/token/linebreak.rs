@@ -3,6 +3,7 @@ use crate::{
     syntax::content::{Parseable, parser::lexeme::Lexeme},
 };
 
+#[derive(Debug)]
 pub struct LineBreak {}
 
 impl Parseable for LineBreak {

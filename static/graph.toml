@@ -132,7 +132,7 @@ For example:
 docs|/node/Documentation
 `
 
-If the left side contains spaces, you need a leading `|` character. In this case, the space on the left side is mandatory:
+If the left side contains spaces, you need a leading `|` character:
 
 `
 |en docs|https://en.jutty.dev/node/Documentation
@@ -141,12 +141,12 @@ If the left side contains spaces, you need a leading `|` character. In this case
 If you have a trailing character that you don't want to be considered as part of the destination, you can separate it with a third `|`:
 
 `
-This |gem|PreciousStone|, though green, was not an emerald.
+This gem|PreciousStone|, though green, was not an emerald.
 `
 
 Which renders as:
 
-This |gem|PreciousStone|, though green, was not an emerald.
+This gem|PreciousStone|, though green, was not an emerald.
 
 ### Node anchors
 
@@ -169,14 +169,15 @@ Because en can resolve IDs case insensitively (with priority to case-sensitive m
 In summary, all of the anchors below are valid and lead to the same page:
 
 `
+|en Syntax|https://en.jutty.dev/node/Syntax|
 |en Syntax|https://en.jutty.dev/node/Syntax
 Syntax|https://en.jutty.dev/node/Syntax
 
-|en Syntax|/node/Syntax
-Syntax|/node/Syntax
+Syntax|/node/syntax
 
-Syntax|Syntax
-syntax|syntax
+|syntax|Syntax
+Syntax|syntax
+Syntax|syntax|
 
 |Syntax|
 |syntax|
@@ -312,23 +313,23 @@ We saw example `docs|/node/Documentation`, but shorter syntax exists.
 #### Epistēmē
 #### Epistēmē
 
+|en Syntax|https://en.jutty.dev/node/Syntax|
 |en Syntax|https://en.jutty.dev/node/Syntax
 Syntax|https://en.jutty.dev/node/Syntax
 
-|en Syntax|/node/Syntax
-Syntax|/node/Syntax
+Syntax|/node/syntax
 
-Syntax|Syntax
-syntax|syntax
+|syntax|Syntax
+Syntax|syntax
+Syntax|syntax|
 
 |Syntax|
 |syntax|
 """
 
 [meta.config]
+content_language = "en"
 footer_credits = false
 footer_text = """
 made by jutty|https://jutty.dev • acknowledgements|Acknowledgments • |source code|https://codeberg.org/jutty/en
 """
-
-

@@ -1,9 +1,18 @@
+use std::{
+    collections::{HashMap, hash_map::Entry},
+    iter::Peekable,
+    slice,
+};
+
 use crate::{
     prelude::*,
+    types::Config,
     syntax::content::{Parseable, Lexeme},
 };
+
 use std::fmt::Display;
 
+#[derive(Debug)]
 pub struct Header {
     open: Option<bool>,
     level: Level,
@@ -19,6 +28,35 @@ impl Header {
         }
     }
 
+    pub fn make_id(
+        config: &Config,
+        iterator: &mut Peekable<slice::Iter<'_, Lexeme>>,
+        ids: &mut HashMap<String, Vec<String>>,
+    ) -> String {
+        let base_id = match iterator.peek() {
+            Some(next_lexeme)
+                if !config.ascii_dom_ids || next_lexeme.next.is_ascii() =>
+            {
+                next_lexeme.next.to_lowercase()
+            },
+            _ => String::from("h"),
+        };
+
+        match ids.entry(base_id.clone()) {
+            Entry::Occupied(mut occupied) => {
+                let ids_vec = occupied.get_mut();
+                let suffix = ids_vec.len();
+                let id_with_suffix = format!("{base_id}-{suffix}");
+                ids_vec.push(id_with_suffix.clone());
+                id_with_suffix
+            },
+            Entry::Vacant(vacant) => {
+                vacant.insert(vec![base_id.clone()]);
+                base_id
+            },
+        }
+    }
+
     pub fn from_u8(level: u8, open: bool, dom_id: Option<&str>) -> Header {
         Header {
             level: Level::from_u8(level),
@@ -27,7 +65,7 @@ impl Header {
         }
     }
 
-    pub fn get_level(&self) -> u8 {
+    pub fn level(&self) -> u8 {
         match self.level {
             Level::One => 1,
             Level::Two => 2,
@@ -92,6 +130,7 @@ impl Display for Header {
     }
 }
 
+#[derive(Debug)]
 pub enum Level {
     One,
     Two,

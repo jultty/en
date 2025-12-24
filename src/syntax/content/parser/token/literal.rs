@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
+#[derive(Debug)]
 pub struct Literal {
     text: String,
 }
@@ -17,12 +18,7 @@ impl Parseable for Literal {
     }
 
     fn render(&self) -> String {
-        let non_sticky = [" ", "\n"];
-        if non_sticky.contains(&self.text.as_str()) {
-            self.text.clone()
-        } else {
-            format!("{} ", self.text.clone())
-        }
+        self.text.clone()
     }
 }
 

@@ -2,42 +2,31 @@ use crate::{
     syntax::content::{Parseable, Lexeme},
 };
 
+#[derive(Debug)]
 pub struct Code {
-    text: String,
-    sticky: bool,
+    open: bool,
+}
+
+impl Code {
+    pub fn new(open: bool) -> Code {
+        Code { open }
+    }
 }
 
 impl Parseable for Code {
     fn probe(lexeme: &Lexeme) -> bool {
-        let chars = lexeme.split_chars();
-
-        if let Some(first_char) = chars.first()
-            && let Some(last_char) = chars.last()
-        {
-            *first_char == '`' && *last_char == '`'
-        } else {
-            false
-        }
+        lexeme.text() == "`"
     }
 
-    fn lex(lexeme: &Lexeme) -> Code {
-        let sticky = [
-            ",", ".", ":", ";", "!", "?", "/", "(", ")", "%", "*", "&", r#"""#,
-            "'",
-        ];
-
-        Code {
-            text: lexeme.text().replace("`", ""),
-            sticky: sticky.contains(&lexeme.next.as_str()),
-        }
+    fn lex(_lexeme: &Lexeme) -> Code {
+        panic!("Attempt to lex a code tag directly from a lexeme")
     }
 
     fn render(&self) -> String {
-        let space = if self.sticky {
-            String::new()
+        if self.open {
+            String::from("<code>")
         } else {
-            String::from(" ")
-        };
-        format!("<code>{}</code>{space}", self.text)
+            String::from("</code>")
+        }
     }
 }

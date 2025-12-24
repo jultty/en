@@ -16,6 +16,26 @@ impl Lexeme {
         self.text.clone()
     }
 
+    pub fn is_whitespace(&self) -> bool {
+        self.text == " " || self.text == "\n"
+    }
+
+    pub fn is_next_whitespace(&self) -> bool {
+        self.next == " " || self.next == "\n"
+    }
+
+    pub fn match_first_char(&self, query: char) -> bool {
+        if let Some(first) = self.text.chars().nth(0) {
+            first == query
+        } else {
+            false
+        }
+    }
+
+    pub fn next_first_char(&self) -> Option<char> {
+        self.next.chars().nth(0)
+    }
+
     /// # Panics
     /// Panics if number of chars for a single lexeme exceeds `i2::MAX`
     pub fn count_char(&self, c: char) -> i32 {

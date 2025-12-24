@@ -136,12 +136,3 @@ pub fn deserialize_graph(in_format: &Format, serial: &str) -> Graph {
         },
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn smoke() {
-        let n = true;
-        assert!(n);
-    }
-}

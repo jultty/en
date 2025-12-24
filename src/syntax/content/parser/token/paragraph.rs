@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
+#[derive(Debug)]
 pub struct Paragraph {
     open: Option<bool>,
 }
@@ -14,9 +15,7 @@ impl Paragraph {
 impl Parseable for Paragraph {
     fn probe(lexeme: &Lexeme) -> bool {
         // lexeme for paragraph is any non-whitespace, parser knows the context
-        let raw = lexeme.text();
-        let trimmed = raw.trim();
-        !trimmed.is_empty() && trimmed != "\n"
+        !lexeme.is_whitespace()
     }
 
     fn lex(_lexeme: &Lexeme) -> Paragraph {

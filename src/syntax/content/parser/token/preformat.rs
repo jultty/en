@@ -2,6 +2,7 @@ use crate::{
     syntax::content::{Parseable, Lexeme},
 };
 
+#[derive(Debug)]
 pub struct PreFormat {
     open: Option<bool>,
 }

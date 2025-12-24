@@ -9,6 +9,7 @@ pub mod header;
 pub mod preformat;
 pub mod code;
 
+#[derive(Debug)]
 pub enum Token {
     Anchor(anchor::Anchor),
     Code(code::Code),

@@ -49,12 +49,3 @@ async fn main() -> io::Result<()> {
 
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn smoke() {
-        let e = true;
-        assert!(e);
-    }
-}

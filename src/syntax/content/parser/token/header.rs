@@ -37,7 +37,7 @@ impl Header {
             Some(next_lexeme)
                 if !config.ascii_dom_ids || next_lexeme.next.is_ascii() =>
             {
-                next_lexeme.next.to_lowercase()
+                next_lexeme.next.clone()
             },
             _ => String::from("h"),
         };

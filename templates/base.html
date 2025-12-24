@@ -1,5 +1,9 @@
 <!DOCTYPE html>
+{% if config.content_language %}
+<html lang="{{ config.content_language }}">
+{% else %}
 <html>
+{% endif %}
     <head>
         {% if config.site_title %}
         <title>{% block title %}{% endblock title %} &bullet; {{config.site_title}}</title>

@@ -96,6 +96,8 @@ pub struct Config {
     pub tree_node_text: bool,
     #[serde(default = "mkfalse")]
     pub ascii_dom_ids: bool,
+    #[serde(default)]
+    pub content_language: String,
 }
 
 // See: https://github.com/serde-rs/serde/issues/368
@@ -136,6 +138,7 @@ impl Graph {
                     index_root_node: true,
                     tree_node_text: false,
                     ascii_dom_ids: false,
+                    content_language: String::new(),
                 },
                 version: (0, 1, 0),
                 messages: message.map_or(vec![], |m| vec![m]),

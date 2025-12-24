@@ -130,6 +130,20 @@ test:
 
 alias t := test
 
+# Run tests with coverage
+[group('checks')]
+cover:
+    cargo llvm-cov test
+
+alias cv := cover
+
+# Open test coverage report
+[group('checks')]
+cover-open:
+    cargo llvm-cov --open
+
+alias cvo := cover-open
+
 # FORMATTING
 
 # Format all files

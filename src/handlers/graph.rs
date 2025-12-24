@@ -10,7 +10,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let empty_node = Node::new(Some(format!("Could not find node ID {id}.")));
     let node = graph.find_node(&id).unwrap_or(empty_node.clone());
 
-    if !graph.nodes.contains_key(&id) {
+    if !graph.nodes.contains_key(&id) && graph.lowercase_keymap.contains_key(&id) {
         return Redirect::permanent(format!("/node/{}", node.id).as_str())
             .into_response();
     }

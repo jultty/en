@@ -15,13 +15,7 @@ impl PreFormat {
 
 impl Parseable for PreFormat {
     fn probe(lexeme: &Lexeme) -> bool {
-        let chars = lexeme.split_chars();
-
-        if let Some(first_char) = chars.first() {
-            *first_char == '`'
-        } else {
-            false
-        }
+        lexeme.match_first_char('`') && lexeme.next == "\n"
     }
 
     fn lex(_lexeme: &Lexeme) -> PreFormat {

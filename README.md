@@ -17,6 +17,7 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
     - [x] Inline code
     - [x] Anchor rendering
         - [ ] Automatic anchors
+        - [ ] `#` syntax for header ID anchors
     - [x] External anchors
     - [ ] Bold, italics, underline, strikethrough
     - [ ] Lists

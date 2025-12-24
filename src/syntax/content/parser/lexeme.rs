@@ -24,6 +24,15 @@ impl Lexeme {
         self.next == " " || self.next == "\n"
     }
 
+    pub fn is_next_punctuation(&self) -> bool {
+        let punctuation = [",", ".", ":", ";", "?", "!", "(", ")", "\"", "'"];
+        punctuation.contains(&self.next.as_str())
+    }
+
+    pub fn next_first_char(&self) -> Option<char> {
+        self.next.chars().nth(0)
+    }
+
     pub fn match_first_char(&self, query: char) -> bool {
         if let Some(first) = self.text.chars().nth(0) {
             first == query
@@ -32,8 +41,12 @@ impl Lexeme {
         }
     }
 
-    pub fn next_first_char(&self) -> Option<char> {
-        self.next.chars().nth(0)
+    pub fn match_next_first_char(&self, query: char) -> bool {
+        if let Some(first) = self.next.chars().nth(0) {
+            first == query
+        } else {
+            false
+        }
     }
 
     /// # Panics

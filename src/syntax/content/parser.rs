@@ -1,7 +1,6 @@
 use std::collections::{HashMap};
 
 use crate::{formats::populate_graph, types::Config};
-
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
@@ -113,8 +112,13 @@ fn lex(text: &str, map: LexMap) -> Vec<Token> {
                 } else if candidate.destination.is_none() {
                     // candidate is leading and we found the second pipe
                     if candidate.leading && lexeme.text() == "|" {
-                        // whitespace after pipe: flanking node anchor
-                        if lexeme.is_next_whitespace() {
+                        // third pipe immediately after second: forcing flanking
+                        if lexeme.match_next_first_char('|') {
+                            continue;
+                        // whitespace or punctuation after pipe: flanking anchor
+                        } else if lexeme.is_next_whitespace()
+                            || lexeme.is_next_punctuation()
+                        {
                             candidate.destination =
                                 Some(candidate.text.clone());
                             let token = Token::Anchor(candidate.clone());
@@ -186,6 +190,11 @@ struct State {
     buffers: Buffers,
 }
 
+struct Context {
+    block: BlockContext,
+    inline: InlineContext,
+}
+
 struct Buffers {
     anchor: AnchorBuffer,
 }
@@ -222,11 +231,6 @@ impl State {
             },
         }
     }
-}
-
-struct Context {
-    block: BlockContext,
-    inline: InlineContext,
 }
 
 fn parse(tokens: &[Token]) -> String {

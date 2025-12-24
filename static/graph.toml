@@ -144,9 +144,11 @@ If you have a trailing character that you don't want to be considered as part of
 This gem|PreciousStone|, though green, was not an emerald.
 `
 
-Which renders as:
+To make a plain address clickable, wrap it in two `|` characters:
 
-This gem|PreciousStone|, though green, was not an emerald.
+`
+|https://en.jutty.dev|
+`
 
 ### Node anchors
 
@@ -182,6 +184,70 @@ Syntax|syntax|
 |Syntax|
 |syntax|
 `
+
+While flexible, this can sometimes be ambiguous. See |AnchorSyntax| for some caveats regarding anchors.
+
+"""
+
+[nodes.AnchorSyntax]
+title = "Anchor Syntax"
+text = """
+Anchor syntax can be very concise, but some situations lead to ambiguity.
+
+In short, following these two rules should keep you out of trouble:
+
+- Avoid special characters in your node IDs
+- When needed, use full three-pipe `|text|destination|` syntax to fix ambiguity
+
+## Punctuation in destinations
+
+Consider this example:
+
+`
+|gem|PreciousStone
+|PreciousStone|,
+`
+
+Both seem to point to the node with ID `PreciousStone`, as they _seem_ to. But if we didn't treat punctuation differently, we'd have:
+
+`
+|a|b
+|a|b
+`
+
+For this reason, punctuation is treated differently. It won't be considered as a possible destination, so you can write the previous example and have it behave as expected.
+
+This also means you can't have punctuation symbols as node IDs or as their first character.
+
+These are the punctuation symbols that are treated specially:
+
+`
+, . : ; ? ! ( ) ' "
+
+`
+
+You can also force this using a third pipe:
+
+`
+|PreciousStone||,
+`
+
+This unambiguously tells en that your destination is a node ID.
+
+## URL detection
+
+en must differentiate node anchors from outgoing URLs:
+
+`
+|sample|Example|
+|sample|https://example.com|
+
+|Example|
+|https://example.com|
+`
+
+It does this by looking at the destination and checking if it contains a `:` or `/`, so also avoid these in your node IDs.
+
 """
 
 [nodes.en]
@@ -219,7 +285,7 @@ en uses this concept to create a writing tool, allowing you to map out complex t
 text = """
 TOML is a configuration format that can be easily read and understood by humans and machines alike.
 
-To learn more about TOML, you can visit its website at <toml.io>.
+To learn more about TOML, you can visit its website at |https://toml.io|.
 
 To see the TOML declaration that translates into the rendered graph you are reading right now, visit the "TOML Graph" link on the top navigation bar.
 """

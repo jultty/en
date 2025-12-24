@@ -6,11 +6,20 @@ _default:
 # Build on changes
 [group('dev')]
 serve-watch:
-    bacon --job run-long -- -- --hostname localhost --port 3003
+    watchexec -q -c -e rs,toml,html -r cargo run -- -p 3003 -h localhost
 
 alias sw := serve-watch
 alias dev := serve-watch
 alias d := serve-watch
+
+[group('dev')]
+serve-watch-interface:
+    watchexec -qr -c -w . -w ../interface -e rs,toml,html cargo run \
+        -- -h localhost -p 3001 -g ../interface/graph.toml
+
+alias swi := serve-watch-interface
+alias dev-interface := serve-watch-interface
+alias di := serve-watch-interface
 
 # Run tests on changes
 [group('dev')]

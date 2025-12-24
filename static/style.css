@@ -1,6 +1,7 @@
 html {
     height: 100%;
     font-family: sans-serif;
+    line-height: 1.5;
 }
 
 body {
@@ -102,9 +103,20 @@ nav li {
         color: #1bc8c8;
         text-decoration-color: #159b9b;
     }
+
+    span.id-label {
+        background-color: #444;
+        border-color: #666;
+    }
+
+    span.hidden-label  {
+        background-color: #000;
+        border-color: #555;
+        color: #969696;
+    }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 600px) {
     nav li {
         margin-right: 3px;
     }

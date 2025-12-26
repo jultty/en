@@ -299,7 +299,6 @@ en is only possible thanks to a number of projects and people:
 - Axum|https://github.com/tokio-rs/axum
 - Tera|https://keats.github.io/tera/
 - Serde|https://serde.rs/ and the |toml crate|https://github.com/toml-rs/toml
-- Bacon|https://dystroy.org/bacon/config/
 """
 
 [nodes.Test]

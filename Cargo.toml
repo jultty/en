@@ -206,11 +206,3 @@ wildcard_enum_match_arm = "warn"
 # cargo
 negative_feature_names = "warn"
 redundant_feature_names = "warn"
-
-[package.metadata.bacon.jobs.fmt-check]
-command = [ "cargo", "fmt", "--check", "--", "--color=always" ]
-need_stdout = true
-
-[package.metadata.bacon.jobs.fmt]
-command = [ "cargo", "fmt" ]
-need_stdout = true

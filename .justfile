@@ -2,7 +2,7 @@ _default:
     @just --list
 
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
-cover_cmd := 'cargo llvm-cov --ignore-filename-regex "main\.rs|dev\.rs"'
+cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
 just_cmd := 'just --unstable --timestamp --explain --command-color green'
 
 # DEV

@@ -11,7 +11,7 @@ pub fn populate_graph() -> Graph {
         Ok(s) => s,
         Err(e) => format!("Error: {e}"),
     };
-    let graph = deserialize_graph(&Format::Toml, &toml_source);
+    let graph = deserialize_graph(&Format::TOML, &toml_source);
 
     let nodes = modulate_nodes(&graph.nodes);
 
@@ -107,17 +107,17 @@ fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
 }
 
 pub enum Format {
-    Toml,
-    Json,
+    TOML,
+    JSON,
 }
 
 pub fn serialize_graph(out_format: &Format, graph: &Graph) -> String {
     match *out_format {
-        Format::Toml => match toml::to_string(graph) {
+        Format::TOML => match toml::to_string(graph) {
             Ok(s) => s,
             Err(e) => e.to_string(),
         },
-        Format::Json => match serde_json::to_string(graph) {
+        Format::JSON => match serde_json::to_string(graph) {
             Ok(s) => s,
             Err(e) => e.to_string(),
         },
@@ -126,11 +126,11 @@ pub fn serialize_graph(out_format: &Format, graph: &Graph) -> String {
 
 pub fn deserialize_graph(in_format: &Format, serial: &str) -> Graph {
     match *in_format {
-        Format::Toml => match toml::from_str(serial) {
+        Format::TOML => match toml::from_str(serial) {
             Ok(g) => g,
             Err(error) => Graph::new(Some(error.to_string())),
         },
-        Format::Json => match serde_json::from_str(serial) {
+        Format::JSON => match serde_json::from_str(serial) {
             Ok(g) => g,
             Err(error) => Graph::new(Some(error.to_string())),
         },

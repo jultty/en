@@ -397,5 +397,5 @@ Syntax|syntax|
 content_language = "en"
 footer_credits = false
 footer_text = """
-made by jutty|https://jutty.dev • acknowledgements|Acknowledgments • |source code|https://codeberg.org/jutty/en
+made by jutty|https://jutty.dev • acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
 """

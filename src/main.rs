@@ -26,7 +26,7 @@ async fn main() -> io::Result<()> {
     }));
 
     let graph = populate_graph();
-    let app = en::router::new(&graph);
+    let router = en::router::new(&graph);
 
     let listener =
         tokio::net::TcpListener::bind(&address).await.map_err(|e| {
@@ -42,7 +42,7 @@ async fn main() -> io::Result<()> {
             .unwrap_or("<unknown>".to_string())
     );
 
-    axum::serve(listener, app).await.map_err(|e| {
+    axum::serve(listener, router).await.map_err(|e| {
         log!("Failed to serve application: {e:#?}");
         io::Error::other(e)
     })?;

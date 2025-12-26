@@ -112,7 +112,7 @@ fn mk8() -> u16 {
 }
 
 impl Graph {
-    pub fn new(message: Option<String>) -> Graph {
+    pub fn new(message: Option<&str>) -> Graph {
         Graph {
             nodes: HashMap::new(),
             root_node: "VoidNode".to_string(),
@@ -141,7 +141,7 @@ impl Graph {
                     content_language: String::new(),
                 },
                 version: (0, 1, 0),
-                messages: message.map_or(vec![], |m| vec![m]),
+                messages: message.map_or(vec![], |m| vec![m.to_string()]),
             },
         }
     }

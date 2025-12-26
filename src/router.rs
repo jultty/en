@@ -41,13 +41,13 @@ pub fn new(graph: &Graph) -> Router {
         if graph.meta.config.raw_json {
             router = router.route(
                 "/graph/json",
-                get(|| handlers::fixed::serial(&Format::Json)),
+                get(|| handlers::fixed::serial(&Format::JSON)),
             );
         }
         if graph.meta.config.raw_toml {
             router = router.route(
                 "/graph/toml",
-                get(|| handlers::fixed::serial(&Format::Toml)),
+                get(|| handlers::fixed::serial(&Format::TOML)),
             );
         }
     }

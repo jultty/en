@@ -89,7 +89,7 @@ alias v := verify
 
 # Assess coverage
 [group: 'assess']
-cover-assess:
+cover-assess: cover
     {{ cover_cmd }} --fail-under-regions 90 report
 
 # Assess formatting

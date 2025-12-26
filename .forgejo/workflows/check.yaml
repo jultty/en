@@ -9,7 +9,7 @@ jobs:
         run: apt install --no-install-recommends --update -y nodejs just
       - name: setup toolchain
         run: |
-          rustup component add rustfmt clippy
+          rustup component add rustfmt clippy llvm-tools-preview
           cargo install cargo-llvm-cov --locked
 
       - name: checkout code

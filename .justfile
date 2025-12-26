@@ -1,154 +1,176 @@
 _default:
     @just --list
 
+watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
+cover_cmd := 'cargo llvm-cov --ignore-filename-regex "main\.rs|dev\.rs"'
+just_cmd := 'just --unstable --timestamp --explain --command-color green'
+
 # DEV
 
+# Start server
+[group: 'develop']
+run:
+    cargo run -- --hostname localhost --port 3003
+
+alias r := run
+
 # Build on changes
-[group('dev')]
-serve-watch:
-    watchexec -q -c -e rs,toml,html -r cargo run -- -p 3003 -h localhost
+[group: 'develop']
+run-watch:
+    {{ watch_cmd }} {{ just_cmd }} run
 
-alias sw := serve-watch
-alias dev := serve-watch
-alias d := serve-watch
+alias rw := run-watch
+alias dev := run-watch
+alias d := run-watch
 
-[group('dev')]
-serve-watch-interface:
-    watchexec -qr -c -w . -w ../interface -e rs,toml,html cargo run \
-        -- -h localhost -p 3001 -g ../interface/graph.toml
+# Run all assessments on changes
+[group: 'develop']
+verify-watch:
+    {{ watch_cmd }} {{ just_cmd }} verify
 
-alias swi := serve-watch-interface
-alias dev-interface := serve-watch-interface
-alias di := serve-watch-interface
+alias vw := verify-watch
 
 # Run tests on changes
-[group('dev')]
+[group: 'develop']
 test-watch:
-    bacon --job test
+    {{ watch_cmd }} {{ just_cmd }} test
 
 alias tw := test-watch
 
+# Run tests with coverage reports on changes
+[group: 'develop']
+cover-watch:
+    {{ watch_cmd }} {{ just_cmd }} cover-report
+
+alias ow := cover-watch
+
 # Run cargo check on changes
-[group('dev')]
+[group: 'develop']
 check-watch:
-    bacon --job check
+    {{ watch_cmd }} {{ just_cmd }} check
 
 alias cw := check-watch
 
-# Format check on changes
-[group('dev')]
-format-watch:
-    bacon --job fmt-check
-
-alias fw := format-watch
-
 # Lint on changes
-[group('dev')]
+[group: 'develop']
 lint-watch:
-    bacon --job clippy
+    {{ watch_cmd }} {{ just_cmd }} lint
 
 alias lw := lint-watch
 
-# Check before push
-[group('dev')]
-push: check
+# Assess formatting on changes
+[group: 'develop']
+format-watch:
+    {{ watch_cmd }} {{ just_cmd }} format-assess
+
+alias fw := format-watch
+
+# Format all files
+[group: 'develop']
+format:
+    cargo fmt
+
+alias f := format
+
+# Verify before push
+[group: 'develop']
+push: verify
     git push
 
 alias p := push
 
-# RUN
+# ANALYSIS
 
-# Start server
-[group('run')]
-serve:
-    cargo run -- --hostname localhost --port 3003
+# Run all analysis
+[group: 'assess']
+verify: format-assess lint check test cover-assess
 
-alias s := serve
+alias v := verify
+
+# Assess coverage
+[group: 'assess']
+cover-assess:
+    {{ cover_cmd }} --fail-under-regions 90 report
+
+# Assess formatting
+[group: 'assess']
+format-assess:
+    cargo fmt -- --check
+
+alias fc := format-assess
+
+# Lint with Clippy
+[group: 'assess']
+lint:
+    cargo clippy
+
+alias l := lint
+
+# Run cargo check
+[group: 'assess']
+check:
+    cargo check --workspace
+
+alias c := check
+
+# Run tests
+[group: 'assess']
+test:
+    cargo test -- --skip 'serial_tests::'
+    cargo test -- --test 'serial_tests::' --test-threads 1
+
+alias t := test
+
+# Run tests with coverage
+[group: 'assess']
+cover:
+    {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
+    {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
+
+alias o := cover
+
+## COVER
+
+# Make coverage report
+[group: 'cover']
+cover-report: cover
+    {{ cover_cmd }} report --html
+    {{ cover_cmd }} report
+
+alias or := cover-report
+
+# Open coverage report
+[group: 'cover']
+cover-open: cover
+    {{ cover_cmd }} report --open
+
+alias oo := cover-open
 
 # BUILD
 
 # Build project with Cargo
-[group('build')]
+[group: 'build']
 build:
     cargo build
 
 alias b := build
 
 # Cleanup build artifacts
-[group('build')]
+[group: 'build']
 clean:
     cargo clean
 
 alias cl := clean
 
-# Clean, build, run checks
-[group('build')]
-full-build: clean build check
+# Clean, run assessments, release build
+[group: 'build']
+full-build: clean verify release-build
 
 alias fb := full-build
 
 # Release build
-[group('build')]
-release-build:
+[group: 'build']
+release-build: verify
     cargo build --release
 
 alias rb := release-build
-
-# CHECKS
-
-# Lint, check formatting and run tests
-[group('checks')]
-check: format-check lint cargo-check test
-
-alias c := check
-
-# Run cargo check
-[group('checks')]
-cargo-check:
-    cargo check --workspace
-
-alias cc := cargo-check
-
-# Lint with Clippy
-[group('checks')]
-lint:
-    cargo clippy
-
-alias l := lint
-
-# Check formatting without changing files
-[group('checks')]
-format-check:
-    cargo fmt -- --check
-
-alias fc := format-check
-
-# Run tests
-[group('checks')]
-test:
-    cargo test
-
-alias t := test
-
-# Run tests with coverage
-[group('checks')]
-cover:
-    cargo llvm-cov test
-
-alias cv := cover
-
-# Open test coverage report
-[group('checks')]
-cover-open:
-    cargo llvm-cov --open
-
-alias cvo := cover-open
-
-# FORMATTING
-
-# Format all files
-[group('checks')]
-format:
-    cargo fmt
-
-alias f := format

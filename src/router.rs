@@ -54,3 +54,125 @@ pub fn new(graph: &Graph) -> Router {
 
     router
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        syntax::serial::populate_graph,
+        types::{Config, Meta},
+    };
+
+    use super::*;
+    use axum::{
+        body::Body,
+        http::{Request, StatusCode},
+        response::Response,
+    };
+    use tower::ServiceExt as _;
+
+    async fn request(uri: &str, config: Option<&Config>) -> Response<Body> {
+        let default_graph = populate_graph();
+        let graph = Graph {
+            meta: Meta {
+                config: config
+                    .map(|c| c.to_owned())
+                    .unwrap_or(default_graph.meta.config),
+                ..default_graph.meta
+            },
+            ..default_graph
+        };
+        let router = new(&graph);
+
+        router
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap()
+    }
+
+    #[tokio::test]
+    async fn smoke() {
+        let router = axum::Router::new();
+        let response = router
+            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn routes() {
+        let routes = [
+            "/",
+            "/about",
+            "/tree",
+            "/node/Syntax",
+            "/static/style.css",
+            "/static/favicon.svg",
+            "/graph/json",
+            "/graph/toml",
+        ];
+
+        for route in routes {
+            let response = request(route, None).await;
+            assert_eq!(response.status(), StatusCode::OK);
+        }
+    }
+
+    #[tokio::test]
+    async fn no_about_page() {
+        let config = Config {
+            about: false,
+            ..populate_graph().meta.config
+        };
+
+        let response = request("/about", Some(&config)).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn no_tree_page() {
+        let config = Config {
+            tree: false,
+            ..populate_graph().meta.config
+        };
+
+        let response = request("/tree", Some(&config)).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn no_toml_raw_graph() {
+        let config = Config {
+            raw_toml: false,
+            ..populate_graph().meta.config
+        };
+
+        let response = request("/graph/toml", Some(&config)).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn no_json_raw_graph() {
+        let config = Config {
+            raw_json: false,
+            ..populate_graph().meta.config
+        };
+
+        let response = request("/graph/json", Some(&config)).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn no_raw_graph() {
+        let config = Config {
+            raw: false,
+            ..populate_graph().meta.config
+        };
+
+        let toml_response = request("/graph/toml", Some(&config)).await;
+        assert_eq!(toml_response.status(), StatusCode::NOT_FOUND);
+        let json_response = request("/graph/json", Some(&config)).await;
+        assert_eq!(json_response.status(), StatusCode::NOT_FOUND);
+    }
+}

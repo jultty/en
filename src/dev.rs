@@ -52,3 +52,42 @@ macro_rules! log {
 
     }};
 }
+
+#[cfg(test)]
+mod tests {
+
+    fn run_in_debug_level(level: &str) {
+        #[allow(unsafe_code)]
+        unsafe {
+            std::env::set_var("DEBUG", level);
+            log!("Debug is set to {level}");
+        }
+    }
+
+    #[test]
+    fn debug_var_set() {
+        for level in 0..9 {
+            run_in_debug_level(&level.to_string());
+        }
+        run_in_debug_level("");
+        run_in_debug_level("駄目！");
+    }
+
+    #[test]
+    fn trait_stripping() {
+        pub trait Loggable {
+            fn test(&self);
+        }
+
+        struct Logger {}
+
+        impl Loggable for Logger {
+            fn test(&self) {
+                log!("This is inside a trait implementation");
+            }
+        }
+
+        let logger = Logger {};
+        logger.test();
+    }
+}

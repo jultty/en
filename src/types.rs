@@ -198,3 +198,84 @@ impl Config {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::syntax::serial::populate_graph;
+
+    use super::*;
+
+    #[test]
+    fn empty_graph() {
+        let graph = Graph::new(Some("ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"));
+        assert!(graph.nodes.is_empty());
+        assert!(graph.incoming.is_empty());
+        assert_eq!(
+            graph.meta.messages.first().unwrap(),
+            "ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"
+        );
+    }
+
+    #[test]
+    fn empty_node_message() {
+        let node = Node::new(None);
+        assert_eq!(node.text, "Node is empty, missing or wasn't found.");
+    }
+
+    #[test]
+    fn empty_footer_text() {
+        let default_graph = populate_graph();
+
+        let config = Config {
+            footer_text: String::new(),
+            ..default_graph.meta.config
+        };
+
+        let parsed_config = config.parse_text();
+
+        println!("{:?}", parsed_config.footer_text);
+        assert!(parsed_config.footer_text.is_empty());
+    }
+
+    #[test]
+    fn config_footer_text() {
+        let payload = "0kqBrdS8NPrU4xVxh2xW0hUzAw926JCQ";
+        let default_graph = populate_graph();
+
+        let config = Config {
+            footer_text: format!("`{payload}`"),
+            ..default_graph.meta.config
+        };
+
+        let parsed_config = config.parse_text();
+
+        assert!(
+            parsed_config
+                .footer_text
+                .matches(format!("<code>{payload}</code>").as_str())
+                .count()
+                == 1
+        );
+    }
+
+    #[test]
+    fn config_about_text() {
+        let payload = "ZqPFl84JlzSS0QUo61RwTUPONIE78Lmw";
+        let default_graph = populate_graph();
+
+        let config = Config {
+            about_text: format!("`{payload}`"),
+            ..default_graph.meta.config
+        };
+
+        let parsed_config = config.parse_text();
+
+        assert!(
+            parsed_config
+                .about_text
+                .matches(format!("<code>{payload}</code>").as_str())
+                .count()
+                == 1
+        );
+    }
+}

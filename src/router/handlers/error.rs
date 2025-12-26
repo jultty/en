@@ -56,3 +56,33 @@ pub async fn not_found() -> Response<Body> {
         Some("The page you tried to access could not be found."),
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use axum::{
+        http::{StatusCode},
+    };
+    use super::*;
+
+    #[tokio::test]
+    async fn not_found() {
+        let response = super::not_found().await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn internal_error() {
+        assert!(by_code(Some(201), None).status() == 201);
+        assert!(by_code(Some(304), None).status() == 304);
+        assert!(by_code(Some(418), None).status() == 418);
+        assert!(by_code(Some(505), None).status() == 505);
+    }
+
+    #[test]
+    fn custom_message() {
+        let pattern = "sibPtt0mvHPWS9HQ0YBQfGu8cUs954LZ";
+        let body = make_body(Some(501), Some(pattern));
+        assert!(body.contains(pattern));
+        assert!(!body.contains(&pattern.chars().rev().collect::<String>()));
+    }
+}

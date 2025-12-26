@@ -128,11 +128,97 @@ pub fn deserialize_graph(in_format: &Format, serial: &str) -> Graph {
     match *in_format {
         Format::TOML => match toml::from_str(serial) {
             Ok(g) => g,
-            Err(error) => Graph::new(Some(error.to_string())),
+            Err(error) => Graph::new(Some(&error.to_string())),
         },
         Format::JSON => match serde_json::from_str(serial) {
             Ok(g) => g,
-            Err(error) => Graph::new(Some(error.to_string())),
+            Err(error) => Graph::new(Some(&error.to_string())),
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn good_json() {
+        let json = r#"
+        {
+            "nodes": {
+                "JSON": {
+                    "text": "",
+                    "title": "JSON",
+                    "links": [],
+                    "id": "JSON",
+                    "hidden": false,
+                    "connections": []
+                }
+            },
+            "root_node": "JSON"
+        }
+        "#;
+
+        let graph = deserialize_graph(&Format::JSON, json);
+        assert!(graph.meta.messages.is_empty());
+    }
+
+    #[test]
+    fn bad_json() {
+        let graph = deserialize_graph(&Format::JSON, ":::");
+        let message = graph.meta.messages.first().unwrap();
+        assert!(message.contains("expected value at line 1 column 1"));
+    }
+
+    #[test]
+    fn detached_node() {
+        let node = Node {
+            id: String::from("SomeNode"),
+            text: String::new(),
+            title: String::new(),
+            links: vec![String::new()],
+            hidden: false,
+            connections: Some(vec![Edge {
+                anchor: String::from("SomeAnchor"),
+                from: String::new(),
+                to: String::new(),
+                detached: false,
+            }]),
+        };
+
+        let mut map: HashMap<String, Node> = HashMap::new();
+        map.insert(String::from("SomeNode"), node);
+
+        let modulated_map = modulate_nodes(&map);
+        let modulated_node = modulated_map.get("SomeNode").unwrap().clone();
+        let modulated_connections = modulated_node.connections.unwrap();
+        let modulated_connection = modulated_connections.first().unwrap();
+        assert!(modulated_connection.anchor == "SomeAnchor");
+        assert!(modulated_connection.detached);
+    }
+}
+
+#[cfg(test)]
+mod serial_tests {
+    use super::*;
+
+    #[test]
+    fn bad_graph_path() {
+        println!("T");
+        let original_working_directory = std::env::current_dir().unwrap();
+
+        assert!(
+            std::env::set_current_dir(std::path::Path::new(
+                "tests/mocks/no_graph"
+            ))
+            .is_ok()
+        );
+
+        let graph = populate_graph();
+        let message = graph.meta.messages.first().unwrap();
+        assert!(message.contains("TOML parse error"));
+        assert!(message.contains("No such file or directory"));
+
+        assert!(std::env::set_current_dir(original_working_directory).is_ok());
     }
 }

@@ -27,9 +27,39 @@ pub(in crate::router::handlers) fn make_response(
                 );
             }
         } else {
-            log!("Failed to wrap header value {}", header.1);
+            log!("Failed to create header value from {}", header.1);
         }
     }
 
     response
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn repeated_header() {
+        let headers = [
+            (header::ACCEPT, "Not really"),
+            (header::ACCEPT, "This again?"),
+        ];
+        let response = make_response("", 418, &headers);
+        assert!(response.headers().get_all(header::ACCEPT).iter().count() == 1);
+        assert_eq!(
+            response
+                .headers()
+                .get(header::ACCEPT)
+                .unwrap()
+                .to_str()
+                .unwrap(),
+            "This again?",
+        );
+    }
+
+    #[test]
+    fn invalid_header() {
+        let response = make_response("", 418, &[(header::MAX_FORWARDS, "\n")]);
+        assert!(response.headers().get(header::MAX_FORWARDS).is_none());
+    }
 }

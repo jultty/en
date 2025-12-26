@@ -27,14 +27,9 @@ pub(in crate::router::handlers) fn render(
     error_message: Option<String>,
 ) -> (String, u16) {
     // TODO just return an Option/String> here
-    let tera = match tera::Tera::new(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/templates/**/*"
-    )) {
+    let tera = match tera::Tera::new("./templates/**/*") {
         Ok(t) => t,
         Err(e) => {
-            let early_error_message = format!("{e:#?}");
-            log!("{}", early_error_message);
             return (emergency_wrap(&e), 500);
         },
     };
@@ -73,7 +68,8 @@ pub(in crate::router::handlers) fn render(
     }
 }
 
-fn emergency_wrap(message: &tera::Error) -> String {
+fn emergency_wrap(error: &tera::Error) -> String {
+    log!("{error:#?}");
     format!(
         r#"<!DOCTYPE html>
         <html>
@@ -93,7 +89,7 @@ fn emergency_wrap(message: &tera::Error) -> String {
             <h2><strong>Early Pre-Templating Error</strong></h2>
             <p>This normally indicates a malformed template.</p>
             <pre>
-            {message}
+            {error:#?}
             </pre>
             <p>
                 If you haven't modified templates, plese consider
@@ -103,4 +99,105 @@ fn emergency_wrap(message: &tera::Error) -> String {
         </html>
     "#
     )
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn by_filename_forced_error() {
+        let response =
+            by_filename("index.html", &tera::Context::new(), 418, None, true);
+        assert_eq!(response.status(), 418);
+    }
+
+    #[test]
+    fn by_filename_index() {
+        let response =
+            by_filename("index.html", &tera::Context::new(), 418, None, false);
+        assert_eq!(response.status(), 200);
+    }
+
+    #[test]
+    fn by_filename_file_not_found() {
+        let response = by_filename(
+            "bwbl3BnWsluIgbO2NV9t3vtihwcjuF6t",
+            &tera::Context::new(),
+            418,
+            None,
+            false,
+        );
+        assert_eq!(response.status(), 500);
+    }
+
+    #[test]
+    fn by_filename_empty() {
+        let response = by_filename("", &tera::Context::new(), 418, None, false);
+        assert_eq!(response.status(), 500);
+    }
+
+    #[test]
+    fn render_with_context() {
+        let payload = "dBgIw8DnNHxJojiXzu445qUC4UpxwZCy";
+        let mut context = tera::Context::new();
+        let node = crate::types::Node::new(Some(payload.to_string()));
+        let graph = crate::syntax::serial::populate_graph();
+        context.insert("node", &node);
+        context.insert("text", &crate::syntax::content::parse(&node.text));
+        context.insert("incoming", &graph.incoming.get(&node.id));
+        context.insert("config", &graph.meta.config.parse_text());
+        let (body, status) = render("node.html", &context, None);
+        assert_eq!(status, 200);
+        assert!(body.matches(payload).count() == 1);
+    }
+
+    #[test]
+    fn render_custom_error_message() {
+        let payload = "dBgIw8DnNHxJojiXzu445qUC4UpxwZCy";
+        let (body, status) = render(
+            "ObH9jYUl4wMhUNcXnuqwVVzHoqx4ufyN",
+            &tera::Context::new(),
+            Some(payload.to_string()),
+        );
+        assert_eq!(status, 500);
+        assert!(body.matches(payload).count() == 1);
+    }
+
+    #[test]
+    fn render_empty() {
+        let (body, status) = render(
+            "R8D1pxwHZDxcH5SMjR7rZEnIzmpkiHkH",
+            &tera::Context::new(),
+            None,
+        );
+        assert_eq!(status, 500);
+        assert!(body.matches("Template render failed").count() == 1);
+    }
+
+    #[test]
+    fn render_not_found() {
+        let payload = "OL6kb9qHe7Iwr7wFIRKUTeFhF34BRsQo";
+        let (body, status) = render(payload, &tera::Context::new(), None);
+
+        assert!(body.matches("TemplateNotFound").count() > 0);
+        assert!(body.matches(payload).count() > 0);
+        assert_eq!(status, 500);
+    }
+
+    #[test]
+    fn render_bad_context() {
+        let (body, status) = render("node.html", &tera::Context::new(), None);
+        assert!(body.matches("Template render failed.").count() > 0);
+        assert_eq!(status, 500);
+    }
+
+    #[test]
+    fn emergency_wrap_custom_message() {
+        let payload = "JLaTtsnd2IFukIOvqFNymeuiaS6nMaUc";
+        let error = tera::Error::msg(payload);
+        let html = emergency_wrap(&error);
+        assert!(html.matches(payload).count() == 1);
+    }
 }

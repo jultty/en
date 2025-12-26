@@ -40,3 +40,44 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
         not_found,
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use axum::{
+        http::{HeaderName, StatusCode},
+    };
+
+    use super::*;
+
+    #[tokio::test]
+    async fn syntax() {
+        let response = node(Path("Syntax".to_string())).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn syntax_content_type() {
+        let response = node(Path("Syntax".to_string())).await;
+        assert!(
+            response
+                .headers()
+                .get(HeaderName::from_static("content-type"),)
+                .unwrap()
+                .to_str()
+                .unwrap()
+                == "text/html"
+        );
+    }
+
+    #[tokio::test]
+    async fn not_found() {
+        let response = node(Path("InexistentNode".to_string())).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn redirect() {
+        let response = node(Path("syntax".to_string())).await;
+        assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
+    }
+}

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::prelude::*;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Arguments {
     pub hostname: String,
     pub port: u16,
@@ -56,4 +56,59 @@ fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
         }
     }
     out_args
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn address() {
+        let args = Arguments {
+            hostname: String::from("localhost"),
+            port: 3007,
+            graph_path: PathBuf::new(),
+        };
+
+        assert_eq!(args.make_address(), "localhost:3007");
+    }
+
+    #[test]
+    fn hostname() {
+        let defaults = Arguments::new();
+
+        let payload = String::from("olUCu7vWcUAsumv2xpj2Z55EDheWLTEu");
+        let args =
+            parse(&defaults, &[String::from("-h"), String::from(&payload)]);
+        assert_eq!(args.hostname, payload);
+    }
+
+    #[test]
+    fn port() {
+        let defaults = Arguments::new();
+
+        let payload = 3901;
+        let args = parse(&defaults, &[String::from("-p"), payload.to_string()]);
+        assert_eq!(args.port, payload);
+    }
+
+    #[test]
+    fn graph_path() {
+        let defaults = Arguments::new();
+
+        let payload = PathBuf::from("/tmp/");
+        let args = parse(
+            &defaults,
+            &[String::from("-g"), payload.to_str().unwrap().to_string()],
+        );
+        assert_eq!(args.graph_path, payload);
+    }
+
+    #[test]
+    fn empty() {
+        let defaults = Arguments::new();
+
+        let args = parse(&defaults, &[]);
+        assert_eq!(defaults, args);
+    }
 }

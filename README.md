@@ -10,7 +10,8 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
 
 ## Roadmap
 
-- [ ] Add tests
+- [x] Add tests
+    - [ ] Improve content syntax parser coverage
 - [ ] Richer text formatting
     - [x] Headers
     - [x] Preformatted blocks

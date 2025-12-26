@@ -25,7 +25,11 @@ impl Parseable for Anchor {
             )
         };
 
-        format!(r#"<a href="{}">{}</a>"#, destination, &self.text)
+        format!(
+            r#"<a href="{}">{}</a>"#,
+            Anchor::resolve_destination(destination),
+            &self.text
+        )
     }
 }
 

@@ -4,9 +4,12 @@ use en::{prelude::*, ONSET, syntax::serial::populate_graph, syntax};
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
+    print_debugging_state();
+
     let args = syntax::command::Arguments::new().parse();
     let address = args.make_address();
 
+    #[allow(clippy::print_stderr)]
     panic::set_hook(Box::new(|info| {
         let payload = info
             .payload_as_str()
@@ -48,4 +51,18 @@ async fn main() -> io::Result<()> {
     })?;
 
     Ok(())
+}
+
+fn print_debugging_state() {
+    let level: u8 = std::env::var("DEBUG")
+        .unwrap_or("0".to_string())
+        .trim()
+        .parse()
+        .unwrap_or(0);
+
+    let filter = std::env::var("DEBUG_FILTER").unwrap_or_default();
+
+    if level > 0 || !filter.is_empty() {
+        log!("DEBUG = {level}, DEBUG_FILTER = {filter:?}");
+    }
 }

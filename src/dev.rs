@@ -1,3 +1,4 @@
+#[allow(clippy::print_stderr)]
 pub fn elog(function: &str, message: &str) {
     eprintln!("{:?} [{function}] {message}", crate::ONSET.elapsed());
 }

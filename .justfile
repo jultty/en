@@ -1,55 +1,33 @@
-_default:
-    @just --list
-
-watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
-cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
-just_cmd := 'just --unstable --timestamp --explain --command-color green'
-
 # DEVELOP
 
-# Start server
+# Update dependencies
 [group: 'develop']
-run:
-    cargo run -- --hostname localhost --port 3003
+update:
+    cargo update --verbose
+
+alias u := update
+
+# Build and run server
+[group: 'develop']
+run host='::1' port='3003' *args:
+    {{ debug_vars }} cargo run -- \
+        --hostname {{ host }} --port {{ port }} {{ args }}
 
 alias r := run
 
-# Build on changes
+# Build and run on changes
 [group: 'develop']
 run-watch:
     {{ watch_cmd }} {{ just_cmd }} run
 
-alias rw := run-watch
-alias dev := run-watch
-alias d := run-watch
+alias w := run-watch
 
-# Run all assessments on changes
+# Format all files
 [group: 'develop']
-verify-watch:
-    {{ watch_cmd }} {{ just_cmd }} verify
+format:
+    cargo fmt
 
-alias vw := verify-watch
-
-# Run tests on changes
-[group: 'develop']
-test-watch:
-    {{ watch_cmd }} {{ just_cmd }} test
-
-alias tw := test-watch
-
-# Run tests with coverage reports on changes
-[group: 'develop']
-cover-watch:
-    {{ watch_cmd }} {{ just_cmd }} cover-report
-
-alias ow := cover-watch
-
-# Run cargo check on changes
-[group: 'develop']
-check-watch:
-    {{ watch_cmd }} {{ just_cmd }} check
-
-alias cw := check-watch
+alias f := format
 
 # Lint
 [group: 'develop']
@@ -65,30 +43,43 @@ lint-watch:
 
 alias lw := lint-watch
 
-# Assess formatting on changes
+# Run cargo check on changes
 [group: 'develop']
-format-watch:
-    {{ watch_cmd }} {{ just_cmd }} format-assess
+check-watch:
+    {{ watch_cmd }} {{ just_cmd }} check
 
-alias fw := format-watch
+alias cw := check-watch
 
-# Format all files
+# Apply rustc lint fixes
 [group: 'develop']
-format:
-    cargo fmt
+rustc-fix:
+    cargo fix --allow-dirty
 
-alias f := format
+alias rf := rustc-fix
 
-# Verify before push
+# Apply all automatic fixes
 [group: 'develop']
-push: verify
-    git push
+fix: rustc-fix format
 
-alias p := push
+alias x := fix
+
+# Run tests on changes
+[group: 'develop']
+test-watch:
+    {{ watch_cmd }} {{ just_cmd }} test
+
+alias tw := test-watch
+
+# Run tests with coverage report on changes
+[group: 'develop']
+cover-watch:
+    {{ watch_cmd }} {{ just_cmd }} cover-report
+
+alias ow := cover-watch
 
 # Make coverage report
 [group: 'develop']
-cover-report: cover
+cover-report: test-cover
     {{ cover_cmd }} report --html
     {{ cover_cmd }} report
 
@@ -96,23 +87,40 @@ alias or := cover-report
 
 # Open coverage report
 [group: 'develop']
-cover-open: cover
+cover-open: test-cover
     {{ cover_cmd }} report --open
 
 alias oo := cover-open
 
-# ANALYSIS
+# Verify and push
+[group: 'develop']
+push: verify
+    git push
 
-# Run all analysis
-[group: 'assess']
-verify: format-assess lint-assess check-assess test-assess cover-assess
+alias p := push
 
-alias v := verify
+# Generate crate documentation
+[group: 'document']
+doc:
+    cargo doc --document-private-items --no-deps
 
-# Assess coverage
-[group: 'assess']
-cover-assess: cover
-    {{ cover_cmd }} --fail-under-regions 95 report
+alias d := doc
+
+# Generate crate and dependencies documentation
+[group: 'document']
+doc-all:
+    cargo doc --document-private-items
+
+alias da := doc-all
+
+# Open documentation
+[group: 'document']
+doc-open: doc
+    xdg-open target/doc/en/index.html
+
+alias do := doc-open
+
+# ASSESSMENTS
 
 # Assess formatting
 [group: 'assess']
@@ -121,10 +129,12 @@ format-assess:
 
 alias fc := format-assess
 
-# Assess lints
+# Assess production lints
 [group: 'assess']
-lint-assess $RUSTFLAGS="-Dwarnings":
-     cargo clippy
+lint-assess:
+    cargo clippy -- \
+        -D clippy::dbg_macro -D clippy::print_stdout -D clippy::print_stderr \
+        -D clippy::todo -D clippy::unimplemented -D clippy::unreachable
 
 alias la := lint-assess
 
@@ -134,20 +144,6 @@ check:
     cargo check --workspace
 
 alias c := check
-
-# Fail on any cargo check warnings
-[group: 'assess']
-check-assess $RUSTFLAGS="-Dwarnings":
-    cargo check --workspace
-
-alias ca := check
-
-# Assess warnings in tests
-[group: 'assess']
-test-assess $RUSTFLAGS="-Dwarnings":
-    just test
-
-alias ta := test-assess
 
 # Run tests
 [group: 'assess']
@@ -159,20 +155,24 @@ alias t := test
 
 # Run tests with coverage
 [group: 'assess']
-cover:
+test-cover:
     {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
 
-alias o := cover
+alias o := test-cover
+
+# Assess coverage
+[group: 'assess']
+cover-assess: test-cover
+    {{ cover_cmd }} --fail-under-regions 95 report
+
+# Run all assessments
+[group: 'assess']
+verify: format-assess lint-assess check test cover-assess
+
+alias v := verify
 
 # BUILD
-
-# Build project with Cargo
-[group: 'build']
-build:
-    cargo build
-
-alias b := build
 
 # Cleanup build artifacts
 [group: 'build']
@@ -181,15 +181,37 @@ clean:
 
 alias cl := clean
 
-# Clean, run assessments, release build
+# Build project with Cargo
 [group: 'build']
-full-build: clean verify release-build
+build: update
+    cargo build
 
-alias fb := full-build
+alias b := build
 
 # Release build
 [group: 'build']
-release-build: verify
+release-build: update verify
     cargo build --release
 
 alias rb := release-build
+
+# Clean, run assessments, release build
+[group: 'build']
+full-build: clean update verify release-build
+
+alias fb := full-build
+
+## META
+
+[default]
+_default:
+    @just --list --unsorted --justfile {{justfile()}}
+
+export RUSTFLAGS := "-Dwarnings"
+export RUST_BACKTRACE := "1"
+export CARGO_TERM_COLOR := 'always'
+
+debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-}'
+watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
+cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
+just_cmd := 'just --timestamp --explain --command-color green'

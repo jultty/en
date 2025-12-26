@@ -1,6 +1,6 @@
 use std::collections::{HashMap};
 
-use crate::{syntax::serial::populate_graph, types::Config};
+use crate::{prelude::*, syntax::serial::populate_graph, types::Config};
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
@@ -168,6 +168,7 @@ fn lex(text: &str, map: LexMap) -> Vec<Token> {
         }
     }
 
+    close(&state, &mut tokens);
     tokens
 }
 
@@ -232,6 +233,18 @@ impl State {
         }
     }
 }
+
+fn close(state: &State, tokens: &mut Vec<Token>) {
+    match state.context.block {
+        BlockContext::Paragraph => {
+            tokens.push(Token::Paragraph(Paragraph::new(false)));
+        },
+        BlockContext::Header(_) => panic!("End of file with open header"),
+        BlockContext::PreFormat => panic!("End of file with open preformat"),
+        BlockContext::None => log!("End of file on None block context"),
+    }
+}
+
 
 fn parse(tokens: &[Token]) -> String {
     tokens.iter().map(Token::render).collect::<String>()

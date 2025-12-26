@@ -25,9 +25,15 @@ impl Parseable for Anchor {
             )
         };
 
+        let non_empty_destination = if destination.is_empty() {
+            self.text.clone()
+        } else {
+            destination.to_owned()
+        };
+
         format!(
             r#"<a href="{}">{}</a>"#,
-            Anchor::resolve_destination(destination),
+            Anchor::resolve_destination(&non_empty_destination),
             &self.text
         )
     }

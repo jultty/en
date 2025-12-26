@@ -240,3 +240,13 @@ fn parse(tokens: &[Token]) -> String {
 pub(super) fn read(text: &str) -> String {
     parse(&lex(text, LEXMAP))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn force_flanking() {
+        assert_eq!(read("|Node||"), r#"<p><a href="/node/Node">Node</a></p>"#);
+    }
+}

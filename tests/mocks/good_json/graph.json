@@ -1,0 +1,13 @@
+{
+    "nodes": {
+        "JSON": {
+            "text": "",
+            "title": "JSON",
+            "links": [],
+            "id": "JSON",
+            "hidden": false,
+            "connections": []
+        }
+    },
+    "root_node": "JSON"
+}

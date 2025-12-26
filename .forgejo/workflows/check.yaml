@@ -12,8 +12,11 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v6
 
-      - name: build
+      - name: cargo build
         run: cargo build
+
+      - name: format
+        run: cargo fmt -- --check
       - name: lint
         run: cargo clippy -- -Dwarnings
       - name: format

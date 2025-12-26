@@ -2,14 +2,18 @@ use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
 
+use crate::syntax::content;
+
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Graph {
     pub nodes: HashMap<String, Node>,
     pub root_node: String,
-    #[serde(default)]
-    pub messages: Vec<String>,
-    #[serde(skip)]
+    #[serde(skip_deserializing)]
     pub incoming: HashMap<String, Vec<Edge>>,
+    #[serde(skip_deserializing)]
+    pub lowercase_keymap: HashMap<String, String>,
+    #[serde(default)]
+    pub meta: Meta,
 }
 
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
@@ -21,6 +25,8 @@ pub struct Node {
     pub links: Vec<String>,
     #[serde(default)]
     pub id: String,
+    #[serde(default)]
+    pub hidden: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connections: Option<Vec<Edge>>,
@@ -37,17 +43,116 @@ pub struct Edge {
     pub detached: bool,
 }
 
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+pub struct Meta {
+    pub config: Config,
+    #[serde(default = "mkversion")]
+    pub version: (u8, u8, u8),
+    #[serde(default)]
+    pub messages: Vec<String>,
+}
+
+// See: https://github.com/serde-rs/serde/issues/368
+fn mkversion() -> (u8, u8, u8) {
+    (0, 0, 0)
+}
+
+#[expect(clippy::struct_excessive_bools)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+pub struct Config {
+    #[serde(default)]
+    pub site_title: String,
+    #[serde(default)]
+    pub site_description: String,
+    #[serde(default = "mktrue")]
+    pub footer: bool,
+    #[serde(default = "mktrue")]
+    pub footer_credits: bool,
+    #[serde(default = "mktrue")]
+    pub footer_date: bool,
+    #[serde(default)]
+    pub footer_text: String,
+    #[serde(default = "mktrue")]
+    pub about: bool,
+    #[serde(default)]
+    pub about_text: String,
+    #[serde(default = "mktrue")]
+    pub tree: bool,
+    #[serde(default = "mktrue")]
+    pub raw: bool,
+    #[serde(default = "mktrue")]
+    pub raw_toml: bool,
+    #[serde(default = "mktrue")]
+    pub raw_json: bool,
+    #[serde(default = "mktrue")]
+    pub index_search: bool,
+    #[serde(default = "mktrue")]
+    pub index_node_list: bool,
+    #[serde(default = "mk8")]
+    pub index_node_count: u16,
+    #[serde(default = "mktrue")]
+    pub index_root_node: bool,
+    #[serde(default = "mkfalse")]
+    pub tree_node_text: bool,
+    #[serde(default = "mkfalse")]
+    pub ascii_dom_ids: bool,
+    #[serde(default)]
+    pub content_language: String,
+}
+
+// See: https://github.com/serde-rs/serde/issues/368
+fn mktrue() -> bool {
+    true
+}
+fn mkfalse() -> bool {
+    false
+}
+fn mk8() -> u16 {
+    8
+}
+
 impl Graph {
-    pub fn new(message: Option<String>) -> Graph {
-        Self {
+    pub fn new(message: Option<&str>) -> Graph {
+        Graph {
             nodes: HashMap::new(),
             root_node: "VoidNode".to_string(),
             incoming: HashMap::new(),
-            messages: vec![
-                message
-                    .unwrap_or("This graph is empty or in error".to_string()),
-            ],
+            lowercase_keymap: HashMap::new(),
+            meta: Meta {
+                config: Config {
+                    site_title: String::new(),
+                    site_description: String::new(),
+                    footer: true,
+                    footer_credits: true,
+                    footer_date: true,
+                    footer_text: String::new(),
+                    about: true,
+                    about_text: String::new(),
+                    tree: true,
+                    raw: true,
+                    raw_toml: true,
+                    raw_json: true,
+                    index_search: true,
+                    index_node_list: true,
+                    index_node_count: 8,
+                    index_root_node: true,
+                    tree_node_text: false,
+                    ascii_dom_ids: false,
+                    content_language: String::new(),
+                },
+                version: (0, 1, 0),
+                messages: message.map_or(vec![], |m| vec![m.to_string()]),
+            },
         }
+    }
+
+    pub fn find_node(&self, query: &str) -> Option<Node> {
+        self.nodes.get(query).cloned().or_else(|| {
+            self.lowercase_keymap
+                .get(query)
+                .and_then(|lower_key| self.nodes.get(lower_key))
+                .cloned()
+        })
     }
 
     pub fn get_root(&self) -> Option<Node> {
@@ -57,7 +162,7 @@ impl Graph {
 
 impl Node {
     pub fn new(message: Option<String>) -> Node {
-        Self {
+        Node {
             id: "VoidNode".to_string(),
             title: "Pure Void".to_string(),
             text: match message {
@@ -66,6 +171,111 @@ impl Node {
             },
             connections: None,
             links: vec![],
+            hidden: false,
         }
+    }
+}
+
+impl Config {
+    #[must_use]
+    pub fn parse_text(self) -> Config {
+        let footer_text = if self.footer_text.is_empty() {
+            self.footer_text
+        } else {
+            content::parse(&self.footer_text)
+        };
+
+        let about_text = if self.about_text.is_empty() {
+            self.about_text
+        } else {
+            content::parse(&self.about_text)
+        };
+
+        Config {
+            footer_text,
+            about_text,
+            ..self
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::syntax::serial::populate_graph;
+
+    use super::*;
+
+    #[test]
+    fn empty_graph() {
+        let graph = Graph::new(Some("ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"));
+        assert!(graph.nodes.is_empty());
+        assert!(graph.incoming.is_empty());
+        assert_eq!(
+            graph.meta.messages.first().unwrap(),
+            "ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"
+        );
+    }
+
+    #[test]
+    fn empty_node_message() {
+        let node = Node::new(None);
+        assert_eq!(node.text, "Node is empty, missing or wasn't found.");
+    }
+
+    #[test]
+    fn empty_footer_text() {
+        let default_graph = populate_graph();
+
+        let config = Config {
+            footer_text: String::new(),
+            ..default_graph.meta.config
+        };
+
+        let parsed_config = config.parse_text();
+
+        println!("{:?}", parsed_config.footer_text);
+        assert!(parsed_config.footer_text.is_empty());
+    }
+
+    #[test]
+    fn config_footer_text() {
+        let payload = "0kqBrdS8NPrU4xVxh2xW0hUzAw926JCQ";
+        let default_graph = populate_graph();
+
+        let config = Config {
+            footer_text: format!("`{payload}`"),
+            ..default_graph.meta.config
+        };
+
+        let parsed_config = config.parse_text();
+
+        assert!(
+            parsed_config
+                .footer_text
+                .matches(format!("<code>{payload}</code>").as_str())
+                .count()
+                == 1
+        );
+    }
+
+    #[test]
+    fn config_about_text() {
+        let payload = "ZqPFl84JlzSS0QUo61RwTUPONIE78Lmw";
+        let default_graph = populate_graph();
+
+        let config = Config {
+            about_text: format!("`{payload}`"),
+            ..default_graph.meta.config
+        };
+
+        let parsed_config = config.parse_text();
+
+        assert!(
+            parsed_config
+                .about_text
+                .matches(format!("<code>{payload}</code>").as_str())
+                .count()
+                == 1
+        );
     }
 }

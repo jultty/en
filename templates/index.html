@@ -3,34 +3,56 @@
 {% block title %}Index{% endblock title %}
 
 {%- block body %}
-    <h1>en</h1>
+    <h1>{%if config.site_title %}{{ config.site_title }}{% else %}en{%endif%}</h1>
     <p>
-    <em>A non-linear writing instrument.</em>
+    <em>
+        {% if config.site_description %}
+        {{config.site_description}}
+        {% else %}
+        A non-linear writing instrument.
+        {% endif %}
+    </em>
     {% if nodes %}
+    {% if config.index_search %}
     <form method="post">
         <label for="node">Find by ID:</label>
         <input type="text" name="node" required/>
         <input type="submit" value="Submit"/>
     </form>
+    {% endif %}
+    {% if config.index_node_list or config.index_root_node %}
     <hr>
+    {% if config.index_node_list %}
     <h2>Nodes</h2>
+    {% endif %}
     <nav>
-        {% if root_node %}
+        {% if root_node and config.index_root_node %}
         <p>
             <strong>Root</strong>:
             <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
         </p>
         {% endif %}
-        {% if nodes %}
+        {% if nodes and config.index_node_list %}
         <ul>
-        {% for node in nodes %}
-        {% if node.id != root_node.id %}
+        {% for node in nodes | slice(end=config.index_node_count) %}
+        {% if node.id != root_node.id and not node.hidden %}
         <li><a href="/node/{{node.id}}">{{node.title}}</a></li>
         {% endif %}
         {% endfor %}
-        {% endif %}
         </ul>
+        {% if config.index_node_count < nodes | length %}
+        <br/>
+        <em style="font-size:0.9em"">
+           Listing {{ config.index_node_count }} of {{ nodes | length }} nodes.
+           {% if config.tree %}
+           <br/>
+           See the <a href="/tree">tree</a> for a full list.
+           {% endif %}
+        </em>
+        {% endif %}
+        {% endif %}
     </nav>
+    {% endif %}
     {% else %}
     <hr>
     {% include "empty.html" %}

@@ -1,97 +1,401 @@
-root_node = "Interface"
+root_node = "Documentation"
 
-[nodes.Interface]
+[nodes.Documentation]
 text = """
-An interface is a point of contact between the inside and the outside of something. Contrast with intraface.
+## Installation
+
+For now, if you want to try en, you must build it yourself.
+
+In an environment with a |Rust toolchain|https://rustup.rs/ and Git installed, run:
+
+`
+git clone https://codeberg.org/jutty/en
+cd en
+cargo build --release
+`
+
+The en binary will be in `target/release/en`.
+
+You can start it and point it to an address, port and graph:
+
+`
+en --host localhost --port 3003 --graph ./graph.toml
+`
+
+See |CLI| for defaults and details on the CLI options.
+
+
+## Graph Syntax
+
+The graph is a TOML file. You can create nodes by adding text such as:
+
+`
+[nodes.Computer]
+text = "A computer is a machine capable of executing arbitrary instructions."
+`
+
+If you need longer text, it's more convenient to use triple quotes:
+
+`
+[nodes.Computer]
+text = \"""
+A computer is a machine capable of executing arbitrary instructions.
+\"""
+`
+
+Some special syntax is allowed inside the node text. See |Syntax| for supported features.
+
+## Connections
+
+Nodes can have connections between each other.
+
+To add a simple connection without any associated properties, you can simply add links:
+
+`
+[nodes.Quark]
+text = "A subatomic particle that forms hadrons."
+
+links = [ "Particle", "Hadron" ]
+`
+
+This will create two outgoing connections from Quark: to Particle and to Hadron. It will also list Quark as an incoming connection in these nodes' pages.
+
+If you want to add properties to the connection, you can use the connection syntax:
+
+`
+[[nodes.Quark.connections]]
+to = "Particle physics"
+anchor = "particle"
+`
+
+This will create a connection from Quark to "Particle physics", and the first occurrence of the word "particle" in the text of Quark gets anchored to this connection.
 """
 
-links = ["Intraface"]
-
-[nodes.Intraface]
+[nodes.CLI]
+title = "CLI Options"
 text = """
-The intraface is the reflexive process of communicating, creating, thinking, that does not or cannot get shared with others. Contrast with interface.
+You can set the hostname, port and graph file path using CLI options:
+
+For the hostname, use `-h` or `--hostname`:
+
+`
+en -h localhost
+en --hostname 10.120.0.5
+`
+
+If unspecified, the default is `0.0.0.0`.
+
+For the port, use `-p` or `--port`:
+
+`
+en -p 3003
+en --port 3000
+`
+
+If unspecified, the default is to use a random available port assigned by the operating system.
+
+For the graph path, use `-g` or `--graph`:
+
+`
+en -g graph.toml
+en --g ./static/my-graph.toml
+`
+
+If unspecified, the default is `./static/graph.toml`.
+
+You can combine these options as you wish:
+
+`
+en -h localhost -p 3000
+en -p 3003 --host localhost --graph ./graph.toml
+en --g ./graph.toml -p 1312
+`
+
+If an option is specified more than once, the last use will override any previous ones.
+
 """
 
-links = ["Thinking", "Interface"]
+[nodes.Syntax]
+text= """
 
-[nodes.Thinking]
-text = """
-Thinking is a process by which some beings create and manipulate mental constructs.
+## Anchors
+
+Anchors follow the following syntax:
+
+`
+anchor|destination
+`
+
+For example:
+
+`
+docs|/node/Documentation
+`
+
+If the left side contains spaces, you need a leading `|` character:
+
+`
+|en docs|https://en.jutty.dev/node/Documentation
+`
+
+If you have a trailing character that you don't want to be considered as part of the destination, you can separate it with a third `|`:
+
+`
+This gem|PreciousStone|, though green, was not an emerald.
+`
+
+To make a plain address clickable, wrap it in two `|` characters:
+
+`
+|https://en.jutty.dev|
+`
+
+### Node anchors
+
+We saw above an example like `docs|/node/Documentation`, but there is a shorter syntax for node anchors.
+
+If the address doesn't contain any `/` or `:` characters, it will be interpreted as a node ID:
+
+`
+particles|ParticlePhysics
+`
+
+This allows you to specify what to display as the anchor text, but just the ID wrapped inside two `|` characters also works:
+
+`
+|Documentation|
+`
+
+Because en can resolve IDs case insensitively (with priority to case-sensitive matches), you can also write the above anchor as `|documentation|`.
+
+In summary, all of the anchors below are valid and lead to the same page:
+
+`
+|en Syntax|https://en.jutty.dev/node/Syntax|
+|en Syntax|https://en.jutty.dev/node/Syntax
+Syntax|https://en.jutty.dev/node/Syntax
+
+Syntax|/node/syntax
+
+|syntax|Syntax
+Syntax|syntax
+Syntax|syntax|
+
+|Syntax|
+|syntax|
+`
+
+While flexible, this can sometimes be ambiguous. See |AnchorSyntax| for some caveats regarding anchors.
+
 """
 
-[nodes.Paradigm]
+[nodes.AnchorSyntax]
+title = "Anchor Syntax"
 text = """
-A paradigm is a cohesive set of beliefs, methods and principles that serve both as justification for a given position and as guidance for how to pursue its praxis.
+Anchor syntax can be very concise, but some situations lead to ambiguity.
+
+In short, following these two rules should keep you out of trouble:
+
+- Avoid special characters in your node IDs
+- When needed, use full three-pipe `|text|destination|` syntax to fix ambiguity
+
+## Punctuation in destinations
+
+Consider this example:
+
+`
+|gem|PreciousStone
+|PreciousStone|,
+`
+
+Both seem to point to the node with ID `PreciousStone`, as they _seem_ to. But if we didn't treat punctuation differently, we'd have:
+
+`
+|a|b
+|a|b
+`
+
+For this reason, punctuation is treated differently. It won't be considered as a possible destination, so you can write the previous example and have it behave as expected.
+
+This also means you can't have punctuation symbols as node IDs or as their first character.
+
+These are the punctuation symbols that are treated specially:
+
+`
+, . : ; ? ! ( ) ' "
+
+`
+
+You can also force this using a third pipe:
+
+`
+|PreciousStone||,
+`
+
+This unambiguously tells en that your destination is a node ID.
+
+## URL detection
+
+en must differentiate node anchors from outgoing URLs:
+
+`
+|sample|Example|
+|sample|https://example.com|
+
+|Example|
+|https://example.com|
+`
+
+It does this by looking at the destination and checking if it contains a `:` or `/`, so also avoid these in your node IDs.
+
 """
 
-links = [ "Principle", "Belief", "Method", "Position", "Praxis" ]
-
-[nodes.Principle]
+[nodes.en]
 text = """
-A principle is a belief that implies commitment and necessity.
+en is a tool to write non-linear, connected pieces of text and have their references mapped out as a graph of connected information.
 
-Principles change, but to change one's principles too constantly defeats its purpose.
+It works by ingesting a TOML file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
 
-A principle is usually informed by experience or formed by cultural context, namely religion.
+## Motivation
 
-As other beliefs, simply identifying with a principle does not mean one follows it, which can introduce a sense of dissonance and/or guilt.
+en was created out of the desire to write complex, long-form descriptions of a personal worldview without being constrained or getting stuck trying to mimic the linearity of a typical philosophy book.
+
+It's described as a "writing instrument" because it's not so much about the presentation or even the web format. While that's the medium for this particular implementation, you can notice en serves its raw data in both TOML and JSON. It's first and foremost about mapping out and structuring written thoughts.
+
+Because en is defined in simple configuration files, you can add new pages easily from a few lines and start connecting them. Instead of having to create a dedicated file or resource for each new entry you find deserving of observation, with its own beginning and end, its own "I'm empty, fill me to completion" demeanor, you can stay in the flow of your sprawling thoughts. This is meant to fit the specific wiring of minds whose thoughts spread and fork quickly and often, whether to great depth or across wide expanses.
+
 """
 
-links = [ "Dissonance", "Guilt", "Belief", "Religion", ]
+links = [ "Graph" ]
 
-[[nodes.Principle.connections]]
-anchor = "identifying"
-to = "Identity"
+[[nodes.en.connections]]
+to = "TOML"
+anchor = "TOML"
 
-[nodes.Religion]
+[nodes.Graph]
 text = """
-A religion is a paradigm that involves unfalsifiable beliefs, particularly those in the domain of morality.
+A graph is a data structure composed of connected (and disconnected) nodes.
 
-A reductive critique of religion dismisses it based on its dogmatic adherence to certain beliefs usually rooted in tradition.
+A familiar example is that of a social network. Each account can be thought of as a node and the "follow" and "follower" relationships can be thought of as edges (connections). A node may have many or few connections, and the nodes it is connected to are meaningful to understand how it fits into the whole.
 
-As a counterpoint, consider that the fact religion carries false beliefs does not imply all of the beliefs that religion carries are false, which is an assertion that holds for any other entity. The beliefs that compose the episteme of a religion may include both falsifiable and unfalsifiable beliefs. In this sense, it does not differ from any other paradigm.
-
-Religion does not subsist solely because of its hard truths, but because it caters to various other basic human necessities: community, identity, knowledge regarding how to conduct one's life. This gives religion enormous presence in society and allows it to act as a strong political force against societal changes that contradict its positions.
-
-One poignant fact about religion is that its dogmas tend to create exclusion, segregating those who can or want to adhere to them from those who can't or don't want to. This not only means religion will create divisions, it also means that the people excluded from it will be left with less means to fulfill the previously mentioned basic human necessities that religion addresses.
+en uses this concept to create a writing tool, allowing you to map out complex thoughts as a web of connected texts.
 """
 
-links = [
-    "Paradigm",
-    "Principle",
-    "Truth",
-    "Tradition",
-    "Morality",
-    "Episteme",
-    "Necessity",
-    "Knowledge",
-    "Community",
-    "Identity",
-    "Dogma",
-    "Reductionism",
-]
-
-[nodes.Identity]
+[nodes.TOML]
 text = """
-Identity is how individuals construe their sameness and otherness from each other and from nothingness.
+TOML is a configuration format that can be easily read and understood by humans and machines alike.
+
+To learn more about TOML, you can visit its website at |https://toml.io|.
+
+To see the TOML declaration that translates into the rendered graph you are reading right now, visit the "TOML Graph" link on the top navigation bar.
 """
 
-links = ["Principle"]
-
-[[nodes.Identity.connections]]
-anchor = "nothingness"
-to = "Emptiness"
-
-[nodes.Emptiness]
+[nodes.Acknowledgments]
 text = """
-Emptiness is the vacuous base in which entities exist.
+en is only possible thanks to a number of projects and people:
+
+- |The Rust Programing Language|https://rust-lang.org/
+- Tokio|https://tokio.rs/
+- Axum|https://github.com/tokio-rs/axum
+- Tera|https://keats.github.io/tera/
+- Serde|https://serde.rs/ and the |toml crate|https://github.com/toml-rs/toml
+- Bacon|https://dystroy.org/bacon/config/
 """
 
-links = [ "Entity" ]
-
-[nodes.Entity]
+[nodes.Test]
+hidden = true
 text = """
-An entity is anything except for actual emptiness. It does not have to be sentient, or physical. It can be an idea, a concept, a memory. The concept of emptiness is an entity, but emptiness itself is not.
+
+This node is just for testing syntax rendering, but I appreciate your curiosity.
+
+`
+|en purple|https://purple.en/n/purple
+cyan|https://cyan.en/n/cyan
+
+|en Giraffe|/node/Giraffe
+|Gorilla|/node/Gorilla
+Crow|/node/Crow
+
+|Circle|Circle
+Circle|Circle
+|Circle|
+`
+
+|en purple|https://purple.en/n/purple
+cyan|https://cyan.en/n/cyan
+
+|en Giraffe|/node/Giraffe
+Crow|/node/Crow
+
+Circle|Circle
+|Circle|
+
+These `|anchors|` are inside `|backticks|Backtick` and should `|not render|https://test.com` as backticks but as `|raw text|` instead. This `|syntax is|` now `being demonstrated|https://test.com` here.
+
+Well |have I ever found such a long anchor in my entire life|Nowhere|, have I?
+
+This failed to parse due to a misunderstanding about what `parts.push(peaker.next().unwrap_or_else(|| unreachable!() ));` really meant.
+
+This greedy anchor is |at the end of a line|Somewhere
+This greedy anchor is |at the end of a line|Somewhere|
+This greedy anchor is |at the end of a line with a period|Somewhere|.
+This inline code is `at the end of a line`
+This inline code is `at the end of a line with a period`.
+
+---
+
+For trailing characters you don't want as part of destination, add a third `|`:
+
+`
+This gem|PreciousStone|, though green, was not an emerald.
+`
+
+Which renders as:
+
+This gem|PreciousStone|, though green, was not an emerald.
+
+Supported for punctuation only.
+
+### Node anchors
+
+We saw example `docs|/node/Documentation`, but shorter syntax exists.
+
+## Green
+## Green
+## Green
+## Purple
+## Purple
+## Purple
+## Cyan
+### Cyan
+#### Cyan
+### Cyan
+## Cyan
+## Épistème
+## Épistème
+## Epistème
+## Epistēmē
+### Epistēmē
+#### Epistēmē
+#### Epistēmē
+
+|en Syntax|https://en.jutty.dev/node/Syntax|
+|en Syntax|https://en.jutty.dev/node/Syntax
+Syntax|https://en.jutty.dev/node/Syntax
+
+Syntax|/node/syntax
+
+|syntax|Syntax
+Syntax|syntax
+Syntax|syntax|
+
+|Syntax|
+|syntax|
 """
 
-links = [ "Emptiness" ]
+[meta.config]
+content_language = "en"
+footer_credits = false
+footer_text = """
+made by jutty|https://jutty.dev • acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
+"""

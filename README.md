@@ -4,20 +4,42 @@ en is a tool to write non-linear, connected pieces of text and have their refere
 
 It works by ingesting a TOML file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
 
+## Learn more
+
+You can learn more and see what en looks like by visiting the [homepage](https://en.jutty.dev), which is rendered using en itself.
+
 ## Roadmap
 
-- [ ] Anchor rendering
-    - [ ] Automatic anchors
-- [ ] Connection kinds
-- [ ] Reduce O(n) calls in the formats module
 - [ ] Add tests
+- [ ] Richer text formatting
+    - [x] Headers
+    - [x] Preformatted blocks
+    - [x] Inline code
+    - [x] Anchor rendering
+        - [ ] Automatic anchors
+        - [ ] `#` syntax for header ID anchors
+    - [x] External anchors
+    - [ ] Bold, italics, underline, strikethrough
+    - [ ] Lists
+    - [ ] Checkboxes
+        - [ ] Move this roadmap to en
+- [ ] Connection kinds
+    - [ ] Mutual
+    - [ ] Category <-> Membership
+    - [ ] Opposite <-> Equivalent
+    - [ ] Contrast <-> Similar
+    - [ ] Cognate <-> Unrelated
+    - [ ] Specialization <-> Generalization
+    - [ ] Custom connection kinds
+- [ ] Strip/render some syntax in Tree text preview
+- [ ] Begin centralizing state
+- [ ] Full-text search
+- [ ] Render to filesystem
+- [ ] Reduce O(n) calls in the formats module
+- [ ] Multi-file graphs
+- [ ] Multi-graph
+- [ ] Themes
 - [x] Array syntax for lightweight connections
 - [x] Automatic IDs
 - [x] Automatic titles
 - [x] Mismatch between TOML ID and provided ID
-
-## Motivation
-
-I created en because I wanted to write a complex, long-form register of my personal worldview. I have always written a lot, but I find non-fiction essays hard to carry to fruition in the usual, linear structure which you'd commonly find in, for instance, a typical philosophy book.
-
-I call en a "writing instrument" because that's how I relate to it. I use it to write my thoughts and connect them. I like how you can write new pages easily from a single big file so that creating new pages and connecting them is effortless compared to creating a new file for each one and them handling that spread of files. With en, I can just write a few lines and I already have a new page laid out. It fits how my thoughts also spread and fork very quickly.

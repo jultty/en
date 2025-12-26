@@ -5,7 +5,7 @@ watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
 just_cmd := 'just --unstable --timestamp --explain --command-color green'
 
-# DEV
+# DEVELOP
 
 # Start server
 [group: 'develop']
@@ -51,6 +51,13 @@ check-watch:
 
 alias cw := check-watch
 
+# Lint
+[group: 'develop']
+lint:
+    cargo clippy
+
+alias l := lint
+
 # Lint on changes
 [group: 'develop']
 lint-watch:
@@ -79,11 +86,26 @@ push: verify
 
 alias p := push
 
+# Make coverage report
+[group: 'develop']
+cover-report: cover
+    {{ cover_cmd }} report --html
+    {{ cover_cmd }} report
+
+alias or := cover-report
+
+# Open coverage report
+[group: 'develop']
+cover-open: cover
+    {{ cover_cmd }} report --open
+
+alias oo := cover-open
+
 # ANALYSIS
 
 # Run all analysis
 [group: 'assess']
-verify: format-assess lint check test cover-assess
+verify: format-assess lint-assess check-assess test-assess cover-assess
 
 alias v := verify
 
@@ -99,12 +121,12 @@ format-assess:
 
 alias fc := format-assess
 
-# Lint with Clippy
+# Assess lints
 [group: 'assess']
-lint:
-    cargo clippy
+lint-assess $RUSTFLAGS="-Dwarnings":
+     cargo clippy
 
-alias l := lint
+alias la := lint-assess
 
 # Run cargo check
 [group: 'assess']
@@ -112,6 +134,20 @@ check:
     cargo check --workspace
 
 alias c := check
+
+# Fail on any cargo check warnings
+[group: 'assess']
+check-assess $RUSTFLAGS="-Dwarnings":
+    cargo check --workspace
+
+alias ca := check
+
+# Assess warnings in tests
+[group: 'assess']
+test-assess $RUSTFLAGS="-Dwarnings":
+    just test
+
+alias ta := test-assess
 
 # Run tests
 [group: 'assess']
@@ -128,23 +164,6 @@ cover:
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
 
 alias o := cover
-
-## COVER
-
-# Make coverage report
-[group: 'cover']
-cover-report: cover
-    {{ cover_cmd }} report --html
-    {{ cover_cmd }} report
-
-alias or := cover-report
-
-# Open coverage report
-[group: 'cover']
-cover-open: cover
-    {{ cover_cmd }} report --open
-
-alias oo := cover-open
 
 # BUILD
 

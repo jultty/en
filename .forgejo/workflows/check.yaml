@@ -21,11 +21,11 @@ jobs:
       - name: format
         run: just format-assess
       - name: lint
-        run: just lint
+        run: just lint-assess
       - name: check
-        run: just check
+        run: just check-assess
       - name: test
-        run: just test
+        run: just test-assess
       - name: coverage
         run: just cover-assess
 

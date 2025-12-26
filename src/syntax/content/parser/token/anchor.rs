@@ -67,7 +67,6 @@ impl Anchor {
 mod tests {
 
     use super::*;
-    use crate::syntax::content::parser::read;
 
     #[test]
     fn render_anchor() {

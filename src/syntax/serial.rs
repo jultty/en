@@ -204,7 +204,6 @@ mod serial_tests {
 
     #[test]
     fn bad_graph_path() {
-        println!("T");
         let original_working_directory = std::env::current_dir().unwrap();
 
         assert!(

@@ -1,7 +1,5 @@
 use std::{
     collections::{HashMap, hash_map::Entry},
-    iter::Peekable,
-    slice,
 };
 
 use crate::{
@@ -30,16 +28,13 @@ impl Header {
 
     pub fn make_id(
         config: &Config,
-        iterator: &mut Peekable<slice::Iter<'_, Lexeme>>,
+        next_lexeme: &Lexeme,
         ids: &mut HashMap<String, Vec<String>>,
     ) -> String {
-        let base_id = match iterator.peek() {
-            Some(next_lexeme)
-                if !config.ascii_dom_ids || next_lexeme.next.is_ascii() =>
-            {
-                next_lexeme.next.clone()
-            },
-            _ => String::from("h"),
+        let base_id = if !config.ascii_dom_ids || next_lexeme.next.is_ascii() {
+            next_lexeme.next.clone()
+        } else {
+            String::from("h")
         };
 
         match ids.entry(base_id.clone()) {
@@ -116,20 +111,6 @@ impl Parseable for Header {
     }
 }
 
-impl Display for Header {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        if let Some(open) = self.open {
-            if open {
-                write!(f, "Level {} Open Header", self.level)
-            } else {
-                write!(f, "Level {} Closed Header", self.level)
-            }
-        } else {
-            write!(f, "Level {} Header (Unknown open state)", self.level)
-        }
-    }
-}
-
 #[derive(Debug)]
 pub enum Level {
     One,
@@ -181,5 +162,98 @@ impl Display for Level {
             Level::Five => write!(f, "5"),
             Level::Six => write!(f, "6"),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn make_id() {
+        let mut map: HashMap<String, Vec<String>> = HashMap::new();
+        let id = Header::make_id(
+            &Config::default(),
+            &Lexeme::new("##", "Title"),
+            &mut map,
+        );
+        assert_eq!(id, "Title");
+    }
+
+    #[test]
+    fn ascii_ids_set() {
+        let config = Config {
+            ascii_dom_ids: true,
+            ..Config::default()
+        };
+
+        let id = Header::make_id(
+            &config,
+            &Lexeme::new("##", "駄目！"),
+            &mut HashMap::new(),
+        );
+        assert_eq!(id, "h");
+    }
+
+    #[test]
+    fn ascii_ids_unset() {
+        let config = Config {
+            ascii_dom_ids: false,
+            ..Config::default()
+        };
+
+        let id = Header::make_id(
+            &config,
+            &Lexeme::new("##", "駄目！"),
+            &mut HashMap::new(),
+        );
+        assert_eq!(id, "駄目！");
+    }
+
+    #[test]
+    fn id_deduplication() {
+        let mut map: HashMap<String, Vec<String>> = HashMap::new();
+        let config = Config::default();
+        let id =
+            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ"), &mut map);
+        assert_eq!(id, "UVrcCUjoQ");
+
+        let double =
+            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ"), &mut map);
+        assert_eq!(double, "UVrcCUjoQ-1");
+
+        let double2 =
+            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ"), &mut map);
+        assert_eq!(double2, "UVrcCUjoQ-2");
+    }
+
+    #[test]
+    fn get_level() {
+        for l in 1..=6 {
+            let header = Header::from_u8(l, true, None);
+            assert_eq!(header.level(), l);
+        }
+    }
+
+    #[test]
+    fn no_id_render() {
+        let open_header = Header::from_u8(2, true, None);
+        let closed_header = Header::from_u8(2, false, None);
+        assert_eq!(open_header.render(), "<h2>");
+        assert_eq!(closed_header.render(), "</h2>");
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Attempt to render a header tag while open state is unknown"
+    )]
+    fn unknown_open_state_render() {
+        let header = Header {
+            level: Level::Two,
+            open: None,
+            dom_id: None,
+        };
+
+        header.render();
     }
 }

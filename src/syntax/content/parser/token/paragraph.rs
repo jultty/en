@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
 #[derive(Debug)]
@@ -37,16 +36,22 @@ impl Parseable for Paragraph {
     }
 }
 
-impl Display for Paragraph {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        if let Some(open) = self.open {
-            if open {
-                write!(f, "Open Paragraph")
-            } else {
-                write!(f, "Closed Paragraph")
-            }
-        } else {
-            write!(f, "Unitialized Paragraph (Unknown open state)")
-        }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lex() {
+        let p = Paragraph::lex(&Lexeme::new("", ""));
+        assert!(p.open.is_none());
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Attempt to render a paragraph tag while open state is unknown"
+    )]
+    fn render_state_unknown() {
+        let p = Paragraph::lex(&Lexeme::new("", ""));
+        drop(p.render());
     }
 }

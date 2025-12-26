@@ -2,7 +2,7 @@ use parser::{token::Token, lexeme::Lexeme};
 
 pub mod parser;
 
-pub trait Parseable: Into<Token> {
+pub trait Parseable {
     fn probe(lexeme: &Lexeme) -> bool;
     fn lex(lexeme: &Lexeme) -> Self;
     fn render(&self) -> String;

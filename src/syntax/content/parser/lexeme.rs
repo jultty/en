@@ -50,7 +50,7 @@ impl Lexeme {
     }
 
     /// # Panics
-    /// Panics if number of chars for a single lexeme exceeds `i2::MAX`
+    /// Panics if number of chars for a single lexeme exceeds `i32::MAX`
     pub fn count_char(&self, c: char) -> i32 {
         let count = self.text().chars().filter(|&n| n == c).count();
         match i32::try_from(count) {
@@ -88,5 +88,61 @@ impl Lexeme {
         }
 
         out_vector
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_lexeme() {
+        let raw = "3PKK4RzfGgUL58rU2NZbAiGN1o5dOfNu";
+        let next = "wAcZe8iVEEcZLp20PP9KKf07zJbeZafa";
+        let lexeme = Lexeme::new(raw, next);
+        assert_eq!(lexeme.text, raw);
+        assert_eq!(lexeme.next, next);
+    }
+
+    #[test]
+    fn next_first_char() {
+        let payload = "4IU";
+        let lexeme = Lexeme::new(payload, payload);
+        assert_eq!(lexeme.next_first_char().unwrap(), '4');
+    }
+
+    #[test]
+    fn match_first_char() {
+        let payload = "MKY";
+        let lexeme = Lexeme::new(payload, payload);
+        assert!(lexeme.match_first_char('M'));
+    }
+
+    #[test]
+    fn match_absent_first_char() {
+        let payload = "";
+        let lexeme = Lexeme::new(payload, payload);
+        assert!(!lexeme.match_first_char('x'));
+    }
+
+    #[test]
+    fn first_word() {
+        let payload = "nhNc fGev QnGW E4hj ExyZ";
+        let lexeme = Lexeme::new(payload, payload);
+        assert_eq!(lexeme.first(), Some(String::from("nhNc")));
+    }
+
+    #[test]
+    fn count_char() {
+        let payload = "6Ur3UjnndhENjFNSYWF7bhej2NZKLwdY";
+        let lexeme = Lexeme::new(payload, payload);
+        assert_eq!(lexeme.count_char('j'), 3);
+    }
+
+    #[test]
+    fn count_char_huge_number() {
+        let payload = "6Ur3UjnndhENjFNSYWF7bhej2NZKLwdY";
+        let lexeme = Lexeme::new(payload, payload);
+        assert_eq!(lexeme.count_char('j'), 3);
     }
 }

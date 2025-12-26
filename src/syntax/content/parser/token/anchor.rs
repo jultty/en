@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
 #[derive(Debug, Clone)]
@@ -65,8 +63,33 @@ impl Anchor {
     }
 }
 
-impl Display for Anchor {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Anchor: <{}> to <{:?}>", &self.text, &self.destination)
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::syntax::content::parser::read;
+
+    #[test]
+    fn render_anchor() {
+        let anchor = Anchor::new("AnchorText", "AnchorDest", true);
+        assert_eq!(
+            anchor.render(),
+            r#"<a href="/node/AnchorDest">AnchorText</a>"#
+        );
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Attempt to lex an anchor directly from a lexeme"
+    )]
+    fn lex() {
+        Anchor::lex(&Lexeme::new("", ""));
+    }
+
+    #[test]
+    #[should_panic(expected = "without knowing its destination")]
+    fn unknown_destination_render() {
+        let anchor = Anchor::empty();
+        drop(anchor.render());
     }
 }

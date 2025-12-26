@@ -36,3 +36,29 @@ impl Parseable for PreFormat {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lex() {
+        let from_empty_lexeme = PreFormat::lex(&Lexeme::new("", ""));
+        assert!(from_empty_lexeme.open.is_none());
+
+        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::new("`", "`"));
+        assert!(from_non_empty_lexeme.open.is_none());
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Attempt to render a preformat tag while open state is unknown"
+    )]
+    fn render() {
+        let from_empty_lexeme = PreFormat::lex(&Lexeme::new("", ""));
+        from_empty_lexeme.render();
+
+        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::new("`", "`"));
+        from_non_empty_lexeme.render();
+    }
+}

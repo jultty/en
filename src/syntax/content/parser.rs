@@ -1,6 +1,6 @@
 use std::collections::{HashMap};
 
-use crate::{prelude::*, syntax::serial::populate_graph, types::Config};
+use crate::{syntax::serial::populate_graph, types::Config};
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
@@ -39,7 +39,7 @@ fn lex(text: &str, map: LexMap) -> Vec<Token> {
                     let mut header = Header::lex(lexeme);
                     header.dom_id = Some(Header::make_id(
                         &config,
-                        &mut iterator,
+                        iterator.peek().map_or(&Lexeme::new("", ""), |l| l),
                         &mut state.dom_ids,
                     ));
                     state.context.block = BlockContext::Header(header.level());
@@ -154,8 +154,6 @@ fn lex(text: &str, map: LexMap) -> Vec<Token> {
                         buffer.destination.push_str(&lexeme.text());
                     }
                     continue;
-                } else {
-                    unreachable!("Anchor is already fully parsed");
                 }
             },
         }
@@ -241,10 +239,9 @@ fn close(state: &State, tokens: &mut Vec<Token>) {
         },
         BlockContext::Header(_) => panic!("End of file with open header"),
         BlockContext::PreFormat => panic!("End of file with open preformat"),
-        BlockContext::None => log!("End of file on None block context"),
+        BlockContext::None => (),
     }
 }
-
 
 fn parse(tokens: &[Token]) -> String {
     tokens.iter().map(Token::render).collect::<String>()
@@ -256,10 +253,100 @@ pub(super) fn read(text: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::header::Level;
+
     use super::*;
+
+    #[test]
+    fn empty_render_is_empty() {
+        assert_eq!(read(""), "");
+    }
+
+    #[test]
+    fn mixed_sample() {
+        let en = "`this |test|` tries ## to |brea|k|: things";
+        let html = r#"<p><code>this |test|</code> tries ## to <a href="/node/k">brea</a>: things</p>"#;
+
+        assert_eq!(read(en), html);
+    }
 
     #[test]
     fn force_flanking() {
         assert_eq!(read("|Node||"), r#"<p><a href="/node/Node">Node</a></p>"#);
+    }
+
+    #[test]
+    fn flanking_with_trailing_pipe() {
+        assert_eq!(
+            read("|Node|Destination|"),
+            r#"<p><a href="/node/Destination">Node</a></p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_second_pipe() {
+        assert_eq!(
+            read("Go to Node|Destination|, here"),
+            r#"<p>Go to <a href="/node/Destination">Node</a>, here</p>"#,
+        );
+    }
+
+    #[test]
+    fn clear_anchor_buffer() {
+        assert_eq!(
+            read("|SomeAnchor|\n|SomeOtherAnchor|"),
+            concat!(
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
+                "\n",
+                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
+            ),
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "End of file with open header")]
+    fn end_with_open_header() {
+        let default_state = State::new();
+        let state = State {
+            context: Context {
+                block: BlockContext::Header(1),
+                ..default_state.context
+            },
+            ..default_state
+        };
+
+        close(&state, &mut vec![]);
+    }
+
+    #[test]
+    #[should_panic(expected = "End of file with open preformat")]
+    fn end_with_open_preformat() {
+        let default_state = State::new();
+        let state = State {
+            context: Context {
+                block: BlockContext::PreFormat,
+                ..default_state.context
+            },
+            ..default_state
+        };
+
+        close(&state, &mut vec![]);
+    }
+
+    #[test]
+    fn truncated_header_level() {
+        let u: usize = 999;
+        let level = Level::from(u);
+        assert_eq!(level.to_string(), "6");
+    }
+
+    #[test]
+    fn display_level() {
+        assert_eq!(format!("{}", Level::One), "1");
+        assert_eq!(format!("{}", Level::Two), "2");
+        assert_eq!(format!("{}", Level::Three), "3");
+        assert_eq!(format!("{}", Level::Four), "4");
+        assert_eq!(format!("{}", Level::Five), "5");
+        assert_eq!(format!("{}", Level::Six), "6");
     }
 }

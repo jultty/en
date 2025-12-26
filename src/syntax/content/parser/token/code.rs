@@ -30,3 +30,25 @@ impl Parseable for Code {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn render() {
+        let code_open = Code::new(true);
+        assert_eq!(code_open.render(), "<code>");
+
+        let code_closed = Code::new(false);
+        assert_eq!(code_closed.render(), "</code>");
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Attempt to lex a code tag directly from a lexeme"
+    )]
+    fn lex() {
+        Code::lex(&Lexeme::new("", ""));
+    }
+}

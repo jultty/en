@@ -18,21 +18,21 @@
         {% endblock head %}
     </head>
     <body>
-        <nav style="text-align: center;">
-            <ul style="display: inline; padding-left: 0;">
-                <li style="display: inline;"><a href="/">Index</a></li>
+        <nav id="main-menu">
+            <ul>
+                <li><a href="/">Index</a></li>
                 {% if config.about %}
-                <li style="display: inline;"><a href="/about">About</a></li>
+                <li><a href="/about">About</a></li>
                 {% endif %}
                 {% if config.tree %}
-                <li style="display: inline;"><a href="/tree">Tree</a></li>
+                <li><a href="/tree">Tree</a></li>
                 {% endif %}
                 {% if config.raw %}
                 {% if config.raw_toml %}
-                <li style="display: inline;"><a href="/graph/toml">TOML Graph</a></li>
+                <li><a href="/graph/toml">TOML Graph</a></li>
                 {% endif %}
                 {% if config.raw_json %}
-                <li style="display: inline;"><a href="/graph/json">JSON Graph</a></li>
+                <li><a href="/graph/json">JSON Graph</a></li>
                 {% endif %}
                 {% endif %}
             </ul>

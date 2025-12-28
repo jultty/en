@@ -37,7 +37,7 @@ a {
 }
 
 a:visited {
-        text-decoration-color: #aaa;
+    text-decoration-color: #aaa;
 }
 
 div.header-row {
@@ -74,6 +74,24 @@ h1.node-title {
     margin: 10px 0;
 }
 
+ul.tree-node-text {
+    display: inline;
+    padding-left: 0;
+}
+
+li.tree-node-text {
+    display: inline;
+}
+
+details.tree-node-text {
+    display: inline;
+    cursor: pointer;
+}
+
+summary.tree-node-text {
+    display: inline;
+}
+
 footer div {
     margin: 20px 0;
     text-align: center;
@@ -84,8 +102,33 @@ footer p {
     margin: 0;
 }
 
-nav li {
+span.detached-connection {
+    filter: opacity(60%);
+}
+
+nav#main-menu {
+    text-align: center;
+}
+
+nav#main-menu ul {
+    display: inline;
+    padding-left: 0;
+}
+
+nav#main-menu li {
     margin-right: 10px;
+    display: inline;
+}
+
+div#error-poem {
+    text-align: right;
+    margin-top: 8em;
+    margin-right: 2em;
+    font-size: 0.8em;
+}
+
+em#index-node-count {
+    font-size: 0.8em;
 }
 
 @media (prefers-color-scheme: dark) {

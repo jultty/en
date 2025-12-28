@@ -42,7 +42,7 @@
         </ul>
         {% if config.index_node_count < nodes | length %}
         <br/>
-        <em style="font-size:0.9em"">
+        <em id="index-node-count">
            Listing {{ config.index_node_count }} of {{ nodes | length }} nodes.
            {% if config.tree %}
            <br/>

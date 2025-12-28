@@ -167,8 +167,12 @@ cover-assess: test-cover
     {{ cover_cmd }} --fail-under-regions 95 report
 
 # Run all assessments
-[group: 'assess']
-verify: format-assess lint-assess check test cover-assess
+[script, group: 'assess']
+verify: && format-assess lint-assess check test cover-assess
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "Git working tree is dirty: Commit or stash your changes first"
+        exit 1
+    fi
 
 alias v := verify
 
@@ -215,3 +219,5 @@ debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-}'
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
 just_cmd := 'just --timestamp --explain --command-color green'
+
+set unstable

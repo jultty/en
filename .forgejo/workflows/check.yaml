@@ -1,31 +1,68 @@
-on: [push]
+on:
+  push:
+    paths:
+      - src/**
+      - tests/**
+      - .forgejo/**
+      - Cargo.toml
+      - Cargo.lock
+env:
+  JUST_VERSION: 1.45.0
+  JUST_SHA256SUM: dc3f958aaf8c6506dd90426e9b03f86dd15e74a6467ee0e54929f750af3d9e49
+  CARGO_LLVM_COV_VERSION: 0.6.21
+  CARGO_LLVM_COV_SHA256SUM: 57f491aedf7cdb261538ceb49cbb1ee9d27df7ca205a5e1a009caaf5cb911afb
 jobs:
-  print-content:
+  verify:
     runs-on: docker
+    timeout-minutes: 20
     container:
       image: rust:slim
     steps:
-      - name: install action dependencies
-        run: apt install --no-install-recommends --update -y nodejs just
-      - name: setup toolchain
+      - name: Install action dependencies
         run: |
-          rustup component add rustfmt clippy llvm-tools-preview
-          cargo install cargo-llvm-cov --locked
+          apt-get install --no-install-recommends --update -y nodejs curl
 
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: build
+      - name: Setup Rust toolchain
+        run: |
+          rustup component add rustfmt clippy llvm-tools-preview
+
+      - name: Setup additional tooling
+        run: |
+          fetch() {
+            repo="$1"; tag="$2"; filename="$3"; digest="$4"
+
+            curl -sSLO -w '%{stderr}HTTP %{response_code} %{url}\n' \
+                "https://github.com/$repo/releases/download/$tag/$filename"
+
+            printf '%s  %s\n' "$digest" "$filename" > digest
+            sha256sum --check digest && tar xf "$filename" -C tools
+          }
+
+          mkdir tools
+
+          fetch casey/just ${{ env.JUST_VERSION }} \
+            just-${{ env.JUST_VERSION }}-x86_64-unknown-linux-musl.tar.gz \
+            ${{ env.JUST_SHA256SUM }}
+          fetch taiki-e/cargo-llvm-cov v${{ env.CARGO_LLVM_COV_VERSION }} \
+            cargo-llvm-cov-x86_64-unknown-linux-gnu.tar.gz \
+            ${{ env.CARGO_LLVM_COV_SHA256SUM }}
+
+          mv -v tools/just tools/cargo-llvm-cov /usr/local/bin
+
+      - name: Build
         run: just build
 
-      - name: format
+      - name: Format
         run: just format-assess
-      - name: lint
+      - name: Lint
         run: just lint-assess
-      - name: check
-        run: just check-assess
-      - name: test
-        run: just test-assess
-      - name: coverage
+      - name: Cargo check
+        run: just check
+      - name: Test
+        run: just test
+      - name: Assess test coverage
         run: just cover-assess
 

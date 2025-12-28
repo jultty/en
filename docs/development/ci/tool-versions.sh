@@ -5,33 +5,37 @@ casey/just just-%VERSION%-x86_64-unknown-linux-musl.tar.gz
 taiki-e/cargo-llvm-cov cargo-llvm-cov-x86_64-unknown-linux-gnu.tar.gz
 "
 
-git_root=$(git rev-parse --show-toplevel)
-
 get_release() {
-    repo="$1"
-
    curl -sSL \
       -H "Accept: application/json" \
-      "https://api.github.com/repos/$repo/releases/latest"
+      "https://api.github.com/repos/$1/releases/latest"
 }
 
 q() { printf '%s' "$1" | jq -r "$2"; }
 
+git_root=$(git rev-parse --show-toplevel)
+
 printf '%s' "$tools" | while read -r repo asset_template; do
     [ -n "$repo" ] || continue
+
     release=$(get_release "$repo")
-    workflow_var=$(echo "$repo" | tr '[:lower:]' '[:upper:]' | tr '-' '_' | cut -d '/' -f 2)_VERSION
-    current=$(grep -m 1 "$workflow_var" "$git_root/.forgejo/workflows/check.yaml" | awk '{print $2}')
+    workflow_var=$(echo "$repo" |
+        awk -F / '{ gsub(/-/, "_"); print toupper($2) }')_VERSION
+
     latest=$(q "$release" .tag_name | tr -d v)
+    current=$(grep -m 1 "$workflow_var" \
+        "$git_root/.forgejo/workflows/check.yaml" | awk '{print $2}')
+
     echo "$repo"
     echo "In use: $current"
     echo "Latest: $latest"
     if [ "$current" != "$latest" ]; then
         echo "  Published: $(q "$release" .published_at)"
-        echo "  [ Draft: $(q "$release" .draft) ] [ Prerelease: $(q "$release" .prerelease) ]"
+        echo "  [ Prerelease: $(q "$release" .prerelease) ]"
         echo "  URL: $(q "$release" .html_url)"
         echo "  $(q "$release" .body)"
-        asset_pattern=$(printf '%s' "$asset_template" | sed "s/%VERSION%/$latest/g")
+        asset_pattern=$(printf '%s' "$asset_template" |
+            sed "s/%VERSION%/$latest/g")
         asset=$(q "$release" ".assets[] | select(.name == \"$asset_pattern\")")
         if [ -n "$asset" ]; then
             echo "    Asset: $(q "$asset" .name)"

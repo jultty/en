@@ -16,7 +16,7 @@ pub async fn page(template: &str) -> Response<Body> {
 
     context.insert("nodes", &nodes);
     context.insert("root_node", &root_node);
-    context.insert("config", &graph.meta.config.parse_text());
+    context.insert("config", &graph.meta.config);
 
     handlers::template::by_filename(template, &context, 500, None, false)
 }

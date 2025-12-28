@@ -1,6 +1,6 @@
 use std::collections::{HashMap};
 
-use crate::{syntax::serial::populate_graph, types::Config};
+use crate::types::Config;
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
@@ -19,10 +19,9 @@ const LEXMAP: LexMap = &[
     (Literal::probe, |word| Token::Literal(Literal::lex(word))),
 ];
 
-fn lex(text: &str, map: LexMap) -> Vec<Token> {
+fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut state = State::new();
-    let config: Config = populate_graph().meta.config;
 
     let segments = segment::segment(text);
     let lexemes = Lexeme::collect(&segments);
@@ -38,7 +37,7 @@ fn lex(text: &str, map: LexMap) -> Vec<Token> {
                 } else if Header::probe(lexeme) {
                     let mut header = Header::lex(lexeme);
                     header.dom_id = Some(Header::make_id(
-                        &config,
+                        config,
                         iterator.peek().map_or(&Lexeme::new("", ""), |l| l),
                         &mut state.dom_ids,
                     ));
@@ -247,19 +246,23 @@ fn parse(tokens: &[Token]) -> String {
     tokens.iter().map(Token::render).collect::<String>()
 }
 
-pub(super) fn read(text: &str) -> String {
-    parse(&lex(text, LEXMAP))
+pub(super) fn read(text: &str, config: &Config) -> String {
+    parse(&lex(text, LEXMAP, config))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::header::Level;
+    use crate::{types::Graph, syntax::content::parser::token::header::Level};
 
     use super::*;
 
+    fn read_noconfig(input: &str) -> String {
+        read(input, &Graph::new(None).meta.config)
+    }
+
     #[test]
     fn empty_render_is_empty() {
-        assert_eq!(read(""), "");
+        assert_eq!(read_noconfig(""), "");
     }
 
     #[test]
@@ -267,18 +270,21 @@ mod tests {
         let en = "`this |test|` tries ## to |brea|k|: things";
         let html = r#"<p><code>this |test|</code> tries ## to <a href="/node/k">brea</a>: things</p>"#;
 
-        assert_eq!(read(en), html);
+        assert_eq!(read_noconfig(en), html);
     }
 
     #[test]
     fn force_flanking() {
-        assert_eq!(read("|Node||"), r#"<p><a href="/node/Node">Node</a></p>"#);
+        assert_eq!(
+            read_noconfig("|Node||"),
+            r#"<p><a href="/node/Node">Node</a></p>"#
+        );
     }
 
     #[test]
     fn flanking_with_trailing_pipe() {
         assert_eq!(
-            read("|Node|Destination|"),
+            read_noconfig("|Node|Destination|"),
             r#"<p><a href="/node/Destination">Node</a></p>"#
         );
     }
@@ -286,7 +292,7 @@ mod tests {
     #[test]
     fn nonleading_second_pipe() {
         assert_eq!(
-            read("Go to Node|Destination|, here"),
+            read_noconfig("Go to Node|Destination|, here"),
             r#"<p>Go to <a href="/node/Destination">Node</a>, here</p>"#,
         );
     }
@@ -294,7 +300,7 @@ mod tests {
     #[test]
     fn clear_anchor_buffer() {
         assert_eq!(
-            read("|SomeAnchor|\n|SomeOtherAnchor|"),
+            read_noconfig("|SomeAnchor|\n|SomeOtherAnchor|"),
             concat!(
                 r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
                 "\n",

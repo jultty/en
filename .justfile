@@ -22,6 +22,14 @@ run-watch:
 
 alias w := run-watch
 
+# Apply basic assessments, build and run on changes
+[group: 'develop']
+assess-run-watch extra='false':
+    {{ watch_cmd }} {{ just_cmd }} lint test \
+        {{ if extra == "cover" { "cover-assess" } else { "" } }} run
+
+alias aw := assess-run-watch
+
 # Format all files
 [group: 'develop']
 format:
@@ -207,8 +215,8 @@ alias fb := full-build
 
 ## META
 
-[default]
-_default:
+[default, private]
+default:
     @just --list --unsorted --justfile {{justfile()}}
 
 export RUSTFLAGS := "-Dwarnings"

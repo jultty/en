@@ -57,9 +57,10 @@ fn mkversion() -> (u8, u8, u8) {
     (0, 0, 0)
 }
 
-#[expect(clippy::struct_excessive_bools)]
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Config {
+    #[serde(default)]
+    _private: bool,
     #[serde(default)]
     pub site_title: String,
     #[serde(default)]
@@ -119,27 +120,7 @@ impl Graph {
             incoming: HashMap::new(),
             lowercase_keymap: HashMap::new(),
             meta: Meta {
-                config: Config {
-                    site_title: String::new(),
-                    site_description: String::new(),
-                    footer: true,
-                    footer_credits: true,
-                    footer_date: true,
-                    footer_text: String::new(),
-                    about: true,
-                    about_text: String::new(),
-                    tree: true,
-                    raw: true,
-                    raw_toml: true,
-                    raw_json: true,
-                    index_search: true,
-                    index_node_list: true,
-                    index_node_count: 8,
-                    index_root_node: true,
-                    tree_node_text: false,
-                    ascii_dom_ids: false,
-                    content_language: String::new(),
-                },
+                config: Config::new(),
                 version: (0, 1, 0),
                 messages: message.map_or(vec![], |m| vec![m.to_string()]),
             },
@@ -177,23 +158,36 @@ impl Node {
 }
 
 impl Config {
+    pub fn new() -> Config {
+        Config {
+            _private: true,
+            site_title: String::new(),
+            site_description: String::new(),
+            footer: true,
+            footer_credits: true,
+            footer_date: true,
+            footer_text: String::new(),
+            about: true,
+            about_text: String::new(),
+            tree: true,
+            raw: true,
+            raw_toml: true,
+            raw_json: true,
+            index_search: true,
+            index_node_list: true,
+            index_node_count: 8,
+            index_root_node: true,
+            tree_node_text: false,
+            ascii_dom_ids: false,
+            content_language: String::new(),
+        }
+    }
+
     #[must_use]
     pub fn parse_text(self) -> Config {
-        let footer_text = if self.footer_text.is_empty() {
-            self.footer_text
-        } else {
-            content::parse(&self.footer_text)
-        };
-
-        let about_text = if self.about_text.is_empty() {
-            self.about_text
-        } else {
-            content::parse(&self.about_text)
-        };
-
         Config {
-            footer_text,
-            about_text,
+            footer_text: content::parse(&self.footer_text, &self),
+            about_text: content::parse(&self.about_text, &self),
             ..self
         }
     }

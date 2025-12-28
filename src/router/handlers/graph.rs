@@ -19,9 +19,9 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
 
     let mut context = tera::Context::new();
     context.insert("node", &node);
-    context.insert("text", &content::parse(&node.text));
+    context.insert("text", &content::parse(&node.text, &graph.meta.config));
     context.insert("incoming", &graph.incoming.get(&id));
-    context.insert("config", &graph.meta.config.parse_text());
+    context.insert("config", &graph.meta.config);
 
     let not_found = node == empty_node;
 

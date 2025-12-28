@@ -75,7 +75,7 @@ mod tests {
         let graph = Graph {
             meta: Meta {
                 config: config
-                    .map(|c| c.to_owned())
+                    .map(std::borrow::ToOwned::to_owned)
                     .unwrap_or(default_graph.meta.config),
                 ..default_graph.meta
             },
@@ -121,10 +121,8 @@ mod tests {
 
     #[tokio::test]
     async fn no_about_page() {
-        let config = Config {
-            about: false,
-            ..populate_graph().meta.config
-        };
+        let mut config = Config::new();
+        config.about = false;
 
         let response = request("/about", Some(&config)).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
@@ -132,10 +130,8 @@ mod tests {
 
     #[tokio::test]
     async fn no_tree_page() {
-        let config = Config {
-            tree: false,
-            ..populate_graph().meta.config
-        };
+        let mut config = Config::new();
+        config.tree = false;
 
         let response = request("/tree", Some(&config)).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
@@ -143,10 +139,8 @@ mod tests {
 
     #[tokio::test]
     async fn no_toml_raw_graph() {
-        let config = Config {
-            raw_toml: false,
-            ..populate_graph().meta.config
-        };
+        let mut config = Config::new();
+        config.raw_toml = false;
 
         let response = request("/graph/toml", Some(&config)).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
@@ -154,10 +148,8 @@ mod tests {
 
     #[tokio::test]
     async fn no_json_raw_graph() {
-        let config = Config {
-            raw_json: false,
-            ..populate_graph().meta.config
-        };
+        let mut config = Config::new();
+        config.raw_json = false;
 
         let response = request("/graph/json", Some(&config)).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
@@ -165,10 +157,8 @@ mod tests {
 
     #[tokio::test]
     async fn no_raw_graph() {
-        let config = Config {
-            raw: false,
-            ..populate_graph().meta.config
-        };
+        let mut config = Config::new();
+        config.raw = false;
 
         let toml_response = request("/graph/toml", Some(&config)).await;
         assert_eq!(toml_response.status(), StatusCode::NOT_FOUND);

@@ -182,10 +182,8 @@ mod tests {
 
     #[test]
     fn ascii_ids_set() {
-        let config = Config {
-            ascii_dom_ids: true,
-            ..Config::default()
-        };
+        let mut config = Config::new();
+        config.ascii_dom_ids = true;
 
         let id = Header::make_id(
             &config,
@@ -197,10 +195,8 @@ mod tests {
 
     #[test]
     fn ascii_ids_unset() {
-        let config = Config {
-            ascii_dom_ids: false,
-            ..Config::default()
-        };
+        let mut config = Config::new();
+        config.ascii_dom_ids = false;
 
         let id = Header::make_id(
             &config,

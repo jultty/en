@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     syntax::command::Arguments,
-    types::{Edge, Graph, Node},
+    types::{Edge, Graph, Meta, Node},
 };
 
 pub fn populate_graph() -> Graph {
@@ -11,27 +11,24 @@ pub fn populate_graph() -> Graph {
         Ok(s) => s,
         Err(e) => format!("Error: {e}"),
     };
-    let graph = deserialize_graph(&Format::TOML, &toml_source);
 
+    let graph = deserialize_graph(&Format::TOML, &toml_source);
+    modulate_graph(&graph)
+}
+
+fn modulate_graph(graph: &Graph) -> Graph {
     let nodes = modulate_nodes(&graph.nodes);
 
     Graph {
-        nodes: nodes.clone(),
         incoming: make_incoming(&nodes),
         lowercase_keymap: map_lowercase_keys(&nodes),
-        ..graph
+        nodes,
+        meta: Meta {
+            config: graph.meta.config.clone().parse_text(),
+            ..graph.meta.clone()
+        },
+        ..graph.to_owned()
     }
-}
-
-fn map_lowercase_keys(
-    source_map: &HashMap<String, Node>,
-) -> HashMap<String, String> {
-    let mut out_map: HashMap<String, String> = HashMap::new();
-    let keys = source_map.keys();
-    for key in keys {
-        out_map.insert(key.clone().to_lowercase(), key.clone());
-    }
-    out_map
 }
 
 fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
@@ -89,23 +86,6 @@ fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
     nodes
 }
 
-// Construct a HashMap with incoming connections (reversed edges)
-fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
-    let mut incoming: HashMap<String, Vec<Edge>> = HashMap::new();
-
-    for node in nodes.clone().into_values() {
-        let empty_vec: Vec<Edge> = vec![];
-        for edge in &node.connections.clone().unwrap_or_default() {
-            let mut edges =
-                incoming.get(&edge.to.clone()).unwrap_or(&empty_vec).clone();
-            edges.extend_from_slice(std::slice::from_ref(edge));
-            incoming.insert(edge.to.clone(), edges.clone());
-        }
-    }
-
-    incoming
-}
-
 pub enum Format {
     TOML,
     JSON,
@@ -135,6 +115,34 @@ pub fn deserialize_graph(in_format: &Format, serial: &str) -> Graph {
             Err(error) => Graph::new(Some(&error.to_string())),
         },
     }
+}
+
+// Construct a HashMap with incoming connections (reversed edges)
+fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
+    let mut incoming: HashMap<String, Vec<Edge>> = HashMap::new();
+
+    for node in nodes.clone().into_values() {
+        let empty_vec: Vec<Edge> = vec![];
+        for edge in &node.connections.clone().unwrap_or_default() {
+            let mut edges =
+                incoming.get(&edge.to.clone()).unwrap_or(&empty_vec).clone();
+            edges.extend_from_slice(std::slice::from_ref(edge));
+            incoming.insert(edge.to.clone(), edges.clone());
+        }
+    }
+
+    incoming
+}
+
+fn map_lowercase_keys(
+    source_map: &HashMap<String, Node>,
+) -> HashMap<String, String> {
+    let mut out_map: HashMap<String, String> = HashMap::new();
+    let keys = source_map.keys();
+    for key in keys {
+        out_map.insert(key.clone().to_lowercase(), key.clone());
+    }
+    out_map
 }
 
 #[cfg(test)]

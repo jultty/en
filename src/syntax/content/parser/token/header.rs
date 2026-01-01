@@ -10,7 +10,7 @@ use crate::{
 
 use std::fmt::Display;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Header {
     open: Option<bool>,
     level: Level,
@@ -111,7 +111,7 @@ impl Parseable for Header {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Level {
     One,
     Two,

@@ -1,6 +1,6 @@
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Paragraph {
     open: Option<bool>,
 }

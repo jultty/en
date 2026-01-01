@@ -2,7 +2,7 @@ use crate::{
     syntax::content::{Parseable, Lexeme},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct PreFormat {
     open: Option<bool>,
 }
@@ -15,7 +15,7 @@ impl PreFormat {
 
 impl Parseable for PreFormat {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.match_first_char('`') && lexeme.next == "\n"
+        lexeme.match_first_char('`') && (lexeme.next() == "\n" || lexeme.last())
     }
 
     fn lex(_lexeme: &Lexeme) -> PreFormat {

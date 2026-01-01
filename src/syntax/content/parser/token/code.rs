@@ -2,7 +2,7 @@ use crate::{
     syntax::content::{Parseable, Lexeme},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Code {
     open: bool,
 }

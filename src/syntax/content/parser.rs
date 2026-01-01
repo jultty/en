@@ -169,6 +169,19 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     tokens
 }
 
+fn close(state: &State, tokens: &mut Vec<Token>) {
+    match state.context.block {
+        BlockContext::PreFormat => {
+            tokens.push(Token::PreFormat(PreFormat::new(false)));
+        },
+        BlockContext::Paragraph => {
+            tokens.push(Token::Paragraph(Paragraph::new(false)));
+        },
+        BlockContext::Header(_) => panic!("End of file with open header"),
+        BlockContext::None => (),
+    }
+}
+
 enum BlockContext {
     Paragraph,
     Header(u8),
@@ -228,17 +241,6 @@ impl State {
                 },
             },
         }
-    }
-}
-
-fn close(state: &State, tokens: &mut Vec<Token>) {
-    match state.context.block {
-        BlockContext::Paragraph => {
-            tokens.push(Token::Paragraph(Paragraph::new(false)));
-        },
-        BlockContext::Header(_) => panic!("End of file with open header"),
-        BlockContext::PreFormat => panic!("End of file with open preformat"),
-        BlockContext::None => (),
     }
 }
 
@@ -310,6 +312,24 @@ mod tests {
     }
 
     #[test]
+    fn pre() {
+        let payload = "D0qdJ184f3q1okbYu3Xm1d93jj6jy615";
+        assert_eq!(
+            read_noconfig(&format!("`\n{payload}\n`\n")),
+            format!("<pre>\n{payload}\n</pre>\n"),
+        );
+    }
+
+    #[test]
+    fn eof_pre() {
+        let payload = "Jp8INpWzsQmk20jpIhBFCfMUXOztxv0w";
+        assert_eq!(
+            read_noconfig(&format!("`\n{payload}\n`")),
+            format!("<pre>\n{payload}\n</pre>"),
+        );
+    }
+
+    #[test]
     #[should_panic(expected = "End of file with open header")]
     fn end_with_open_header() {
         let default_state = State::new();
@@ -325,18 +345,13 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "End of file with open preformat")]
     fn end_with_open_preformat() {
-        let default_state = State::new();
-        let state = State {
-            context: Context {
-                block: BlockContext::PreFormat,
-                ..default_state.context
-            },
-            ..default_state
-        };
+        let mut state = State::new();
+        state.context.block = BlockContext::PreFormat;
 
-        close(&state, &mut vec![]);
+        let mut vec: Vec<Token> = vec![];
+        close(&state, &mut vec);
+        assert_eq!(vec, vec![Token::PreFormat(PreFormat::new(false))]);
     }
 
     #[test]

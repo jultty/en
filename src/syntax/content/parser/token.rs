@@ -9,7 +9,7 @@ pub mod header;
 pub mod preformat;
 pub mod code;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Token {
     Anchor(anchor::Anchor),
     Code(code::Code),

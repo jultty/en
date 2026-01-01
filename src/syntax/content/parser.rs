@@ -4,7 +4,7 @@ use crate::types::Config;
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
-    preformat::PreFormat, literal::Literal, code::Code,
+    preformat::PreFormat, literal::Literal, code::Code, oblique::Oblique,
 };
 use lexeme::Lexeme;
 
@@ -78,6 +78,10 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     state.context.inline = InlineContext::Code;
                     tokens.push(Token::Code(Code::new(true)));
                     continue;
+                } else if Oblique::probe(lexeme) {
+                    state.context.inline = InlineContext::Oblique;
+                    tokens.push(Token::Oblique(Oblique::new(true)));
+                    continue;
                 } else if Anchor::probe(lexeme) {
                     state.context.inline = InlineContext::Anchor;
                     state.buffers.anchor.clear();
@@ -94,6 +98,13 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                 if Code::probe(lexeme) {
                     state.context.inline = InlineContext::None;
                     tokens.push(Token::Code(Code::new(false)));
+                    continue;
+                }
+            },
+            InlineContext::Oblique => {
+                if Oblique::probe(lexeme) {
+                    state.context.inline = InlineContext::None;
+                    tokens.push(Token::Oblique(Oblique::new(false)));
                     continue;
                 }
             },
@@ -192,6 +203,7 @@ enum BlockContext {
 enum InlineContext {
     Anchor,
     Code,
+    Oblique,
     None,
 }
 

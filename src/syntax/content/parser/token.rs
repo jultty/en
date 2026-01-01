@@ -8,6 +8,7 @@ pub mod span;
 pub mod header;
 pub mod preformat;
 pub mod code;
+pub mod oblique;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Token {
@@ -16,6 +17,7 @@ pub enum Token {
     Header(header::Header),
     LineBreak(linebreak::LineBreak),
     Literal(literal::Literal),
+    Oblique(oblique::Oblique),
     Paragraph(paragraph::Paragraph),
     PreFormat(preformat::PreFormat),
     Span(span::Span),
@@ -29,6 +31,7 @@ impl Token {
             Token::Header(ref d) => d.render(),
             Token::LineBreak(ref d) => d.render(),
             Token::Literal(ref d) => d.render(),
+            Token::Oblique(ref d) => d.render(),
             Token::Paragraph(ref d) => d.render(),
             Token::PreFormat(ref d) => d.render(),
             Token::Span(ref d) => d.render(),

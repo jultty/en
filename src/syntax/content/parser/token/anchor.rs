@@ -9,7 +9,8 @@ pub struct Anchor {
 
 impl Parseable for Anchor {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.text() == "|" || (!lexeme.is_whitespace() && lexeme.next == "|")
+        lexeme.text() == "|"
+            || (!lexeme.is_whitespace() && lexeme.next() == "|")
     }
 
     fn lex(_lexeme: &Lexeme) -> Anchor {

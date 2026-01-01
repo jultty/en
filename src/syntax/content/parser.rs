@@ -101,7 +101,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                 let buffer = &mut state.buffers.anchor;
                 let candidate = &mut buffer.candidate;
                 if candidate.text.is_empty() {
-                    if lexeme.next == "|" {
+                    if lexeme.next() == "|" {
                         buffer.text.push_str(&lexeme.text());
                         candidate.text.clone_from(&buffer.text);
                     } else {
@@ -125,19 +125,19 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                             state.context.inline = InlineContext::None;
                         // non-whitespace after pipe is the destination
                         } else {
-                            candidate.destination = Some(lexeme.next.clone());
+                            candidate.destination = Some(lexeme.next().clone());
                             let token = Token::Anchor(candidate.clone());
                             tokens.push(token);
                             state.context.inline = InlineContext::None;
                             // if there is a trailing pipe, consume it
                             if let Some(next) = iterator.next()
-                                && next.next == "|"
+                                && next.next() == "|"
                             {
                                 iterator.next();
                             }
                         }
                     // candidate is nonleading and we found a second pipe
-                    } else if !candidate.leading && lexeme.next == "|" {
+                    } else if !candidate.leading && lexeme.next() == "|" {
                         candidate.destination = Some(lexeme.text());
                         tokens.push(Token::Anchor(candidate.clone()));
                         state.context.inline = InlineContext::None;

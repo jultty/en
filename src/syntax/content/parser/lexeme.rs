@@ -1,7 +1,10 @@
+use crate::prelude::*;
+
 #[derive(Clone, Debug)]
 pub struct Lexeme {
     text: String,
-    pub next: String,
+    next: String,
+    last: bool,
 }
 
 impl Lexeme {
@@ -9,11 +12,27 @@ impl Lexeme {
         Lexeme {
             text: raw.to_owned(),
             next: next.to_owned(),
+            last: false,
         }
     }
 
     pub fn text(&self) -> String {
         self.text.clone()
+    }
+
+    pub fn next(&self) -> String {
+        if self.next.is_empty() && !self.last {
+            log!("Returning an empty string for next of non-last {self:?}");
+        }
+        self.next.clone()
+    }
+
+    pub fn last(&self) -> bool {
+        self.last
+    }
+
+    pub fn mutate_text(&mut self, new: &str) {
+        self.text = new.to_string();
     }
 
     pub fn is_whitespace(&self) -> bool {
@@ -36,6 +55,14 @@ impl Lexeme {
     pub fn match_first_char(&self, query: char) -> bool {
         if let Some(first) = self.text.chars().nth(0) {
             first == query
+        } else {
+            false
+        }
+    }
+
+    pub fn match_last_char(&self, query: char) -> bool {
+        if let Some(last) = self.text.chars().last() {
+            last == query
         } else {
             false
         }
@@ -79,11 +106,17 @@ impl Lexeme {
         let mut iterator = raw_strings.iter().peekable();
 
         while let Some(raw) = iterator.next() {
-            let next =
-                iterator.peek().map(|s| (*s).clone()).unwrap_or_default();
+            let mut next = String::new();
+            let mut last = false;
+            if let Some(peeked) = iterator.peek() {
+                next.clone_from(*peeked);
+            } else {
+                last = true;
+            }
             out_vector.push(Lexeme {
                 text: raw.to_owned(),
                 next,
+                last,
             });
         }
 

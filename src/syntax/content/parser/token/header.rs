@@ -31,8 +31,9 @@ impl Header {
         next_lexeme: &Lexeme,
         ids: &mut HashMap<String, Vec<String>>,
     ) -> String {
-        let base_id = if !config.ascii_dom_ids || next_lexeme.next.is_ascii() {
-            next_lexeme.next.clone()
+        let base_id = if !config.ascii_dom_ids || next_lexeme.next().is_ascii()
+        {
+            next_lexeme.next().clone()
         } else {
             String::from("h")
         };
@@ -92,7 +93,7 @@ impl Parseable for Header {
         Header::new(
             lexeme.text().len().into(),
             true,
-            Some(&lexeme.next.to_ascii_lowercase()),
+            Some(&lexeme.next().to_ascii_lowercase()),
         )
     }
 

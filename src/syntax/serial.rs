@@ -180,19 +180,13 @@ mod tests {
 
     #[test]
     fn detached_node() {
-        let node = Node {
-            id: String::from("SomeNode"),
-            text: String::new(),
-            title: String::new(),
-            links: vec![String::new()],
-            hidden: false,
-            connections: Some(vec![Edge {
-                anchor: String::from("SomeAnchor"),
-                from: String::new(),
-                to: String::new(),
-                detached: false,
-            }]),
-        };
+        let mut node = Node::new(None);
+        node.connections = Some(vec![Edge {
+            anchor: String::from("SomeAnchor"),
+            from: String::new(),
+            to: String::new(),
+            detached: false,
+        }]);
 
         let mut map: HashMap<String, Node> = HashMap::new();
         map.insert(String::from("SomeNode"), node);

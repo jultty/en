@@ -220,10 +220,9 @@ default:
     @just --list --unsorted --justfile {{justfile()}}
 
 export RUSTFLAGS := "-Dwarnings"
-export RUST_BACKTRACE := "1"
 export CARGO_TERM_COLOR := 'always'
 
-debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-}'
+debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-}'
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
 just_cmd := 'just --timestamp --explain --command-color green'

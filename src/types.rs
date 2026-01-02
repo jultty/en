@@ -147,8 +147,8 @@ impl Graph {
 impl Node {
     pub fn new(message: Option<String>) -> Node {
         Node {
-            id: "VoidNode".to_string(),
-            title: "Pure Void".to_string(),
+            id: "404".to_string(),
+            title: "Not Found".to_string(),
             text: match message {
                 Some(s) => s,
                 None => "Node is empty, missing or wasn't found.".to_string(),

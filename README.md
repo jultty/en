@@ -12,12 +12,17 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
 
 - [x] Add tests
     - [ ] Improve content syntax parser coverage
+- [ ] Redirects
 - [ ] Richer text formatting
     - [x] Headers
     - [x] Preformatted blocks
     - [x] Inline code
     - [x] Anchor rendering
         - [ ] Automatic anchors
+        - [ ] Plural anchors (|node|s -> node)
+        - [ ] Conjugation anchors (|will|ed -> will)
+        - [ ] Spaced node anchor (|red fox| -> redfox -> RedFox)
+        - [ ] TOML allows only letters, numbers, dashes and underscores in node IDs. This means trailing punctuation such as in `panther|Panthera,` could be automatically split
         - [ ] `#` syntax for header ID anchors
     - [x] External anchors
     - [ ] Bold, italics, underline, strikethrough

@@ -80,10 +80,6 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     state.context.inline = Inline::Code;
                     tokens.push(Token::Code(Code::new(true)));
                     continue;
-                } else if Oblique::probe(lexeme) {
-                    state.context.inline = Inline::Oblique;
-                    tokens.push(Token::Oblique(Oblique::new(true)));
-                    continue;
                 } else if Anchor::probe(lexeme) {
                     state.context.inline = Inline::Anchor;
                     state.buffers.anchor.clear();
@@ -93,6 +89,10 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     } else {
                         state.buffers.anchor.candidate.text = lexeme.text();
                     }
+                    continue;
+                } else if Oblique::probe(lexeme) {
+                    state.context.inline = Inline::Oblique;
+                    tokens.push(Token::Oblique(Oblique::new(true)));
                     continue;
                 }
             },
@@ -155,7 +155,7 @@ struct AnchorBuffer {
 
 impl AnchorBuffer {
     fn clear(&mut self) {
-        self.candidate = Anchor::empty();
+        self.candidate = Anchor::default();
         self.text = String::new();
         self.destination = String::new();
     }
@@ -248,6 +248,64 @@ mod tests {
         assert_eq!(
             read_noconfig("The |letter s|s|'s node: |s|!"),
             r#"<p>The <a href="/node/s">letter s</a>'s node: <a href="/node/s">s</a>!</p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_plural_anchor() {
+        assert_eq!(
+            read_noconfig("The flower|s bloomed"),
+            r#"<p>The <a href="/node/flower">flowers</a> bloomed</p>"#
+        );
+    }
+
+    #[test]
+    fn leading_plural_anchor() {
+        assert_eq!(
+            read_noconfig("Interfaces are |element|s of |system|s."),
+            r#"<p>Interfaces are <a href="/node/element">elements</a> of <a href="/node/system">systems</a>.</p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor() {
+        assert_eq!(
+            read_noconfig(
+                "a |false dichotomy|https://en.wikipedia.org/wiki/False_dilemma|."
+            ),
+            r#"<p>a <a href="https://en.wikipedia.org/wiki/False_dilemma">false dichotomy</a>.</p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor_leading_no_third() {
+        assert_eq!(
+            read_noconfig("|Rust toolchain|https://rustup.rs/ "),
+            r#"<p><a href="https://rustup.rs/">Rust toolchain</a> </p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor_leading_no_third_then_punctuation_then_space() {
+        assert_eq!(
+            read_noconfig("|Rust toolchain|https://rustup.rs/, "),
+            r#"<p><a href="https://rustup.rs/">Rust toolchain</a>, </p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor_leading_no_third_then_punctuation_then_eof() {
+        assert_eq!(
+            read_noconfig("|Rust toolchain|https://rustup.rs/,"),
+            r#"<p><a href="https://rustup.rs/">Rust toolchain</a></p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor_leading_no_third_then_eof() {
+        assert_eq!(
+            read_noconfig("|Rust toolchain|https://rustup.rs/"),
+            r#"<p><a href="https://rustup.rs/">Rust toolchain</a></p>"#
         );
     }
 

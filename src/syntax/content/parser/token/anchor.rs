@@ -5,6 +5,7 @@ pub struct Anchor {
     pub text: String,
     pub destination: Option<String>,
     pub leading: bool,
+    pub external: bool,
 }
 
 impl Parseable for Anchor {
@@ -39,11 +40,17 @@ impl Parseable for Anchor {
 }
 
 impl Anchor {
-    pub fn new(text: &str, destination: &str, spaced: bool) -> Anchor {
+    pub fn new(
+        text: &str,
+        destination: &str,
+        leading: bool,
+        external: bool,
+    ) -> Anchor {
         Anchor {
             text: text.to_owned(),
             destination: Some(Anchor::resolve_destination(destination)),
-            leading: spaced,
+            leading,
+            external,
         }
     }
 
@@ -52,14 +59,6 @@ impl Anchor {
             raw.to_owned()
         } else {
             format!("/node/{raw}")
-        }
-    }
-
-    pub fn empty() -> Anchor {
-        Anchor {
-            text: String::new(),
-            destination: None,
-            leading: false,
         }
     }
 }
@@ -71,7 +70,7 @@ mod tests {
 
     #[test]
     fn render_anchor() {
-        let anchor = Anchor::new("AnchorText", "AnchorDest", true);
+        let anchor = Anchor::new("AnchorText", "AnchorDest", true, false);
         assert_eq!(
             anchor.render(),
             r#"<a href="/node/AnchorDest">AnchorText</a>"#
@@ -89,7 +88,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "without knowing its destination")]
     fn unknown_destination_render() {
-        let anchor = Anchor::empty();
+        let anchor = Anchor::default();
         drop(anchor.render());
     }
 }

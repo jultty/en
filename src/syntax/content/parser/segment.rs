@@ -62,31 +62,35 @@ pub mod delimiter {
 
         let mut iterator = text.chars().peekable();
         while let Some(c) = iterator.next() {
-            // if the current char is an atomic delimiter
-            if delimiters.atomic.contains(&c) {
+            // if the current char is a boundary
+            if delimiters.is_boundary(c) {
                 atomized.push(c.to_string());
+                continue;
 
             // if the current char is a flanking delimiter
             } else if delimiters.flanking.contains(&c) {
                 // if next char is a boundary
                 if iterator
                     .peek()
-                    .is_some_and(|next| delimiters.is_boundary(*next))
+                    .is_none_or(|next| delimiters.is_boundary(*next))
                 {
                     atomized.push(c.to_string());
+                    continue;
 
                 // if the previous char was whitespace
                 } else if let Some(last_string) = atomized.last()
                     && let Some(last_char) = last_string.chars().last()
-                    && last_char.is_whitespace()
+                    && delimiters.whitespace.contains(&last_char)
                 {
                     atomized.push(c.to_string());
+                    continue;
                 }
+            }
 
             // if there is a last atomized element
-            } else if let Some(last) = atomized.last_mut() {
-                // if the last atomized element is a delimiter
-                if delimiters.is_delimiter(last) {
+            if let Some(last) = atomized.last_mut() {
+                // if the last atomized element is a boundary
+                if delimiters.is_str_delimiter(last) {
                     atomized.push(c.to_string());
                 } else {
                     last.push(c);
@@ -105,9 +109,82 @@ pub mod delimiter {
         use super::*;
 
         #[test]
+        fn atomize_nonflanking_underscore() {
+            assert_eq!(atomize("false_dichotomy"), vec!["false_dichotomy"]);
+        }
+
+        #[test]
+        fn atomize_left_flanking_underscore() {
+            assert_eq!(
+                atomize("_false_dichotomy"),
+                vec!["_", "false_dichotomy"]
+            );
+        }
+
+        #[test]
+        fn atomize_right_flanking_underscore() {
+            assert_eq!(
+                atomize("false_dichotomy_"),
+                vec!["false_dichotomy", "_"]
+            );
+        }
+
+        #[test]
+        fn atomize_dual_flanking_underscore() {
+            assert_eq!(
+                atomize("_false_dichotomy_"),
+                vec!["_", "false_dichotomy", "_"]
+            );
+        }
+
+        #[test]
+        fn atomize_flankign_sentence() {
+            assert_eq!(
+                atomize(
+                    "about_colors: the colors _amber_, _orange_ and _yellow mustard_ to `jane_bishop@mail.com`."
+                ),
+                vec![
+                    "about_colors",
+                    ":",
+                    " ",
+                    "the",
+                    " ",
+                    "colors",
+                    " ",
+                    "_",
+                    "amber",
+                    "_",
+                    ",",
+                    " ",
+                    "_",
+                    "orange",
+                    "_",
+                    " ",
+                    "and",
+                    " ",
+                    "_",
+                    "yellow",
+                    " ",
+                    "mustard",
+                    "_",
+                    " ",
+                    "to",
+                    " ",
+                    "`",
+                    "jane_bishop@mail",
+                    ".",
+                    "com",
+                    "`",
+                    "."
+                ],
+            );
+        }
+
+        #[test]
         fn atomize_words() {
-            let words = "    justification for  the actions   of those  who hold authority   inevitably dwindles  "; // 2
-            let actual = atomize(words);
+            let actual = atomize(
+                "    justification for  the actions   of those  who hold authority   inevitably dwindles  ",
+            );
             let expected = vec![
                 " ",
                 " ",
@@ -179,8 +256,7 @@ pub mod delimiter {
 
         #[test]
         fn atomize_pipes() {
-            let s = "every other |time| as it was perceived";
-            let actual = atomize(s);
+            let actual = atomize("every other |time| as it was perceived");
             let expected = vec![
                 "every",
                 " ",
@@ -203,8 +279,9 @@ pub mod delimiter {
 
         #[test]
         fn atomize_pipes_and_ticks() {
-            let s = "every other |time| as `it could or |perhaps somehow|then or now| it was` perceived";
-            let actual = atomize(s);
+            let actual = atomize(
+                "every other |time| as `it could or |perhaps somehow|then or now| it was` perceived",
+            );
             let expected = vec![
                 "every",
                 " ",
@@ -247,9 +324,8 @@ pub mod delimiter {
 
         #[test]
         fn atomize_newlines() {
-            let s = "a`c`adc`da \ndcdb d` cdb` dc\ndb `dc ` d ad ` bdc";
-
-            let actual = atomize(s);
+            let actual =
+                atomize("a`c`adc`da \ndcdb d` cdb` dc\ndb `dc ` d ad ` bdc");
             let expected = vec![
                 "a", "`", "c", "`", "adc", "`", "da", " ", "\n", "dcdb", " ",
                 "d", "`", " ", "cdb", "`", " ", "dc", "\n", "db", " ", "`",

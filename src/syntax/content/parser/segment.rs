@@ -4,35 +4,87 @@ pub fn segment(text: &str) -> Vec<String> {
 
 mod delimiter {
 
-    fn make_delimiters() -> Vec<char> {
-        vec!['\n', ' ', '`', '|']
+    struct Delimiters {
+        atomic: Vec<char>,
+        flanking: Vec<char>,
+        punctuation: Vec<char>,
+        grouping: Vec<char>,
+    }
+
+    impl Delimiters {
+        fn new() -> Delimiters {
+            Delimiters {
+                atomic: vec!['\n', ' ', '`', '|'],
+                flanking: vec!['_', '*'],
+                punctuation: vec![',', '.', ':', ';', '?', '!'],
+                grouping: vec!['(', ')', '\'', '"'],
+            }
+        }
+
+        fn is_boundary(&self, c: char) -> bool {
+            self.atomic.contains(&c)
+                || self.punctuation.contains(&c)
+                || self.grouping.contains(&c)
+        }
+
+        fn is_delimiter(&self, s: &str) -> bool {
+            Delimiters::match_str(s, &self.atomic)
+                || Delimiters::match_str(s, &self.flanking)
+        }
+
+        fn match_str(s: &str, delimiters: &[char]) -> bool {
+            if s.chars().count() > 1 {
+                false
+            } else if let Some(first) = s.chars().nth(0) {
+                delimiters.contains(&first)
+            } else {
+                false
+            }
+        }
     }
 
     pub fn atomize(text: &str) -> Vec<String> {
-        let delimiters = make_delimiters();
-        text.chars().fold(
-            Vec::new(),
-            |mut accumulator: Vec<String>, character| {
-                if delimiters.contains(&character) {
-                    accumulator.push(character.to_string());
-                } else if let Some(last) = accumulator.last_mut() {
-                    if delimiters
-                        .iter()
-                        .map(char::to_string)
-                        .filter(|d| d == last)
-                        .count()
-                        > 0
-                    {
-                        accumulator.push(character.to_string());
-                    } else {
-                        last.push(character);
-                    }
-                } else {
-                    accumulator.push(character.to_string());
+        let delimiters = Delimiters::new();
+        let mut atomized: Vec<String> = vec![];
+
+        let mut iterator = text.chars().peekable();
+        while let Some(c) = iterator.next() {
+            // if the current char is an atomic delimiter
+            if delimiters.atomic.contains(&c) {
+                atomized.push(c.to_string());
+
+            // if the current char is a flanking delimiter
+            } else if delimiters.flanking.contains(&c) {
+                // if next char is a boundary
+                if iterator
+                    .peek()
+                    .is_some_and(|next| delimiters.is_boundary(*next))
+                {
+                    atomized.push(c.to_string());
+
+                // if the previous char was whitespace
+                } else if let Some(last_string) = atomized.last()
+                    && let Some(last_char) = last_string.chars().last()
+                    && last_char.is_whitespace()
+                {
+                    atomized.push(c.to_string());
                 }
-                accumulator
-            },
-        )
+
+            // if there is a last atomized element
+            } else if let Some(last) = atomized.last_mut() {
+                // if the last atomized element is a delimiter
+                if delimiters.is_delimiter(last) {
+                    atomized.push(c.to_string());
+                } else {
+                    last.push(c);
+                }
+
+            // if there is no last atomized element
+            } else {
+                atomized.push(c.to_string());
+            }
+        }
+        atomized
     }
 
     #[cfg(test)]

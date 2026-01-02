@@ -124,6 +124,12 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     if candidate.leading && lexeme.text() == "|" {
                         // third pipe immediately after second: forcing flanking
                         if lexeme.match_next_first_char('|') {
+                            candidate.destination =
+                                Some(candidate.text.clone());
+                            let token = Token::Anchor(candidate.clone());
+                            tokens.push(token);
+                            state.context.inline = InlineContext::None;
+                            iterator.next();
                             continue;
                         // whitespace or punctuation after pipe: flanking anchor
                         } else if lexeme.is_next_whitespace()
@@ -292,6 +298,14 @@ mod tests {
         assert_eq!(
             read_noconfig("|Node||"),
             r#"<p><a href="/node/Node">Node</a></p>"#
+        );
+    }
+
+    #[test]
+    fn force_flanking_with_trailing_letter() {
+        assert_eq!(
+            read_noconfig("|Node||s"),
+            r#"<p><a href="/node/Node">Node</a>s</p>"#
         );
     }
 

@@ -15,8 +15,5 @@ type Lexer = fn(&Lexeme) -> Token;
 type LexMap<'lm> = &'lm [(Probe, Lexer)];
 
 pub fn parse(text: &str, config: &Config) -> String {
-    if text.is_empty() {
-        return String::new();
-    }
     parser::read(text, config)
 }

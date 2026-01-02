@@ -7,10 +7,12 @@ use token::{
     preformat::PreFormat, literal::Literal, code::Code, oblique::Oblique,
 };
 use lexeme::Lexeme;
+use context::{Context, Block, Inline};
 
 pub mod token;
 pub mod lexeme;
 pub mod segment;
+pub mod context;
 
 const LEXMAP: LexMap = &[
     (LineBreak::probe, |word| {
@@ -29,9 +31,9 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     let mut iterator = lexemes.iter().peekable();
     while let Some(lexeme) = iterator.next() {
         match state.context.block {
-            BlockContext::None => {
+            Block::None => {
                 if PreFormat::probe(lexeme) {
-                    state.context.block = BlockContext::PreFormat;
+                    state.context.block = Block::PreFormat;
                     tokens.push(Token::PreFormat(PreFormat::new(true)));
                     continue;
                 } else if Header::probe(lexeme) {
@@ -41,49 +43,49 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                         iterator.peek().map_or(&Lexeme::new("", ""), |l| l),
                         &mut state.dom_ids,
                     ));
-                    state.context.block = BlockContext::Header(header.level());
+                    state.context.block = Block::Header(header.level());
                     tokens.push(Token::Header(header));
                     continue;
                 } else if Paragraph::probe(lexeme) {
-                    state.context.block = BlockContext::Paragraph;
+                    state.context.block = Block::Paragraph;
                     tokens.push(Token::Paragraph(Paragraph::new(true)));
                 }
             },
-            BlockContext::PreFormat => {
+            Block::PreFormat => {
                 if PreFormat::probe(lexeme) {
                     tokens.push(Token::PreFormat(PreFormat::new(false)));
-                    state.context.block = BlockContext::None;
+                    state.context.block = Block::None;
                 } else {
                     tokens.push(Token::Literal(Literal::lex(lexeme)));
                 }
                 continue;
             },
-            BlockContext::Paragraph => {
+            Block::Paragraph => {
                 if lexeme.text() == "\n" {
                     tokens.push(Token::Paragraph(Paragraph::new(false)));
-                    state.context.block = BlockContext::None;
+                    state.context.block = Block::None;
                 }
             },
-            BlockContext::Header(n) => {
+            Block::Header(n) => {
                 if lexeme.text() == "\n" {
                     tokens.push(Token::Header(Header::from_u8(n, false, None)));
-                    state.context.block = BlockContext::None;
+                    state.context.block = Block::None;
                 }
             },
         }
 
         match state.context.inline {
-            InlineContext::None => {
+            Inline::None => {
                 if Code::probe(lexeme) {
-                    state.context.inline = InlineContext::Code;
+                    state.context.inline = Inline::Code;
                     tokens.push(Token::Code(Code::new(true)));
                     continue;
                 } else if Oblique::probe(lexeme) {
-                    state.context.inline = InlineContext::Oblique;
+                    state.context.inline = Inline::Oblique;
                     tokens.push(Token::Oblique(Oblique::new(true)));
                     continue;
                 } else if Anchor::probe(lexeme) {
-                    state.context.inline = InlineContext::Anchor;
+                    state.context.inline = Inline::Anchor;
                     state.buffers.anchor.clear();
 
                     if lexeme.match_first_char('|') {
@@ -94,81 +96,27 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     continue;
                 }
             },
-            InlineContext::Code => {
+            Inline::Code => {
                 if Code::probe(lexeme) {
-                    state.context.inline = InlineContext::None;
+                    state.context.inline = Inline::None;
                     tokens.push(Token::Code(Code::new(false)));
                     continue;
                 }
             },
-            InlineContext::Oblique => {
+            Inline::Oblique => {
                 if Oblique::probe(lexeme) {
-                    state.context.inline = InlineContext::None;
+                    state.context.inline = Inline::None;
                     tokens.push(Token::Oblique(Oblique::new(false)));
                     continue;
                 }
             },
-            InlineContext::Anchor => {
-                let buffer = &mut state.buffers.anchor;
-                let candidate = &mut buffer.candidate;
-                if candidate.text.is_empty() {
-                    if lexeme.next() == "|" {
-                        buffer.text.push_str(&lexeme.text());
-                        candidate.text.clone_from(&buffer.text);
-                    } else {
-                        buffer.text.push_str(&lexeme.text());
-                    }
-                    continue;
-                } else if candidate.destination.is_none() {
-                    // candidate is leading and we found the second pipe
-                    if candidate.leading && lexeme.text() == "|" {
-                        // third pipe immediately after second: forcing flanking
-                        if lexeme.match_next_first_char('|') {
-                            candidate.destination =
-                                Some(candidate.text.clone());
-                            let token = Token::Anchor(candidate.clone());
-                            tokens.push(token);
-                            state.context.inline = InlineContext::None;
-                            iterator.next();
-                            continue;
-                        // whitespace or punctuation after pipe: flanking anchor
-                        } else if lexeme.is_next_whitespace()
-                            || lexeme.is_next_punctuation()
-                        {
-                            candidate.destination =
-                                Some(candidate.text.clone());
-                            let token = Token::Anchor(candidate.clone());
-                            tokens.push(token);
-                            state.context.inline = InlineContext::None;
-                        // non-whitespace after pipe is the destination
-                        } else {
-                            candidate.destination = Some(lexeme.next().clone());
-                            let token = Token::Anchor(candidate.clone());
-                            tokens.push(token);
-                            state.context.inline = InlineContext::None;
-                            // if there is a trailing pipe, consume it
-                            if let Some(next) = iterator.next()
-                                && next.next() == "|"
-                            {
-                                iterator.next();
-                            }
-                        }
-                    // candidate is nonleading and we found a second pipe
-                    } else if !candidate.leading && lexeme.next() == "|" {
-                        candidate.destination = Some(lexeme.text());
-                        tokens.push(Token::Anchor(candidate.clone()));
-                        state.context.inline = InlineContext::None;
-                        iterator.next();
-                    // candidate is nonleading and we found whitespace
-                    } else if lexeme.is_next_whitespace() {
-                        candidate.destination = Some(lexeme.text());
-                        let token = Token::Anchor(candidate.clone());
-                        tokens.push(token);
-                        state.context.inline = InlineContext::None;
-                    // candidate is nonleading and we haven't found whitespace
-                    } else {
-                        buffer.destination.push_str(&lexeme.text());
-                    }
+            Inline::Anchor => {
+                if context::anchor::parse(
+                    lexeme,
+                    &mut iterator,
+                    &mut state,
+                    &mut tokens,
+                ) {
                     continue;
                 }
             },
@@ -182,46 +130,14 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
         }
     }
 
-    close(&state, &mut tokens);
+    context::close(&state, &mut tokens);
     tokens
 }
 
-fn close(state: &State, tokens: &mut Vec<Token>) {
-    match state.context.block {
-        BlockContext::PreFormat => {
-            tokens.push(Token::PreFormat(PreFormat::new(false)));
-        },
-        BlockContext::Paragraph => {
-            tokens.push(Token::Paragraph(Paragraph::new(false)));
-        },
-        BlockContext::Header(_) => panic!("End of file with open header"),
-        BlockContext::None => (),
-    }
-}
-
-enum BlockContext {
-    Paragraph,
-    Header(u8),
-    PreFormat,
-    None,
-}
-
-enum InlineContext {
-    Anchor,
-    Code,
-    Oblique,
-    None,
-}
-
-struct State {
+pub struct State {
     context: Context,
     dom_ids: HashMap<String, Vec<String>>,
     buffers: Buffers,
-}
-
-struct Context {
-    block: BlockContext,
-    inline: InlineContext,
 }
 
 struct Buffers {
@@ -247,8 +163,8 @@ impl State {
     fn new() -> State {
         State {
             context: Context {
-                inline: InlineContext::None,
-                block: BlockContext::None,
+                inline: Inline::None,
+                block: Block::None,
             },
             dom_ids: HashMap::new(),
             buffers: Buffers {
@@ -326,6 +242,14 @@ mod tests {
     }
 
     #[test]
+    fn anchor_to_node_s() {
+        assert_eq!(
+            read_noconfig("The |letter s|s|'s node: |s|!"),
+            r#"<p>The <a href="/node/s">letter s</a>'s node: <a href="/node/s">s</a>!</p>"#
+        );
+    }
+
+    #[test]
     fn clear_anchor_buffer() {
         assert_eq!(
             read_noconfig("|SomeAnchor|\n|SomeOtherAnchor|"),
@@ -356,27 +280,27 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "End of file with open header")]
+    #[should_panic(expected = "End of input with open header")]
     fn end_with_open_header() {
         let default_state = State::new();
         let state = State {
             context: Context {
-                block: BlockContext::Header(1),
+                block: Block::Header(1),
                 ..default_state.context
             },
             ..default_state
         };
 
-        close(&state, &mut vec![]);
+        context::close(&state, &mut vec![]);
     }
 
     #[test]
     fn end_with_open_preformat() {
         let mut state = State::new();
-        state.context.block = BlockContext::PreFormat;
+        state.context.block = Block::PreFormat;
 
         let mut vec: Vec<Token> = vec![];
-        close(&state, &mut vec);
+        context::close(&state, &mut vec);
         assert_eq!(vec, vec![Token::PreFormat(PreFormat::new(false))]);
     }
 

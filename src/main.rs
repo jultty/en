@@ -20,10 +20,14 @@ async fn main() -> io::Result<()> {
             |s| format!("{}:{}:{}", s.file(), s.line(), s.column()),
         );
 
+        let level: u8 = std::env::var("RUST_BACKTRACE")
+            .unwrap_or("0".to_string()).trim().parse().unwrap_or(0);
+
         eprintln!(" P! [{:?}] {location}: {payload}", ONSET.elapsed());
 
         let trace = backtrace::Backtrace::capture();
-        if trace.status() == backtrace::BacktraceStatus::Captured {
+        if trace.status() == backtrace::BacktraceStatus::Captured && level > 1
+        {
             eprintln!("\n  Stack trace:\n{trace:#?}");
         }
     }));

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, syntax::content::parser::segment::delimiter::Delimiters};
 
 #[derive(Clone, Debug)]
 pub struct Lexeme {
@@ -35,17 +35,53 @@ impl Lexeme {
         self.text = new.to_string();
     }
 
+    pub fn as_char(&self) -> Option<char> {
+        if self.text.chars().count() == 1 {
+            self.text.chars().nth(0)
+        } else {
+            None
+        }
+    }
+
+    pub fn next_as_char(&self) -> Option<char> {
+        if self.next.chars().count() == 1 {
+            self.next.chars().nth(0)
+        } else {
+            None
+        }
+    }
+
+    pub fn match_as_char(&self, c: char) -> bool {
+        self.as_char().is_some_and(|as_char| as_char == c)
+    }
+
+    pub fn is_punctuation(&self) -> bool {
+        let punctuation = Delimiters::default().punctuation;
+        self.as_char().is_some_and(|c| punctuation.contains(&c))
+    }
+
     pub fn is_whitespace(&self) -> bool {
-        self.text == " " || self.text == "\n"
+        let delimiters = Delimiters::default();
+        self.as_char()
+            .is_some_and(|c| delimiters.whitespace.contains(&c))
     }
 
     pub fn is_next_whitespace(&self) -> bool {
-        self.next == " " || self.next == "\n"
+        let delimiters = Delimiters::default();
+        self.next_as_char()
+            .is_some_and(|c| delimiters.whitespace.contains(&c))
     }
 
     pub fn is_next_punctuation(&self) -> bool {
-        let punctuation = [",", ".", ":", ";", "?", "!", "(", ")", "\"", "'"];
-        punctuation.contains(&self.next.as_str())
+        let delimiters = Delimiters::default();
+        self.next_as_char()
+            .is_some_and(|c| delimiters.punctuation.contains(&c))
+    }
+
+    pub fn is_next_boundary(&self) -> bool {
+        let delimiters = Delimiters::default();
+        self.next_as_char()
+            .is_some_and(|c| delimiters.is_boundary(c))
     }
 
     pub fn next_first_char(&self) -> Option<char> {
@@ -53,27 +89,15 @@ impl Lexeme {
     }
 
     pub fn match_first_char(&self, query: char) -> bool {
-        if let Some(first) = self.text.chars().nth(0) {
-            first == query
-        } else {
-            false
-        }
+        self.text.chars().nth(0).is_some_and(|c| c == query)
     }
 
     pub fn match_last_char(&self, query: char) -> bool {
-        if let Some(last) = self.text.chars().last() {
-            last == query
-        } else {
-            false
-        }
+        self.text.chars().last().is_some_and(|c| c == query)
     }
 
     pub fn match_next_first_char(&self, query: char) -> bool {
-        if let Some(first) = self.next.chars().nth(0) {
-            first == query
-        } else {
-            false
-        }
+        self.next.chars().nth(0).is_some_and(|c| c == query)
     }
 
     /// # Panics

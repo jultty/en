@@ -2,41 +2,54 @@ pub fn segment(text: &str) -> Vec<String> {
     delimiter::atomize(text)
 }
 
-mod delimiter {
+pub mod delimiter {
 
-    struct Delimiters {
-        atomic: Vec<char>,
-        flanking: Vec<char>,
-        punctuation: Vec<char>,
-        grouping: Vec<char>,
+    pub struct Delimiters {
+        pub atomic: Vec<char>,
+        pub boundary: Vec<char>,
+        pub flanking: Vec<char>,
+        pub punctuation: Vec<char>,
+        pub whitespace: Vec<char>,
+    }
+
+    impl Default for Delimiters {
+        fn default() -> Self {
+            let atomic = vec!['`', '|'];
+            let flanking = vec!['_', '*'];
+            let punctuation = vec![',', '.', ';', ':', '?', '!'];
+            let whitespace = vec!['\n', ' '];
+
+            let boundary =
+                [atomic.clone(), punctuation.clone(), whitespace.clone()]
+                    .concat();
+
+            Delimiters {
+                atomic,
+                boundary,
+                flanking,
+                punctuation,
+                whitespace,
+            }
+        }
     }
 
     impl Delimiters {
-        fn new() -> Delimiters {
-            Delimiters {
-                atomic: vec!['\n', ' ', '`', '|'],
-                flanking: vec!['_', '*'],
-                punctuation: vec![',', '.', ':', ';', '?', '!'],
-                grouping: vec!['(', ')', '\'', '"'],
-            }
+        pub fn is_boundary(&self, c: char) -> bool {
+            [
+                self.atomic.clone(),
+                self.punctuation.clone(),
+                self.whitespace.clone(),
+            ]
+            .concat()
+            .contains(&c)
         }
 
-        fn is_boundary(&self, c: char) -> bool {
-            self.atomic.contains(&c)
-                || self.punctuation.contains(&c)
-                || self.grouping.contains(&c)
-        }
-
-        fn is_delimiter(&self, s: &str) -> bool {
-            Delimiters::match_str(s, &self.atomic)
-                || Delimiters::match_str(s, &self.flanking)
-        }
-
-        fn match_str(s: &str, delimiters: &[char]) -> bool {
+        fn is_str_delimiter(&self, s: &str) -> bool {
             if s.chars().count() > 1 {
-                false
-            } else if let Some(first) = s.chars().nth(0) {
-                delimiters.contains(&first)
+                return false;
+            }
+            if let Some(c) = s.chars().nth(0) {
+                self.boundary.contains(&c) || self.flanking.contains(&c)
             } else {
                 false
             }
@@ -44,7 +57,7 @@ mod delimiter {
     }
 
     pub fn atomize(text: &str) -> Vec<String> {
-        let delimiters = Delimiters::new();
+        let delimiters = Delimiters::default();
         let mut atomized: Vec<String> = vec![];
 
         let mut iterator = text.chars().peekable();

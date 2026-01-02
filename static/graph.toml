@@ -24,7 +24,6 @@ en --host localhost --port 3003 --graph ./graph.toml
 
 See |CLI| for defaults and details on the CLI options.
 
-
 ## Graph Syntax
 
 The graph is a TOML file. You can create nodes by adding text such as:
@@ -44,6 +43,8 @@ A computer is a machine capable of executing arbitrary instructions.
 `
 
 Some special syntax is allowed inside the node text. See |Syntax| for supported features.
+
+A node can have several other attributes. See |Node| for details on all of them.
 
 ## Connections
 
@@ -71,9 +72,59 @@ anchor = "particle"
 This will create a connection from Quark to "Particle physics", and the first occurrence of the word "particle" in the text of Quark gets anchored to this connection.
 """
 
+[nodes.Node] # foo
+text = """
+A node is defined in your graph file starting with a table header of the form:
+
+`
+[nodes.ID]
+`
+
+Where `ID` is an identifier of your choice.
+
+While the |TOML| specification is quite flexible regarding what characters can make up this identifier, it's recommended that you keep it simple and use only letters and numbers. See |AnchorSyntax| for more details on why.
+
+## Fields
+
+Nodes can have several optional fields that alter how en interprets and displays them.
+
+- `title`: The main heading shown at the top of the page and tab title
+- `text`: The textual content that is shown when the node is accessed
+- `redirect`: Where to redirect any attempt to access the node
+- `links`: An array of identifiers for other nodes to which this node is connected
+- `hidden`: Whether this node should be listed in the index and tree pages. This won't prevent the node from being found or linked to directly through its ID
+
+## Example
+
+`
+[nodes.Citrus]
+title = "Citrus Trees"
+hidden = false
+text = "Citrus is a |genus| of trees known mainly for its fruits."
+redirect = "Citric"
+links = [ "Orange", "Lemon", "Lime", "Grapefruit", ]
+
+[[nodes.Citrus.connections]]
+from = "Citrus"
+to = "Citric acid"
+`
+
+### Default values
+
+The example above has all fields in it for completeness, but all fields have default values and are therefore optional. This means that explicitly writing `hidden = false` is the same as not setting it at all.
+
+The default values for unset fields are:
+
+- `title`: Same as the identifier
+- `text`: An empty string (i.e. `text = ""`)
+- `redirect`: An empty string
+- `links`: An empty array (i.e. `links = []`)
+- `hidden`: `false`
+"""
+
 [nodes.CLI]
 title = "CLI Options"
-text = """
+text = """ # bb
 You can set the hostname, port and graph file path using CLI options:
 
 For the hostname, use `-h` or `--hostname`:
@@ -208,14 +259,16 @@ Consider this example:
 |PreciousStone|,
 `
 
-Both seem to point to the node with ID `PreciousStone`, as they _seem_ to. But if we didn't treat punctuation differently, we'd have:
+Both point to the node with ID `PreciousStone`, as they indeed _seem_ to. But if we didn't treat punctuation differently, we'd have:
 
 `
 |a|b
 |a|b
 `
 
-For this reason, punctuation is treated differently. It won't be considered as a possible destination, so you can write the previous example and have it behave as expected.
+For this reason, some symbols are treated specially at the trailing boundary of anchors.
+
+Punctuation won't be considered as a possible destination, so you can write the previous example and have it behave as expected.
 
 This also means you can't have punctuation symbols as node IDs or as their first character.
 
@@ -223,16 +276,47 @@ These are the punctuation symbols that are treated specially:
 
 `
 , . : ; ? ! ( ) ' "
-
 `
 
-You can also force this using a third pipe:
+## Plural node anchors
+
+Something similar applies to the lowercase letter `s`:
 
 `
-|PreciousStone||,
+We found three |boat|s at the marina.
 `
 
-This unambiguously tells en that your destination is a node ID.
+This conveniently lets you write plural words as anchors to their singular form without having to write:
+
+`
+We found three boats|boat at the marina.
+`
+
+Which is annoyting to write and also makes the raw text a lot noisier.
+
+Unlike with punctuation, this doesn't mean you can't have a node with the ID `s`. You can, but you'll have to write your anchors to it always with a trailing pipe:
+
+`
+The |letter s|s| is important so we dedicated a whole page to it: |s|!
+`
+
+## Spaced node anchors
+
+Like punctuation, node IDs can't have spaces. If you write a node anchor with spaces, it will be collapsed:
+
+`
+This |Node Anchor| will work as if it were |Node Anchor|NodeAnchor|.
+`
+
+As long as you don't have a page with the ID `NodeanchoR` and another with the ID `NodeAnchor`, this shouldn't be a problem.
+
+Because node ID resolution redirects to a lowercase match as a fallback to an exact match, you can write:
+
+`
+The next |precious stone| was stolen in 1973.
+`
+
+And the visible text will be preserved as "precious stone" but be able to point to an ID such as `PreciousStone`.
 
 ## URL detection
 
@@ -390,7 +474,7 @@ Syntax|syntax|
 
 |Syntax|
 |syntax|
-"""
+`"""
 
 [meta.config]
 content_language = "en"

@@ -10,6 +10,13 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let empty_node = Node::new(Some(format!("Could not find node ID {id}.")));
     let node = graph.find_node(&id).unwrap_or(empty_node.clone());
 
+    if !node.redirect.is_empty() {
+        return Redirect::permanent(
+            format!("/node/{}", node.redirect).as_str(),
+        )
+        .into_response();
+    }
+
     if !graph.nodes.contains_key(&id)
         && graph.lowercase_keymap.contains_key(&id)
     {

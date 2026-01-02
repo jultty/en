@@ -18,13 +18,16 @@ pub struct Graph {
 
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Node {
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
     pub text: String,
     #[serde(default)]
     pub title: String,
     #[serde(default)]
     pub links: Vec<String>,
     #[serde(default)]
-    pub id: String,
+    pub redirect: String,
     #[serde(default)]
     pub hidden: bool,
 
@@ -152,6 +155,7 @@ impl Node {
             },
             connections: None,
             links: vec![],
+            redirect: String::new(),
             hidden: false,
         }
     }

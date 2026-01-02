@@ -5,11 +5,13 @@ use crate::syntax::content::parser::{
 
 pub mod anchor;
 
+#[derive(Clone, Debug)]
 pub struct Context {
     pub block: Block,
     pub inline: Inline,
 }
 
+#[derive(Clone, Debug)]
 pub enum Block {
     Paragraph,
     Header(u8),
@@ -17,6 +19,7 @@ pub enum Block {
     None,
 }
 
+#[derive(Clone, Debug)]
 pub enum Inline {
     Anchor,
     Code,

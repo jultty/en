@@ -134,17 +134,19 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     tokens
 }
 
+#[derive(Clone, Debug)]
 pub struct State {
     context: Context,
     dom_ids: HashMap<String, Vec<String>>,
     buffers: Buffers,
 }
 
+#[derive(Clone, Debug)]
 struct Buffers {
     anchor: AnchorBuffer,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct AnchorBuffer {
     candidate: Anchor,
     text: String,
@@ -169,7 +171,7 @@ impl State {
             dom_ids: HashMap::new(),
             buffers: Buffers {
                 anchor: AnchorBuffer {
-                    candidate: Anchor::empty(),
+                    candidate: Anchor::default(),
                     text: String::new(),
                     destination: String::new(),
                 },

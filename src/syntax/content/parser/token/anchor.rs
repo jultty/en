@@ -1,6 +1,6 @@
 use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Default)]
 pub struct Anchor {
     pub text: String,
     pub destination: Option<String>,

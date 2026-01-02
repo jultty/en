@@ -10,7 +10,7 @@ pub mod preformat;
 pub mod code;
 pub mod oblique;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Token {
     Anchor(anchor::Anchor),
     Code(code::Code),

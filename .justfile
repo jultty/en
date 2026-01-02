@@ -22,11 +22,15 @@ run-watch:
 
 alias w := run-watch
 
+[private]
+assess-run:
+    -{{ just_cmd }} lint test
+    {{ just_cmd }} run
+
 # Apply basic assessments, build and run on changes
 [group: 'develop']
-assess-run-watch extra='false':
-    {{ watch_cmd }} {{ just_cmd }} lint test \
-        {{ if extra == "cover" { "cover-assess" } else { "" } }} run
+assess-run-watch:
+    {{ watch_cmd }} {{ just_cmd }} assess-run
 
 alias aw := assess-run-watch
 
@@ -54,7 +58,7 @@ alias lw := lint-watch
 # Run cargo check on changes
 [group: 'develop']
 check-watch:
-    {{ watch_cmd }} {{ just_cmd }} check
+    RUSTFLAGS="-Dwarnings" {{ watch_cmd }} {{ just_cmd }} check
 
 alias cw := check-watch
 
@@ -149,7 +153,7 @@ alias la := lint-assess
 # Run cargo check
 [group: 'assess']
 check:
-    cargo check --workspace
+    RUSTFLAGS="-Dwarnings" cargo check --workspace
 
 alias c := check
 
@@ -177,6 +181,7 @@ cover-assess: test-cover
 # Run all assessments
 [script, group: 'assess']
 verify: && format-assess lint-assess check test cover-assess
+    export RUSTFLAGS="-Dwarnings"
     if [ -n "$(git status --porcelain)" ]; then
         echo "Git working tree is dirty: Commit or stash your changes first"
         exit 1
@@ -219,10 +224,9 @@ alias fb := full-build
 default:
     @just --list --unsorted --justfile {{justfile()}}
 
-export RUSTFLAGS := "-Dwarnings"
 export CARGO_TERM_COLOR := 'always'
 
-debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-}'
+debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
 just_cmd := 'just --timestamp --explain --command-color green'

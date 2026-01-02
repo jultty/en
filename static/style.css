@@ -127,6 +127,12 @@ div#error-poem {
     font-size: 0.8em;
 }
 
+em, i {
+    font-style: oblique 20deg;
+    font-weight: 300;
+    padding-right: 2px;
+}
+
 em#index-node-count {
     font-size: 0.8em;
 }

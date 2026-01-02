@@ -5,13 +5,13 @@
 {%- block body %}
     <h1>{%if config.site_title %}{{ config.site_title }}{% else %}en{%endif%}</h1>
     <p>
-    <em>
+    <i>
         {% if config.site_description %}
         {{config.site_description}}
         {% else %}
         A non-linear writing instrument.
         {% endif %}
-    </em>
+    </i>
     {% if nodes %}
     {% if config.index_search %}
     <form method="post">

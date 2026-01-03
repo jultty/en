@@ -1,6 +1,6 @@
 use std::collections::{HashMap};
 
-use crate::{prelude::*,types::Config};
+use crate::{prelude::*, types::Config};
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
@@ -15,10 +15,12 @@ pub mod segment;
 pub mod context;
 
 const LEXMAP: LexMap = &[
-    (LineBreak::probe, |word| {
-        Token::LineBreak(LineBreak::lex(word))
+    (LineBreak::probe, |lexeme| {
+        Token::LineBreak(LineBreak::lex(lexeme))
     }),
-    (Literal::probe, |word| Token::Literal(Literal::lex(word))),
+    (Literal::probe, |lexeme| {
+        Token::Literal(Literal::lex(lexeme))
+    }),
 ];
 
 fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
@@ -49,6 +51,9 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     tokens.push(Token::Header(header));
                     continue;
                 } else if Paragraph::probe(lexeme) {
+                    log!(
+                        "Probed {lexeme:#?} from Block::None -> Block::Paragraph"
+                    );
                     state.context.block = Block::Paragraph;
                     tokens.push(Token::Paragraph(Paragraph::new(true)));
                 }
@@ -63,7 +68,12 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                 continue;
             },
             Block::Paragraph => {
-                if lexeme.text() == "\n" {
+                if lexeme.text() == "\n"
+                    && matches!(state.context.inline, Inline::None)
+                {
+                    log!(
+                        "Probed {lexeme:#?} from Block::Paragraph -> Block::None"
+                    );
                     tokens.push(Token::Paragraph(Paragraph::new(false)));
                     state.context.block = Block::None;
                 }
@@ -122,12 +132,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                 }
             },
             Inline::Anchor => {
-                if context::anchor::parse(
-                    lexeme,
-                    &mut iterator,
-                    &mut state,
-                    &mut tokens,
-                ) {
+                if context::anchor::parse(lexeme, &mut state, &mut tokens) {
                     continue;
                 }
             },
@@ -135,7 +140,9 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
 
         for &(ref probe, lex) in map {
             if probe(lexeme) {
-                tokens.push(lex(lexeme));
+                let token = lex(lexeme);
+                log!("Lexmap lexed {lexeme:?} into {token:?}");
+                tokens.push(token);
                 break;
             }
         }
@@ -223,23 +230,31 @@ mod tests {
     }
 
     #[test]
-    fn force_flanking() {
+    fn flanking_with_trailing_comma() {
         assert_eq!(
-            read_noconfig("|Node||"),
+            read_noconfig("|Node|,"),
+            r#"<p><a href="/node/Node">Node</a>,</p>"#
+        );
+    }
+
+    #[test]
+    fn flanking_with_trailing_comma_and_space() {
+        assert_eq!(
+            read_noconfig("|Node|, at"),
+            r#"<p><a href="/node/Node">Node</a>, at</p>"#
+        );
+    }
+
+    #[test]
+    fn flanking_at_eoi() {
+        assert_eq!(
+            read_noconfig("|Node|"),
             r#"<p><a href="/node/Node">Node</a></p>"#
         );
     }
 
     #[test]
-    fn force_flanking_with_trailing_letter() {
-        assert_eq!(
-            read_noconfig("|Node||s"),
-            r#"<p><a href="/node/Node">Node</a>s</p>"#
-        );
-    }
-
-    #[test]
-    fn flanking_with_trailing_pipe() {
+    fn needless_three_pipe_anchor() {
         assert_eq!(
             read_noconfig("|Node|Destination|"),
             r#"<p><a href="/node/Destination">Node</a></p>"#
@@ -279,6 +294,22 @@ mod tests {
     }
 
     #[test]
+    fn nonleading_plural_anchor_at_eoi() {
+        assert_eq!(
+            read_noconfig("element|s"),
+            r#"<p><a href="/node/element">elements</a></p>"#
+        );
+    }
+
+    #[test]
+    fn leading_plural_anchor_at_eoi() {
+        assert_eq!(
+            read_noconfig("|element|s"),
+            r#"<p><a href="/node/element">elements</a></p>"#
+        );
+    }
+
+    #[test]
     fn http_external_anchor() {
         assert_eq!(
             read_noconfig(
@@ -289,26 +320,26 @@ mod tests {
     }
 
     #[test]
-    fn http_external_anchor_leading_no_third() {
+    fn http_external_anchor_leading_no_third_then_newline() {
         assert_eq!(
-            read_noconfig("|Rust toolchain|https://rustup.rs/ "),
-            r#"<p><a href="https://rustup.rs/">Rust toolchain</a> </p>"#
+            read_noconfig(concat!(
+                "|Rust toolchain|https://rustup.rs/",
+                "\n",
+                "at rustup.rs",
+            )),
+            concat!(
+                r#"<p><a href="https://rustup.rs/">Rust toolchain</a>"#,
+                "\n",
+                "at rustup.rs</p>",
+            )
         );
     }
 
     #[test]
-    fn http_external_anchor_leading_no_third_then_punctuation_then_space() {
+    fn http_external_anchor_leading_no_third_then_space() {
         assert_eq!(
-            read_noconfig("|Rust toolchain|https://rustup.rs/, "),
-            r#"<p><a href="https://rustup.rs/">Rust toolchain</a>, </p>"#
-        );
-    }
-
-    #[test]
-    fn http_external_anchor_leading_no_third_then_punctuation_then_eoi() {
-        assert_eq!(
-            read_noconfig("|Rust toolchain|https://rustup.rs/,"),
-            r#"<p><a href="https://rustup.rs/">Rust toolchain</a></p>"#
+            read_noconfig("|Rust toolchain|https://rustup.rs/ at rustup.rs"),
+            r#"<p><a href="https://rustup.rs/">Rust toolchain</a> at rustup.rs</p>"#
         );
     }
 
@@ -321,13 +352,40 @@ mod tests {
     }
 
     #[test]
-    fn clear_anchor_buffer() {
+    fn newline_wrapped_anchor() {
         assert_eq!(
-            read_noconfig("|SomeAnchor|\n|SomeOtherAnchor|"),
+            read_noconfig("\n|SomeAnchor|\n"),
+            concat!(
+                "\n",
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
+                "\n"
+            ),
+        );
+    }
+
+    #[test]
+    fn newline_separated_anchors() {
+        assert_eq!(
+            read_noconfig("|SomeAnchor|\n|SomeOtherAnchor|\n"),
             concat!(
                 r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
                 "\n",
-                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
+                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#,
+                "\n"
+            )
+        );
+    }
+
+    #[test]
+    fn empty_line_separated_anchors() {
+        assert_eq!(
+            read_noconfig("|SomeAnchor|\n\n|SomeOtherAnchor|\n"),
+            concat!(
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
+                "\n",
+                "\n",
+                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#,
+                "\n",
             ),
         );
     }

@@ -55,6 +55,10 @@ impl Lexeme {
         self.as_char().is_some_and(|as_char| as_char == c)
     }
 
+    pub fn match_next_as_char(&self, c: char) -> bool {
+        self.next_as_char().is_some_and(|next| next == c)
+    }
+
     pub fn is_punctuation(&self) -> bool {
         let punctuation = Delimiters::default().punctuation;
         self.as_char().is_some_and(|c| punctuation.contains(&c))
@@ -80,8 +84,10 @@ impl Lexeme {
 
     pub fn is_next_boundary(&self) -> bool {
         let delimiters = Delimiters::default();
-        self.next_as_char()
-            .is_some_and(|c| delimiters.is_boundary(c))
+        self.last
+            || self
+                .next_as_char()
+                .is_some_and(|c| delimiters.is_boundary(c))
     }
 
     pub fn next_first_char(&self) -> Option<char> {

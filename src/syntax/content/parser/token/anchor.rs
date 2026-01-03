@@ -5,6 +5,7 @@ pub struct Anchor {
     pub text: String,
     pub destination: Option<String>,
     pub leading: bool,
+    pub balanced: bool,
     pub external: bool,
 }
 
@@ -45,12 +46,14 @@ impl Anchor {
         destination: &str,
         leading: bool,
         external: bool,
+        balanced: bool,
     ) -> Anchor {
         Anchor {
             text: text.to_owned(),
             destination: Some(Anchor::resolve_destination(destination)),
             leading,
             external,
+            balanced,
         }
     }
 
@@ -70,7 +73,7 @@ mod tests {
 
     #[test]
     fn render_anchor() {
-        let anchor = Anchor::new("AnchorText", "AnchorDest", true, false);
+        let anchor = Anchor::new("AnchorText", "AnchorDest", true, false, false);
         assert_eq!(
             anchor.render(),
             r#"<a href="/node/AnchorDest">AnchorText</a>"#

@@ -1,6 +1,6 @@
 use std::collections::{HashMap};
 
-use crate::types::Config;
+use crate::{prelude::*,types::Config};
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
@@ -27,6 +27,8 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
 
     let segments = segment::segment(text);
     let lexemes = Lexeme::collect(&segments);
+
+    log!("Lexing segments: {segments:?}");
 
     let mut iterator = lexemes.iter().peekable();
     while let Some(lexeme) = iterator.next() {
@@ -81,13 +83,22 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     tokens.push(Token::Code(Code::new(true)));
                     continue;
                 } else if Anchor::probe(lexeme) {
+                    log!("Positively probed anchor: {lexeme:?}");
                     state.context.inline = Inline::Anchor;
                     state.buffers.anchor.clear();
 
-                    if lexeme.match_first_char('|') {
+                    if lexeme.match_as_char('|') {
+                        log!("{:#?} matches as a pipe char", lexeme.text());
                         state.buffers.anchor.candidate.leading = true;
                     } else {
+                        log!(
+                            "{:#?} not a pipe: assuming it's the anchor text",
+                            lexeme.text(),
+                        );
                         state.buffers.anchor.candidate.text = lexeme.text();
+                        // because we probed positively and this is not a pipe,
+                        // the next lexeme must be and so it was now parsed
+                        iterator.next();
                     }
                     continue;
                 } else if Oblique::probe(lexeme) {
@@ -294,7 +305,7 @@ mod tests {
     }
 
     #[test]
-    fn http_external_anchor_leading_no_third_then_punctuation_then_eof() {
+    fn http_external_anchor_leading_no_third_then_punctuation_then_eoi() {
         assert_eq!(
             read_noconfig("|Rust toolchain|https://rustup.rs/,"),
             r#"<p><a href="https://rustup.rs/">Rust toolchain</a></p>"#
@@ -302,7 +313,7 @@ mod tests {
     }
 
     #[test]
-    fn http_external_anchor_leading_no_third_then_eof() {
+    fn http_external_anchor_leading_no_third_then_eoi() {
         assert_eq!(
             read_noconfig("|Rust toolchain|https://rustup.rs/"),
             r#"<p><a href="https://rustup.rs/">Rust toolchain</a></p>"#
@@ -331,7 +342,7 @@ mod tests {
     }
 
     #[test]
-    fn eof_pre() {
+    fn eoi_pre() {
         let payload = "Jp8INpWzsQmk20jpIhBFCfMUXOztxv0w";
         assert_eq!(
             read_noconfig(&format!("`\n{payload}\n`")),

@@ -73,7 +73,8 @@ mod tests {
 
     #[test]
     fn render_anchor() {
-        let anchor = Anchor::new("AnchorText", "AnchorDest", true, false, false);
+        let anchor =
+            Anchor::new("AnchorText", "AnchorDest", true, false, false);
         assert_eq!(
             anchor.render(),
             r#"<a href="/node/AnchorDest">AnchorText</a>"#

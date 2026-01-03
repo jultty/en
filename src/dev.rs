@@ -1,13 +1,10 @@
-
 #[allow(clippy::print_stderr)]
 pub fn elog(function: &str, message: &str) {
     eprintln!("{:?} [{function}] {message}", crate::ONSET.elapsed());
 }
 
 // Paths in this slice suppress logging if found in the stack trace
-pub const SKIP_PATHS: &[&str] = &[
-    "en::types::Config::parse_text"
-];
+pub const SKIP_PATHS: &[&str] = &["en::types::Config::parse_text"];
 
 #[macro_export]
 macro_rules! log {

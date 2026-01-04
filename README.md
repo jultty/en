@@ -12,38 +12,65 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
 
 - [x] Add tests
     - [ ] Improve content syntax parser coverage
-- [ ] Redirects
+- [x] Redirects
+- [ ] Strip/render some syntax in Tree text preview
+- [ ] Drop-down navigation
+- [ ] Meta-awareness
+    - [ ] Detached edges
+    - [ ] Most linked to nodes
+    - [ ] Most linked from nodes
+    - [ ] Most linked to nonexistent nodes
+    - [ ] Most linked
+- [ ] Special sections
+    - [ ] Definition (implies metadata `has_definition`)
+    - [ ] See also (implies a kind of connection, e.g. `related`)
+    - [ ] Not to be confused with (implies a kind of connection)
+    - [ ] Contrast with (implies a kind of connection)
+    - [ ] Example (implies metadata `has_example`)
+    - [ ] References/influences (implies metadata `has_references`)
+- [ ] Sorting of tree, index list and drop-down navigation
+    - [ ] Alphabetic
+    - [ ] By most linked to
+- [x] Anchors and connections
+    - [ ] Render detached anchors differently
+    - [ ] Suffix-aware anchors
+        - [x] Plural anchors (|node|s -> node)
+        - [x] Ignore trailing punctuation
+        - [ ] Conjugation anchors (|will|ed -> will)
+        - [ ] Configurable suffixes
+    - [ ] Spaced node anchor (|red fox| -> redfox -> RedFox)
+    - [ ] Automatic connections from anchors
+    - [ ] `#` syntax for header ID anchors
+    - [ ] Connection kinds
+        - [ ] Mutual
+        - [ ] Category <-> Membership
+        - [ ] Opposite <-> Equivalent
+        - [ ] Contrast <-> Similar
+        - [ ] Cognate <-> Unrelated
+        - [ ] Specialization <-> Generalization
+        - [ ] Custom connection kinds
+    - [x] External anchors
 - [ ] Richer text formatting
+    - [ ] Nested formatting
     - [x] Headers
     - [x] Preformatted blocks
+    - [x] Oblique,
+    - [ ] Underline
+    - [ ] Strikethrough
+    - [ ] Bold
     - [x] Inline code
-    - [x] Anchor rendering
-        - [ ] Automatic anchors
-        - [ ] Plural anchors (|node|s -> node)
-        - [ ] Conjugation anchors (|will|ed -> will)
-        - [ ] Spaced node anchor (|red fox| -> redfox -> RedFox)
-        - [ ] TOML allows only letters, numbers, dashes and underscores in node IDs. This means trailing punctuation such as in `panther|Panthera,` could be automatically split
-        - [ ] `#` syntax for header ID anchors
-    - [x] External anchors
-    - [ ] Bold, italics, underline, strikethrough
     - [ ] Lists
     - [ ] Checkboxes
         - [ ] Move this roadmap to en
-- [ ] Connection kinds
-    - [ ] Mutual
-    - [ ] Category <-> Membership
-    - [ ] Opposite <-> Equivalent
-    - [ ] Contrast <-> Similar
-    - [ ] Cognate <-> Unrelated
-    - [ ] Specialization <-> Generalization
-    - [ ] Custom connection kinds
-- [ ] Strip/render some syntax in Tree text preview
-- [ ] Begin centralizing state
 - [ ] Full-text search
-- [ ] Render to filesystem
+- [ ] Begin centralizing state
 - [ ] Reduce O(n) calls in the formats module
-- [ ] Multi-file graphs
-- [ ] Multi-graph
+- [ ] Alternative rendering modes
+    - [ ] Render to filesystem
+    - [ ] Single-page rendering
+- [ ] Input formats
+    - [ ] Multi-file graphs
+    - [ ] Multi-graph
 - [ ] Themes
 - [x] Array syntax for lightweight connections
 - [x] Automatic IDs

@@ -7,7 +7,7 @@ update:
 
 alias u := update
 
-# Build and run server
+# Build and serve
 [group: 'develop']
 run host='::1' port='3003' *args:
     {{ debug_vars }} cargo run -- \
@@ -15,7 +15,7 @@ run host='::1' port='3003' *args:
 
 alias r := run
 
-# Build and run on changes
+# Build and serve on changes
 [group: 'develop']
 run-watch:
     {{ watch_cmd }} {{ just_cmd }} run
@@ -23,16 +23,27 @@ run-watch:
 alias w := run-watch
 
 [private]
-assess-run:
-    -{{ just_cmd }} lint test
+quick-assess:
+    {{ just_cmd }} check lint test
+
+[private]
+quick-assess-run:
+    -{{ just_cmd }} quick-assess
     {{ just_cmd }} run
 
-# Apply basic assessments, build and run on changes
+# Run quick assessments on changes
 [group: 'develop']
-assess-run-watch:
-    {{ watch_cmd }} {{ just_cmd }} assess-run
+quick-assess-watch:
+    {{ watch_cmd }} {{ just_cmd }} quick-assess
 
-alias aw := assess-run-watch
+alias qa := quick-assess-watch
+
+# Run quick assessments, build and serve on changes
+[group: 'develop']
+quick-assess-run-watch:
+    {{ watch_cmd }} {{ just_cmd }} quick-assess-run
+
+alias qr := quick-assess-run-watch
 
 # Format all files
 [group: 'develop']
@@ -153,7 +164,7 @@ alias la := lint-assess
 # Run cargo check
 [group: 'assess']
 check:
-    RUSTFLAGS="-Dwarnings" cargo check --workspace
+    {{ debug_vars }} cargo check --workspace
 
 alias c := check
 
@@ -180,12 +191,13 @@ cover-assess: test-cover
 
 # Run all assessments
 [script, group: 'assess']
-verify: && format-assess lint-assess check test cover-assess
-    export RUSTFLAGS="-Dwarnings"
+verify:
+    export RUSTFLAGS=${RUSTFLAGS:-"-Dwarnings"}
     if [ -n "$(git status --porcelain)" ]; then
         echo "Git working tree is dirty: Commit or stash your changes first"
         exit 1
     fi
+    {{ just_cmd }} format-assess lint-assess check test cover-assess
 
 alias v := verify
 

@@ -71,3 +71,68 @@ pub fn parse(
     }
     false
 }
+
+#[cfg(test)]
+mod tests {
+
+    use crate::{
+        types::Graph,
+        syntax::content::{
+            parser,
+            parser::{
+                token::{preformat::PreFormat},
+                state::State,
+                token::header::Level,
+                Block, context, Token,
+            },
+        },
+    };
+
+    fn read(input: &str) -> String {
+        parser::read(input, &Graph::new(None).meta.config)
+    }
+
+    #[test]
+    fn pre() {
+        let payload = "D0qdJ184f3q1okbYu3Xm1d93jj6jy615";
+        assert_eq!(
+            read(&format!("`\n{payload}\n`\n")),
+            format!("<pre>\n{payload}\n</pre>"),
+        );
+    }
+
+    #[test]
+    fn eoi_pre() {
+        let payload = "Jp8INpWzsQmk20jpIhBFCfMUXOztxv0w";
+        assert_eq!(
+            read(&format!("`\n{payload}\n`")),
+            format!("<pre>\n{payload}\n</pre>"),
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "End of input with open header")]
+    fn end_with_open_header() {
+        let mut state = State::default();
+        state.context.block = Block::Header(1);
+
+        context::close(&state, &mut vec![]);
+    }
+
+    #[test]
+    fn end_with_open_preformat() {
+        let mut state = State::default();
+        state.context.block = Block::PreFormat;
+
+        let mut vec: Vec<Token> = vec![];
+        context::close(&state, &mut vec);
+        assert_eq!(vec, vec![Token::PreFormat(PreFormat::new(false))]);
+    }
+
+    #[test]
+    fn truncated_header_level() {
+        let u: usize = 999;
+        let level = Level::from(u);
+        assert_eq!(level.to_string(), "6");
+    }
+}

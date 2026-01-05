@@ -139,27 +139,195 @@ pub fn parse(
 mod tests {
     use crate::{syntax::content::parser, types::Graph};
 
-    fn read_noconfig(input: &str) -> String {
+    fn read(input: &str) -> String {
         parser::read(input, &Graph::new(None).meta.config)
     }
 
     #[test]
+    fn flanking_with_trailing_comma() {
+        assert_eq!(read("|Node|,"), r#"<p><a href="/node/Node">Node</a>,</p>"#);
+    }
+
+    #[test]
+    fn flanking_with_trailing_comma_and_space() {
+        assert_eq!(
+            read("|Node|, at"),
+            r#"<p><a href="/node/Node">Node</a>, at</p>"#
+        );
+    }
+
+    #[test]
+    fn flanking_at_eoi() {
+        assert_eq!(read("|Node|"), r#"<p><a href="/node/Node">Node</a></p>"#);
+    }
+
+    #[test]
+    fn needless_three_pipe_anchor() {
+        assert_eq!(
+            read("|Node|Destination|"),
+            r#"<p><a href="/node/Destination">Node</a></p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_second_pipe() {
+        assert_eq!(
+            read("Go to Node|Destination|, here"),
+            r#"<p>Go to <a href="/node/Destination">Node</a>, here</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_to_node_s() {
+        assert_eq!(
+            read("The |letter s|s|'s node: |s|!"),
+            r#"<p>The <a href="/node/s">letter s</a>'s node: <a href="/node/s">s</a>!</p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_plural_anchor() {
+        assert_eq!(
+            read("The flower|s bloomed"),
+            r#"<p>The <a href="/node/flower">flowers</a> bloomed</p>"#
+        );
+    }
+
+    #[test]
+    fn leading_plural_anchor() {
+        assert_eq!(
+            read("Interfaces are |element|s of |system|s."),
+            r#"<p>Interfaces are <a href="/node/element">elements</a> of <a href="/node/system">systems</a>.</p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_plural_anchor_at_eoi() {
+        assert_eq!(
+            read("element|s"),
+            r#"<p><a href="/node/element">elements</a></p>"#
+        );
+    }
+
+    #[test]
+    fn leading_plural_anchor_at_eoi() {
+        assert_eq!(
+            read("|element|s"),
+            r#"<p><a href="/node/element">elements</a></p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor() {
+        assert_eq!(
+            read(
+                "a |false dichotomy|https://en.wikipedia.org/wiki/False_dilemma|."
+            ),
+            r#"<p>a <a href="https://en.wikipedia.org/wiki/False_dilemma">false dichotomy</a>.</p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor_leading_no_third_then_newline() {
+        assert_eq!(
+            read(concat!(
+                "|Rust toolchain|https://rustup.rs/",
+                "\n",
+                "at rustup.rs",
+            )),
+            concat!(
+                r#"<p><a href="https://rustup.rs/">Rust toolchain</a>"#,
+                "\n",
+                "at rustup.rs</p>",
+            )
+        );
+    }
+
+    #[test]
+    fn http_external_anchor_leading_no_third_then_space() {
+        assert_eq!(
+            read("|Rust toolchain|https://rustup.rs/ at rustup.rs"),
+            r#"<p><a href="https://rustup.rs/">Rust toolchain</a> at rustup.rs</p>"#
+        );
+    }
+
+    #[test]
+    fn http_external_anchor_leading_no_third_then_eoi() {
+        assert_eq!(
+            read("|Rust toolchain|https://rustup.rs/"),
+            r#"<p><a href="https://rustup.rs/">Rust toolchain</a></p>"#
+        );
+    }
+
+    #[test]
+    fn newline_wrapped_anchor() {
+        assert_eq!(
+            read("\n|SomeAnchor|\n"),
+            concat!(
+                "\n",
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#
+            ),
+        );
+    }
+
+    #[test]
+    fn newline_separated_anchors() {
+        assert_eq!(
+            read("|SomeAnchor|\n|SomeOtherAnchor|\n"),
+            concat!(
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a>"#,
+                "\n",
+                r#"<a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
+            )
+        );
+    }
+
+    #[test]
+    fn empty_line_separated_anchors() {
+        assert_eq!(
+            read("|SomeAnchor|\n\n|SomeOtherAnchor|\n"),
+            concat!(
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
+                "\n",
+                "\n",
+                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
+            ),
+        );
+    }
+
+    #[test]
+    fn trailing_anchor() {
+        assert_eq!(
+            read("see acks|acks"),
+            r#"<p>see <a href="/node/acks">acks</a></p>"#
+        );
+    }
+
+    #[test]
+    fn trailing_anchor_with_newline() {
+        assert_eq!(
+            read("\nsee acks|acks\n"),
+            concat!("\n", r#"<p>see <a href="/node/acks">acks</a></p>"#)
+        );
+    }
+
+    #[test]
     fn indifferent_trailing_pipe() {
-        assert_eq!(read_noconfig("|a|a|"), read_noconfig("a|a|"));
+        assert_eq!(read("|a|a|"), read("a|a|"));
     }
 
     #[test]
     fn indifferent_leading_pipe() {
-        assert_eq!(read_noconfig("|a|a|"), read_noconfig("|a|a"));
+        assert_eq!(read("|a|a|"), read("|a|a"));
     }
 
     #[test]
     fn indifferent_multiline_trailing_pipe() {
-        assert_eq!(read_noconfig("|a|a|\nn"), read_noconfig("a|a|\nn"));
+        assert_eq!(read("|a|a|\nn"), read("a|a|\nn"));
     }
 
     #[test]
     fn indifferent_multiline_leading_pipe() {
-        assert_eq!(read_noconfig("|a|a|\nn"), read_noconfig("|a|a\nn"));
+        assert_eq!(read("|a|a|\nn"), read("|a|a\nn"));
     }
 }

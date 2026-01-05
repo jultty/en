@@ -24,17 +24,27 @@ pub fn parse(
 mod tests {
     use crate::{syntax::content::parser, types::Graph};
 
-    fn read_noconfig(input: &str) -> String {
+    fn read(input: &str) -> String {
         parser::read(input, &Graph::new(None).meta.config)
     }
 
     #[test]
     fn oblique() {
         assert_eq!(
-            read_noconfig(
+            read(
                 "_|this anchor is oblique|o as are these literals_ but not these _just these_, not this _and these with an |anchor| again_"
             ),
             r#"<p><em><a href="/node/o">this anchor is oblique</a> as are these literals</em> but not these <em>just these</em>, not this <em>and these with an <a href="/node/anchor">anchor</a> again</em></p>"#
         );
+    }
+
+    #[test]
+    fn trailing_oblique() {
+        assert_eq!(read("see _acks_"), "<p>see <em>acks</em></p>");
+    }
+
+    #[test]
+    fn trailing_oblique_with_newline() {
+        assert_eq!(read("see _acks_\n"), "<p>see <em>acks</em></p>");
     }
 }

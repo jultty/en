@@ -53,7 +53,7 @@ impl std::fmt::Display for Token {
             Token::Span(ref d) => format!("{d}"),
         };
 
-        write!(f, "T*{data}")
+        write!(f, "Tk:{data}")
     }
 }
 

@@ -12,7 +12,8 @@ pub struct Anchor {
 impl Parseable for Anchor {
     fn probe(lexeme: &Lexeme) -> bool {
         lexeme.text() == "|"
-            || (!lexeme.is_whitespace() && lexeme.next() == "|")
+            || ((!lexeme.is_whitespace() && !lexeme.is_delimiter())
+                && lexeme.next() == "|")
     }
 
     fn lex(_lexeme: &Lexeme) -> Anchor {
@@ -58,13 +59,13 @@ impl std::fmt::Display for Anchor {
         let mut tail = String::default();
 
         if self.leading {
-            tail.push_str(" [Leading]");
+            tail.push_str(" +Leading");
         }
         if self.balanced {
-            tail.push_str(" [Balanced]");
+            tail.push_str(" +Balanced");
         }
         if self.external {
-            tail.push_str(" [External]");
+            tail.push_str(" +External");
         }
 
         write!(

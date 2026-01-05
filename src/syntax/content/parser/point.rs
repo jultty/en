@@ -1,9 +1,12 @@
-use crate::syntax::content::{
-    Parseable as _,
-    parser::{
-        lexeme::Lexeme,
-        token::{Token, oblique::Oblique},
-        state::State,
+use crate::{
+    prelude::*,
+    syntax::content::{
+        Parseable as _,
+        parser::{
+            lexeme::Lexeme,
+            token::{Token, oblique::Oblique},
+            state::State,
+        },
     },
 };
 
@@ -13,6 +16,7 @@ pub fn parse(
     tokens: &mut Vec<Token>,
 ) -> bool {
     if Oblique::probe(lexeme) {
+        log!("Oblique probed {lexeme}");
         tokens.push(Token::Oblique(Oblique::new(!state.switches.oblique)));
         state.switches.oblique = !state.switches.oblique;
         return true;
@@ -26,6 +30,22 @@ mod tests {
 
     fn read(input: &str) -> String {
         parser::read(input, &Graph::new(None).meta.config)
+    }
+
+    #[test]
+    fn oblique_anchor() {
+        assert_eq!(
+            read("w _|S|_ w"),
+            r#"<p>w <em><a href="/node/S">S</a></em> w</p>"#
+        );
+    }
+
+    #[test]
+    fn oblique_anchor_with_trailing_comma() {
+        assert_eq!(
+            read("w _|S|_, w"),
+            r#"<p>w <em><a href="/node/S">S</a></em>, w</p>"#
+        );
     }
 
     #[test]

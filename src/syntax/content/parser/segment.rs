@@ -6,7 +6,6 @@ pub mod delimiter {
 
     pub struct Delimiters {
         pub atomic: Vec<char>,
-        pub boundary: Vec<char>,
         pub flanking: Vec<char>,
         pub punctuation: Vec<char>,
         pub whitespace: Vec<char>,
@@ -14,21 +13,11 @@ pub mod delimiter {
 
     impl Default for Delimiters {
         fn default() -> Self {
-            let atomic = vec!['`', '|'];
-            let flanking = vec!['_', '*'];
-            let punctuation = vec![',', '.', ';', ':', '?', '!'];
-            let whitespace = vec!['\n', ' '];
-
-            let boundary =
-                [atomic.clone(), punctuation.clone(), whitespace.clone()]
-                    .concat();
-
             Delimiters {
-                atomic,
-                boundary,
-                flanking,
-                punctuation,
-                whitespace,
+                atomic: vec!['`', '|'],
+                flanking: vec!['_', '*', '(', ')', '\'', '"'],
+                punctuation: vec![',', '.', ';', ':', '?', '!'],
+                whitespace: vec!['\n', ' '],
             }
         }
     }
@@ -44,12 +33,16 @@ pub mod delimiter {
             .contains(&c)
         }
 
+        pub fn is_delimiter(&self, c: char) -> bool {
+            self.is_boundary(c) || self.flanking.contains(&c)
+        }
+
         fn is_str_delimiter(&self, s: &str) -> bool {
             if s.chars().count() > 1 {
                 return false;
             }
             if let Some(c) = s.chars().nth(0) {
-                self.boundary.contains(&c) || self.flanking.contains(&c)
+                self.is_delimiter(c)
             } else {
                 false
             }

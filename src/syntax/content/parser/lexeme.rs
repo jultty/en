@@ -92,6 +92,19 @@ impl Lexeme {
                 .is_some_and(|c| delimiters.is_boundary(c))
     }
 
+    pub fn is_delimiter(&self) -> bool {
+        let delimiters = Delimiters::default();
+        self.as_char().is_some_and(|c| delimiters.is_delimiter(c))
+    }
+
+    pub fn is_next_delimiter(&self) -> bool {
+        let delimiters = Delimiters::default();
+        self.last
+            || self
+                .next_as_char()
+                .is_some_and(|c| delimiters.is_delimiter(c))
+    }
+
     pub fn next_first_char(&self) -> Option<char> {
         self.next.chars().nth(0)
     }

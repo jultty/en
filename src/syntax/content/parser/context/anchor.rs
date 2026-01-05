@@ -65,8 +65,8 @@ pub fn parse(
                 state.context.inline = Inline::None;
             }
             return true;
-        } else if lexeme.match_as_char('|') && lexeme.is_next_boundary() {
-            log!("End: Pipe followed by boundary");
+        } else if lexeme.match_as_char('|') && lexeme.is_next_delimiter() {
+            log!("End: Pipe followed by delimiter");
             if buffer.destination.is_empty() {
                 candidate.destination = Some(candidate.text.clone());
             } else {
@@ -79,21 +79,30 @@ pub fn parse(
             log!("State: Found a pipe, but no boundary: destination follows");
             candidate.balanced = true;
             return true;
+        } else if lexeme.match_as_char(':') {
+            log!("State: Found a colon, marking anchor as external");
+            candidate.external = true;
+            buffer.destination.push_str(&lexeme.text());
+            return true;
         } else if lexeme.match_as_char('|') {
             log!("End: Explicit end-of-destination pipe");
             candidate.destination = Some(buffer.destination.clone());
             return true;
-        } else if !candidate.external
-            && lexeme.is_punctuation()
-            && lexeme.is_next_whitespace()
-        {
-            log!("End: Punctuation followed by whitespace");
+        } else if !candidate.external && lexeme.is_delimiter() {
+            log!("End: Internal anchor trailed by delimiter");
             candidate.destination = Some(buffer.destination.clone());
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
             return false;
         } else if lexeme.is_next_whitespace() {
             log!("End: next is whitespace");
+            buffer.destination.push_str(&lexeme.text());
+            candidate.destination = Some(buffer.destination.clone());
+            tokens.push(Token::Anchor(candidate.clone()));
+            state.context.inline = Inline::None;
+            return true;
+        } else if lexeme.last() {
+            log!("End: end of input");
             buffer.destination.push_str(&lexeme.text());
             candidate.destination = Some(buffer.destination.clone());
             tokens.push(Token::Anchor(candidate.clone()));
@@ -108,9 +117,6 @@ pub fn parse(
                 lexeme.text(),
                 buffer.destination,
             );
-            if lexeme.match_as_char(':') {
-                candidate.external = true;
-            }
             buffer.destination.push_str(&lexeme.text());
             if lexeme.last() {
                 candidate.destination = Some(buffer.destination.clone());
@@ -329,5 +335,117 @@ mod tests {
     #[test]
     fn indifferent_multiline_leading_pipe() {
         assert_eq!(read("|a|a|\nn"), read("|a|a\nn"));
+    }
+
+    #[test]
+    fn anchor_with_trailing_single_quote() {
+        assert_eq!(
+            read("the |lion|'s mouth"),
+            r#"<p>the <a href="/node/lion">lion</a>'s mouth</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_trailing_double_quote() {
+        assert_eq!(
+            read(r#"the "|real|" motive"#),
+            r#"<p>the "<a href="/node/real">real</a>" motive</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_trailing_parenthesis() {
+        assert_eq!(
+            read("this (though |true|) was questioned"),
+            r#"<p>this (though <a href="/node/true">true</a>) was questioned</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_leading_single_quote() {
+        assert_eq!(
+            read("the 'real|Reality' motive"),
+            r#"<p>the '<a href="/node/Reality">real</a>' motive</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_leading_double_quote() {
+        assert_eq!(
+            read(r#"the "real|Reality" motive"#),
+            r#"<p>the "<a href="/node/Reality">real</a>" motive</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_leading_parenthesis() {
+        assert_eq!(
+            read("her (last|Surname) name"),
+            r#"<p>her (<a href="/node/Surname">last</a>) name</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_internal_apostrophe() {
+        assert_eq!(
+            read("the |lion's mouth|album was released"),
+            r#"<p>the <a href="/node/album">lion's mouth</a> was released</p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_anchor_with_internal_apostrophe() {
+        assert_eq!(
+            read("they decided to stay at Jane's|YellowHouse that night"),
+            r#"<p>they decided to stay at <a href="/node/YellowHouse">Jane's</a> that night</p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_anchor_with_internal_apostrophe_at_eoi() {
+        assert_eq!(
+            read("they decided to stay at Jane's|YellowHouse"),
+            r#"<p>they decided to stay at <a href="/node/YellowHouse">Jane's</a></p>"#
+        );
+    }
+
+    #[test]
+    fn nonleading_anchor_with_internal_apostrophe_at_soi() {
+        assert_eq!(
+            read("Jane's|YellowHouse that night"),
+            r#"<p><a href="/node/YellowHouse">Jane's</a> that night</p>"#
+        );
+    }
+
+    #[test]
+    fn anchor_with_internal_double_quotes() {
+        assert_eq!(
+            read(r#"the |"real"|Truth motive"#),
+            r#"<p>the <a href="/node/Truth">"real"</a> motive</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_internal_double_quotes_wrapping_spaced_words() {
+        assert_eq!(
+            read(r#"the |"bare reality"|Ideology they believed"#),
+            r#"<p>the <a href="/node/Ideology">"bare reality"</a> they believed</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_internal_parenthesis() {
+        assert_eq!(
+            read("her |last (name)|Surname was Amad"),
+            r#"<p>her <a href="/node/Surname">last (name)</a> was Amad</p>"#,
+        );
+    }
+
+    #[test]
+    fn anchor_with_internal_parenthesis_wrapping_spaced_words() {
+        assert_eq!(
+            read("this |truth (though questionable) was fine|Absurd to them "),
+            r#"<p>this <a href="/node/Absurd">truth (though questionable) was fine</a> to them</p>"#
+        );
     }
 }

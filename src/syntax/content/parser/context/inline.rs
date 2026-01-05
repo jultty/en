@@ -1,14 +1,17 @@
 use std::{iter::Peekable, slice::Iter};
 
-use crate::{prelude::*,syntax::content::{
-    Parseable as _,
-    parser::{
-        context, Inline,
-        lexeme::Lexeme,
-        state::State,
-        token::{Token, code::Code, anchor::Anchor},
+use crate::{
+    prelude::*,
+    syntax::content::{
+        Parseable as _,
+        parser::{
+            context, Inline,
+            lexeme::Lexeme,
+            state::State,
+            token::{Token, code::Code, anchor::Anchor},
+        },
     },
-}};
+};
 
 pub fn parse(
     lexeme: &Lexeme,

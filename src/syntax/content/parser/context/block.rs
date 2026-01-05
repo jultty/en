@@ -27,6 +27,7 @@ pub fn parse(
     match state.context.block {
         Block::None => {
             if PreFormat::probe(lexeme) {
+                log!("Block Context: None -> PreFormat on {lexeme}");
                 state.context.block = Block::PreFormat;
                 tokens.push(Token::PreFormat(PreFormat::new(true)));
                 return true;
@@ -37,6 +38,7 @@ pub fn parse(
                     iterator.peek().map_or(&Lexeme::new("", ""), |l| l),
                     &mut state.dom_ids,
                 ));
+                log!("Block Context: None -> Header on {lexeme}");
                 state.context.block = Block::Header(header.level());
                 tokens.push(Token::Header(header));
                 return true;
@@ -49,6 +51,7 @@ pub fn parse(
         Block::PreFormat => {
             if PreFormat::probe(lexeme) {
                 tokens.push(Token::PreFormat(PreFormat::new(false)));
+                log!("Block Context: PreFormat -> None on {lexeme}");
                 state.context.block = Block::None;
             } else {
                 tokens.push(Token::Literal(Literal::lex(lexeme)));
@@ -57,14 +60,15 @@ pub fn parse(
         },
         Block::Paragraph => {
             if Paragraph::probe_end(lexeme) {
-                log!("Block Context: Paragraph -> None on {lexeme}");
                 tokens.push(Token::Paragraph(Paragraph::new(false)));
+                log!("Block Context: Paragraph -> None on {lexeme}");
                 state.context.block = Block::None;
             }
         },
         Block::Header(n) => {
             if lexeme.text() == "\n" {
                 tokens.push(Token::Header(Header::from_u8(n, false, None)));
+                log!("Block Context: Header -> None on {lexeme}");
                 state.context.block = Block::None;
             }
         },

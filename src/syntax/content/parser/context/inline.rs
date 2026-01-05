@@ -1,6 +1,6 @@
 use std::{iter::Peekable, slice::Iter};
 
-use crate::syntax::content::{
+use crate::{prelude::*,syntax::content::{
     Parseable as _,
     parser::{
         context, Inline,
@@ -8,7 +8,7 @@ use crate::syntax::content::{
         state::State,
         token::{Token, code::Code, anchor::Anchor},
     },
-};
+}};
 
 pub fn parse(
     lexeme: &Lexeme,
@@ -19,10 +19,12 @@ pub fn parse(
     match state.context.inline {
         Inline::None => {
             if Code::probe(lexeme) {
+                log!("Inline Context: None -> Code on {lexeme}");
                 state.context.inline = Inline::Code;
                 tokens.push(Token::Code(Code::new(true)));
                 return true;
             } else if Anchor::probe(lexeme) {
+                log!("Inline Context: None -> Anchor on {lexeme}");
                 state.context.inline = Inline::Anchor;
                 state.buffers.anchor.clear();
 
@@ -39,6 +41,7 @@ pub fn parse(
         },
         Inline::Code => {
             if Code::probe(lexeme) {
+                log!("Inline Context: Code -> None on {lexeme}");
                 state.context.inline = Inline::None;
                 tokens.push(Token::Code(Code::new(false)));
                 return true;

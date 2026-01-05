@@ -112,6 +112,27 @@ impl Parseable for Header {
     }
 }
 
+impl std::fmt::Display for Header {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let display_open_state = if let Some(open_state) = self.open {
+            if open_state { "open" } else { "closed" }
+        } else {
+            "unknown"
+        };
+
+        let display_dom_id = match self.dom_id {
+            Some(ref dom_id) => format!(" DOM ID {dom_id}"),
+            None => String::new()
+        };
+
+        write!(
+            f,
+            "Header [{} L{}{}]",
+            display_open_state, self.level, display_dom_id
+        )
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Level {
     One,

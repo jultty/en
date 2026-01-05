@@ -31,6 +31,13 @@ impl Parseable for Oblique {
     }
 }
 
+impl std::fmt::Display for Oblique {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let display_open_state = if self.open { "open" } else { "closed" };
+        write!(f, "Oblique [{display_open_state}]")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -4,7 +4,7 @@ use crate::types::Config;
 
 pub mod parser;
 
-pub trait Parseable {
+pub trait Parseable: std::fmt::Display {
     fn probe(lexeme: &Lexeme) -> bool;
     fn lex(lexeme: &Lexeme) -> Self;
     fn render(&self) -> String;

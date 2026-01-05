@@ -39,6 +39,24 @@ impl Token {
     }
 }
 
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let data = match *self {
+            Token::Anchor(ref d) => format!("{d}"),
+            Token::Code(ref d) => format!("{d}"),
+            Token::Header(ref d) => format!("{d}"),
+            Token::LineBreak(ref d) => format!("{d}"),
+            Token::Literal(ref d) => format!("{d}"),
+            Token::Oblique(ref d) => format!("{d}"),
+            Token::Paragraph(ref d) => format!("{d}"),
+            Token::PreFormat(ref d) => format!("{d}"),
+            Token::Span(ref d) => format!("{d}"),
+        };
+
+        write!(f, "T*{data}")
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

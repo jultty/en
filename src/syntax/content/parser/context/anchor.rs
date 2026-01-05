@@ -19,10 +19,7 @@ pub fn parse(
     state: &mut State,
     tokens: &mut Vec<Token>,
 ) -> bool {
-    log!(
-        "Resolving open context: {:#?}",
-        state.clone().buffers.anchor
-    );
+    log!("Solving: {}", state.clone().buffers.anchor);
     let buffer = &mut state.buffers.anchor;
     let candidate = &mut buffer.candidate;
 

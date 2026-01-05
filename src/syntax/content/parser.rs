@@ -30,7 +30,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     let segments = segment::segment(text);
     let lexemes = Lexeme::collect(&segments);
 
-    log!("Lexing segments: {segments:?}");
+    log!("Segments: {segments:?}");
 
     let mut iterator = lexemes.iter().peekable();
     while let Some(lexeme) = iterator.next() {
@@ -51,7 +51,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     tokens.push(Token::Header(header));
                     continue;
                 } else if Paragraph::probe(lexeme) {
-                    log!("Probed block context None -> Paragraph: {lexeme:?}");
+                    log!("Block Context: None -> Paragraph on {lexeme}");
                     state.context.block = Block::Paragraph;
                     tokens.push(Token::Paragraph(Paragraph::new(true)));
                 }
@@ -67,7 +67,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
             },
             Block::Paragraph => {
                 if Paragraph::probe_end(lexeme) {
-                    log!("Probed block context Paragraph -> None: {lexeme:?}");
+                    log!("Block Context: Paragraph -> None on {lexeme}");
                     tokens.push(Token::Paragraph(Paragraph::new(false)));
                     state.context.block = Block::None;
                 }
@@ -86,28 +86,23 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     state.context.inline = Inline::Code;
                     tokens.push(Token::Code(Code::new(true)));
                     continue;
+                } else if Oblique::probe(lexeme) {
+                    log!("Inline Context: None -> Oblique on {lexeme}");
+                    state.context.inline = Inline::Oblique;
+                    tokens.push(Token::Oblique(Oblique::new(true)));
+                    continue;
                 } else if Anchor::probe(lexeme) {
-                    log!("Positively probed anchor: {lexeme:?}");
                     state.context.inline = Inline::Anchor;
                     state.buffers.anchor.clear();
 
                     if lexeme.match_as_char('|') {
-                        log!("{:#?} matches as a pipe char", lexeme.text());
                         state.buffers.anchor.candidate.leading = true;
                     } else {
-                        log!(
-                            "{:#?} not a pipe: assuming it's the anchor text",
-                            lexeme.text(),
-                        );
                         state.buffers.anchor.candidate.text = lexeme.text();
                         // because we probed positively and this is not a pipe,
                         // the next lexeme must be and so it was now parsed
                         iterator.next();
                     }
-                    continue;
-                } else if Oblique::probe(lexeme) {
-                    state.context.inline = Inline::Oblique;
-                    tokens.push(Token::Oblique(Oblique::new(true)));
                     continue;
                 }
             },
@@ -120,6 +115,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
             },
             Inline::Oblique => {
                 if Oblique::probe(lexeme) {
+                    log!("Inline Context: Oblique -> None on {lexeme}");
                     state.context.inline = Inline::None;
                     tokens.push(Token::Oblique(Oblique::new(false)));
                     continue;
@@ -135,7 +131,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
         for &(ref probe, lex) in map {
             if probe(lexeme) {
                 let token = lex(lexeme);
-                log!("Lexmap lexed {lexeme:?} into {token:?}");
+                log!("Lexmap lexed {lexeme} into {token}");
                 tokens.push(token);
                 break;
             }
@@ -170,6 +166,30 @@ impl AnchorBuffer {
         self.candidate = Anchor::default();
         self.text = String::new();
         self.destination = String::new();
+    }
+}
+
+impl std::fmt::Display for AnchorBuffer {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let display_text = if self.text.is_empty() {
+            String::new()
+        } else {
+            format!("text: {:?}", self.text)
+        };
+        let display_destination = if self.destination.is_empty() {
+            String::new()
+        } else {
+            format!(", dest: {:?}", self.destination)
+        };
+
+        let display_text_and_destination =
+            format!("{display_text}{display_destination}");
+
+        write!(
+            f,
+            "AnchorBuffer [{display_text_and_destination}] >> {}",
+            self.candidate,
+        )
     }
 }
 

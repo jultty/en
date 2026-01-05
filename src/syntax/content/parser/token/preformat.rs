@@ -13,6 +13,17 @@ impl PreFormat {
     }
 }
 
+impl std::fmt::Display for PreFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let display_open_state = if let Some(open_state) = self.open {
+            if open_state { "open" } else { "closed" }
+        } else {
+            "unknown"
+        };
+        write!(f, "PreFormat [{display_open_state}]")
+    }
+}
+
 impl Parseable for PreFormat {
     fn probe(lexeme: &Lexeme) -> bool {
         lexeme.match_first_char('`') && (lexeme.next() == "\n" || lexeme.last())

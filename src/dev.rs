@@ -62,8 +62,53 @@ macro_rules! log {
     }};
 }
 
+pub fn wrap(s: &str) -> String {
+    fn symbolize(s: &str) -> String {
+        if s == r"\n" {
+            String::from('↳')
+        } else {
+            String::from(s)
+        }
+    }
+
+    fn quote(s: &str) -> String {
+        if s.contains(' ') {
+            format!("'{s}'")
+        } else {
+            String::from(s)
+        }
+    }
+
+    fn escape(s: &str) -> String {
+        s.escape_debug().collect()
+    }
+
+    symbolize(&quote(&escape(s)))
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    #[test]
+    fn wrap_newline() {
+        assert_eq!(wrap("\n"), String::from(r"↳"));
+    }
+
+    #[test]
+    fn wrap_space() {
+        assert_eq!(wrap(" "), String::from("' '"));
+    }
+
+    #[test]
+    fn wrap_spaces() {
+        assert_eq!(wrap("  "), String::from("'  '"));
+    }
+
+    #[test]
+    fn wrap_containing_space() {
+        assert_eq!(wrap("< "), String::from("'< '"));
+    }
 
     fn run_in_debug_level(level: &str) {
         #[allow(unsafe_code)]

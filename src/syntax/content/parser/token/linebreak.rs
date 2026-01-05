@@ -18,3 +18,9 @@ impl Parseable for LineBreak {
         "\n".to_owned()
     }
 }
+
+impl std::fmt::Display for LineBreak {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "LineBreak")
+    }
+}

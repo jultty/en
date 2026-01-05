@@ -40,6 +40,16 @@ impl Parseable for Paragraph {
     }
 }
 
+impl std::fmt::Display for Paragraph {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let display_open_state = match self.open {
+            Some(open_state) => { if open_state { "open" } else { "closed" } },
+            None => "unknown"
+        };
+        write!(f, "Paragraph [{display_open_state}]")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

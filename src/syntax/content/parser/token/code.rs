@@ -31,6 +31,13 @@ impl Parseable for Code {
     }
 }
 
+impl std::fmt::Display for Code {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let display_open_state = if self.open { "open" } else { "closed" };
+        write!(f, "Code [{display_open_state}]")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

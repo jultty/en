@@ -20,3 +20,9 @@ impl Parseable for Literal {
         self.text.clone()
     }
 }
+
+impl std::fmt::Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Literal {}", crate::dev::wrap(&self.text))
+    }
+}

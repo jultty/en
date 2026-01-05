@@ -22,7 +22,7 @@ impl Parseable for Anchor {
     fn render(&self) -> String {
         let Some(ref destination) = self.destination else {
             panic!(
-                "Attempt to render anchor {self:?} without knowing its destination."
+                "Attempt to render anchor {self:#?} without knowing its destination."
             )
         };
 
@@ -36,6 +36,41 @@ impl Parseable for Anchor {
             r#"<a href="{}">{}</a>"#,
             Anchor::resolve_destination(&non_empty_destination),
             &self.text
+        )
+    }
+}
+
+impl std::fmt::Display for Anchor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use crate::dev::wrap;
+
+        let display_destination = match self.destination {
+            Some(ref destination) => { if destination.is_empty() {
+                "<empty>"
+            } else {
+                destination
+            }},
+            None => "<unknown>"
+        };
+
+        let mut tail = String::new();
+
+        if self.leading {
+            tail.push_str(" [Leading]");
+        }
+        if self.balanced {
+            tail.push_str(" [Balanced]");
+        }
+        if self.external {
+            tail.push_str(" [External]");
+        }
+
+        write!(
+            f,
+            "Anchor {:?} -> {:?}{}",
+            wrap(&self.text),
+            display_destination,
+            tail
         )
     }
 }

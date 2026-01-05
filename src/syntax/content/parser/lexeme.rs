@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::{prelude::*, syntax::content::parser::segment::delimiter::Delimiters};
 
 #[derive(Clone, Debug)]
@@ -151,6 +153,19 @@ impl Lexeme {
         }
 
         out_vector
+    }
+}
+
+impl fmt::Display for Lexeme {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use crate::dev::wrap;
+
+        let next_display = if self.last() {
+            " <EOI>"
+        } else {
+            &format!("-> {}", wrap(&self.next))
+        };
+        write!(f, "{} {}", wrap(&self.text), next_display)
     }
 }
 

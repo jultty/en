@@ -6,8 +6,8 @@ pub struct Literal {
 }
 
 impl Parseable for Literal {
-    fn probe(_lexeme: &Lexeme) -> bool {
-        true
+    fn probe(lexeme: &Lexeme) -> bool {
+        !(lexeme.last() && lexeme.is_whitespace())
     }
 
     fn lex(lexeme: &Lexeme) -> Literal {

@@ -1,6 +1,6 @@
 use crate::syntax::content::parser::{
-    token::{Token, paragraph::Paragraph, preformat::PreFormat},
     State,
+    token::{Token, paragraph::Paragraph, preformat::PreFormat},
 };
 
 pub mod anchor;

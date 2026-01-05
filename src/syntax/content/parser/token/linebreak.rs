@@ -2,12 +2,12 @@ use crate::{
     syntax::content::{Parseable, parser::lexeme::Lexeme},
 };
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct LineBreak {}
 
 impl Parseable for LineBreak {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.text() == "\n"
+        lexeme.text() == "\n" && !lexeme.last()
     }
 
     fn lex(_lexeme: &Lexeme) -> LineBreak {

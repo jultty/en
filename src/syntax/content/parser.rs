@@ -51,9 +51,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                     tokens.push(Token::Header(header));
                     continue;
                 } else if Paragraph::probe(lexeme) {
-                    log!(
-                        "Probed {lexeme:#?} from Block::None -> Block::Paragraph"
-                    );
+                    log!("Probed block context None -> Paragraph: {lexeme:?}");
                     state.context.block = Block::Paragraph;
                     tokens.push(Token::Paragraph(Paragraph::new(true)));
                 }
@@ -68,12 +66,8 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                 continue;
             },
             Block::Paragraph => {
-                if lexeme.text() == "\n"
-                    && matches!(state.context.inline, Inline::None)
-                {
-                    log!(
-                        "Probed {lexeme:#?} from Block::Paragraph -> Block::None"
-                    );
+                if Paragraph::probe_end(lexeme) {
+                    log!("Probed block context Paragraph -> None: {lexeme:?}");
                     tokens.push(Token::Paragraph(Paragraph::new(false)));
                     state.context.block = Block::None;
                 }
@@ -357,8 +351,7 @@ mod tests {
             read_noconfig("\n|SomeAnchor|\n"),
             concat!(
                 "\n",
-                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
-                "\n"
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#
             ),
         );
     }
@@ -368,10 +361,9 @@ mod tests {
         assert_eq!(
             read_noconfig("|SomeAnchor|\n|SomeOtherAnchor|\n"),
             concat!(
-                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
+                r#"<p><a href="/node/SomeAnchor">SomeAnchor</a>"#,
                 "\n",
-                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#,
-                "\n"
+                r#"<a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
             )
         );
     }
@@ -384,10 +376,45 @@ mod tests {
                 r#"<p><a href="/node/SomeAnchor">SomeAnchor</a></p>"#,
                 "\n",
                 "\n",
-                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#,
-                "\n",
+                r#"<p><a href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
             ),
         );
+    }
+
+    #[test]
+    fn homepage_footer() {
+        assert_eq!(
+            read_noconfig(
+                "made by jutty|https://jutty.dev • acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en"
+            ),
+            r#"<p>made by <a href="https://jutty.dev">jutty</a> • <a href="/node/Acknowledgments">acknowledgments</a> • <a href="https://codeberg.org/jutty/en">source code</a></p>"#
+        );
+    }
+
+    #[test]
+    fn trailing_anchor() {
+        assert_eq!(
+            read_noconfig("see acks|acks"),
+            r#"<p>see <a href="/node/acks">acks</a></p>"#
+        );
+    }
+
+    #[test]
+    fn trailing_anchor_with_newline() {
+        assert_eq!(
+            read_noconfig("\nsee acks|acks\n"),
+            concat!("\n", r#"<p>see <a href="/node/acks">acks</a></p>"#)
+        );
+    }
+
+    #[test]
+    fn trailing_oblique() {
+        assert_eq!(read_noconfig("see _acks_"), "<p>see <em>acks</em></p>");
+    }
+
+    #[test]
+    fn trailing_oblique_with_newline() {
+        assert_eq!(read_noconfig("see _acks_\n"), "<p>see <em>acks</em></p>");
     }
 
     #[test]
@@ -395,7 +422,7 @@ mod tests {
         let payload = "D0qdJ184f3q1okbYu3Xm1d93jj6jy615";
         assert_eq!(
             read_noconfig(&format!("`\n{payload}\n`\n")),
-            format!("<pre>\n{payload}\n</pre>\n"),
+            format!("<pre>\n{payload}\n</pre>"),
         );
     }
 

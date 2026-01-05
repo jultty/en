@@ -9,6 +9,10 @@ impl Paragraph {
     pub fn new(open: bool) -> Paragraph {
         Paragraph { open: Some(open) }
     }
+
+    pub fn probe_end(lexeme: &Lexeme) -> bool {
+        lexeme.match_as_char('\n') && lexeme.match_next_as_char('\n')
+    }
 }
 
 impl Parseable for Paragraph {

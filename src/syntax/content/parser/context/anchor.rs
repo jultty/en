@@ -57,6 +57,7 @@ pub fn parse(
         );
 
         // Conditions in this decision tree should match the destination end
+        // or some intermediary state necessary to finding it
         if lexeme.match_as_char('s')
             && lexeme.is_next_boundary()
             && !lexeme.match_next_as_char('|')
@@ -80,7 +81,7 @@ pub fn parse(
             state.context.inline = Inline::None;
             return true;
         } else if lexeme.match_as_char('|') && !candidate.balanced {
-            log!("Found a pipe, but no boundary: Destination likely follows");
+            log!("State: Found a pipe, but no boundary: destination follows");
             candidate.balanced = true;
             return true;
         } else if lexeme.match_as_char('|') {
@@ -96,12 +97,13 @@ pub fn parse(
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
             return false;
-        } else if lexeme.is_whitespace() {
-            log!("End: Whitespace");
+        } else if lexeme.is_next_whitespace() {
+            log!("End: next is whitespace");
+            buffer.destination.push_str(&lexeme.text());
             candidate.destination = Some(buffer.destination.clone());
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
-            return false;
+            return true;
 
         // This else branch is the 'no end found yet' state and will keep
         // pushing lexemes into the buffer until an end is found above
@@ -136,4 +138,33 @@ pub fn parse(
     tokens.push(Token::Anchor(candidate.clone()));
     state.context.inline = Inline::None;
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{syntax::content::parser, types::Graph};
+
+    fn read_noconfig(input: &str) -> String {
+        parser::read(input, &Graph::new(None).meta.config)
+    }
+
+    #[test]
+    fn indifferent_trailing_pipe() {
+        assert_eq!(read_noconfig("|a|a|"), read_noconfig("a|a|"));
+    }
+
+    #[test]
+    fn indifferent_leading_pipe() {
+        assert_eq!(read_noconfig("|a|a|"), read_noconfig("|a|a"));
+    }
+
+    #[test]
+    fn indifferent_multiline_trailing_pipe() {
+        assert_eq!(read_noconfig("|a|a|\nn"), read_noconfig("a|a|\nn"));
+    }
+
+    #[test]
+    fn indifferent_multiline_leading_pipe() {
+        assert_eq!(read_noconfig("|a|a|\nn"), read_noconfig("|a|a\nn"));
+    }
 }

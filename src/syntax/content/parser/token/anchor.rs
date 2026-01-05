@@ -45,12 +45,14 @@ impl std::fmt::Display for Anchor {
         use crate::dev::wrap;
 
         let display_destination = match self.destination {
-            Some(ref destination) => { if destination.is_empty() {
-                "<empty>"
-            } else {
-                destination
-            }},
-            None => "<unknown>"
+            Some(ref destination) => {
+                if destination.is_empty() {
+                    "<empty>"
+                } else {
+                    destination
+                }
+            },
+            None => "<unknown>",
         };
 
         let mut tail = String::new();

@@ -38,8 +38,13 @@ impl std::fmt::Display for Span {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let display_open_state = match self.open {
             Some(ref open_state) => {
-            if *open_state { "open" } else { "closed" }},
-                None => "unknown"
+                if *open_state {
+                    "open"
+                } else {
+                    "closed"
+                }
+            },
+            None => "unknown",
         };
         write!(f, "Span [{display_open_state}]")
     }

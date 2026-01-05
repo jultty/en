@@ -1,19 +1,17 @@
 use crate::{
     prelude::*,
     syntax::content::parser::{
-        State, context::Inline, lexeme::Lexeme, token::Token,
+        state::State, context::Inline, lexeme::Lexeme, token::Token,
     },
 };
 
 /// Handles open anchor contexts until an anchor token is fully parsed.
 ///
-/// This function is only called if the current inline context is Anchor.
-///
 /// A return of `true` will trigger a continue in the outer parser,
 /// skipping any further parsing of the current lexeme.
 ///
 /// # Panics
-/// This function will panic if can't determine the destination of an anchor.
+/// If it can't determine the destination of an anchor.
 pub fn parse(
     lexeme: &Lexeme,
     state: &mut State,

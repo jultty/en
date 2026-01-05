@@ -122,7 +122,7 @@ impl std::fmt::Display for Header {
 
         let display_dom_id = match self.dom_id {
             Some(ref dom_id) => format!(" DOM ID {dom_id}"),
-            None => String::new()
+            None => String::new(),
         };
 
         write!(

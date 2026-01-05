@@ -1,5 +1,3 @@
-use std::collections::{HashMap};
-
 use crate::{prelude::*, types::Config};
 use super::{Parseable as _, Token, LexMap};
 use token::{
@@ -7,12 +5,13 @@ use token::{
     preformat::PreFormat, literal::Literal, code::Code, oblique::Oblique,
 };
 use lexeme::Lexeme;
-use context::{Context, Block, Inline};
+use context::{Block, Inline};
 
 pub mod token;
 pub mod lexeme;
 pub mod segment;
 pub mod context;
+pub mod state;
 
 const LEXMAP: LexMap = &[
     (LineBreak::probe, |lexeme| {
@@ -25,7 +24,7 @@ const LEXMAP: LexMap = &[
 
 fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
-    let mut state = State::new();
+    let mut state = state::State::new();
 
     let segments = segment::segment(text);
     let lexemes = Lexeme::collect(&segments);
@@ -142,76 +141,6 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     tokens
 }
 
-#[derive(Clone, Debug)]
-pub struct State {
-    context: Context,
-    dom_ids: HashMap<String, Vec<String>>,
-    buffers: Buffers,
-}
-
-#[derive(Clone, Debug)]
-struct Buffers {
-    anchor: AnchorBuffer,
-}
-
-#[derive(Clone, Debug)]
-struct AnchorBuffer {
-    candidate: Anchor,
-    text: String,
-    destination: String,
-}
-
-impl AnchorBuffer {
-    fn clear(&mut self) {
-        self.candidate = Anchor::default();
-        self.text = String::new();
-        self.destination = String::new();
-    }
-}
-
-impl std::fmt::Display for AnchorBuffer {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let display_text = if self.text.is_empty() {
-            String::new()
-        } else {
-            format!("text: {:?}", self.text)
-        };
-        let display_destination = if self.destination.is_empty() {
-            String::new()
-        } else {
-            format!(", dest: {:?}", self.destination)
-        };
-
-        let display_text_and_destination =
-            format!("{display_text}{display_destination}");
-
-        write!(
-            f,
-            "AnchorBuffer [{display_text_and_destination}] >> {}",
-            self.candidate,
-        )
-    }
-}
-
-impl State {
-    fn new() -> State {
-        State {
-            context: Context {
-                inline: Inline::None,
-                block: Block::None,
-            },
-            dom_ids: HashMap::new(),
-            buffers: Buffers {
-                anchor: AnchorBuffer {
-                    candidate: Anchor::default(),
-                    text: String::new(),
-                    destination: String::new(),
-                },
-            },
-        }
-    }
-}
-
 fn parse(tokens: &[Token]) -> String {
     tokens.iter().map(Token::render).collect::<String>()
 }
@@ -222,7 +151,10 @@ pub(super) fn read(text: &str, config: &Config) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::{types::Graph, syntax::content::parser::token::header::Level};
+    use crate::{
+        types::Graph,
+        syntax::content::parser::{state::State, token::header::Level},
+    };
 
     use super::*;
 
@@ -458,14 +390,8 @@ mod tests {
     #[test]
     #[should_panic(expected = "End of input with open header")]
     fn end_with_open_header() {
-        let default_state = State::new();
-        let state = State {
-            context: Context {
-                block: Block::Header(1),
-                ..default_state.context
-            },
-            ..default_state
-        };
+        let mut state = State::new();
+        state.context.block = Block::Header(1);
 
         context::close(&state, &mut vec![]);
     }

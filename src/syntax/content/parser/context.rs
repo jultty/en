@@ -1,5 +1,5 @@
 use crate::syntax::content::parser::{
-    State,
+    state::State,
     token::{Token, paragraph::Paragraph, preformat::PreFormat},
 };
 

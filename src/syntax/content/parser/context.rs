@@ -4,6 +4,8 @@ use crate::syntax::content::parser::{
 };
 
 pub mod anchor;
+pub mod block;
+pub mod inline;
 
 #[derive(Clone, Debug)]
 pub struct Context {

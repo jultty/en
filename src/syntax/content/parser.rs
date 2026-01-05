@@ -1,9 +1,6 @@
 use crate::{prelude::*, types::Config};
 use super::{Parseable as _, Token, LexMap};
-use token::{
-    anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
-    preformat::PreFormat, literal::Literal, code::Code,
-};
+use token::{linebreak::LineBreak, literal::Literal};
 use lexeme::Lexeme;
 use context::{Block, Inline};
 
@@ -34,89 +31,27 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
 
     let mut iterator = lexemes.iter().peekable();
     while let Some(lexeme) = iterator.next() {
-        match state.context.block {
-            Block::None => {
-                if PreFormat::probe(lexeme) {
-                    state.context.block = Block::PreFormat;
-                    tokens.push(Token::PreFormat(PreFormat::new(true)));
-                    continue;
-                } else if Header::probe(lexeme) {
-                    let mut header = Header::lex(lexeme);
-                    header.dom_id = Some(Header::make_id(
-                        config,
-                        iterator.peek().map_or(&Lexeme::new("", ""), |l| l),
-                        &mut state.dom_ids,
-                    ));
-                    state.context.block = Block::Header(header.level());
-                    tokens.push(Token::Header(header));
-                    continue;
-                } else if Paragraph::probe(lexeme) {
-                    log!("Block Context: None -> Paragraph on {lexeme}");
-                    state.context.block = Block::Paragraph;
-                    tokens.push(Token::Paragraph(Paragraph::new(true)));
-                }
-            },
-            Block::PreFormat => {
-                if PreFormat::probe(lexeme) {
-                    tokens.push(Token::PreFormat(PreFormat::new(false)));
-                    state.context.block = Block::None;
-                } else {
-                    tokens.push(Token::Literal(Literal::lex(lexeme)));
-                }
-                continue;
-            },
-            Block::Paragraph => {
-                if Paragraph::probe_end(lexeme) {
-                    log!("Block Context: Paragraph -> None on {lexeme}");
-                    tokens.push(Token::Paragraph(Paragraph::new(false)));
-                    state.context.block = Block::None;
-                }
-            },
-            Block::Header(n) => {
-                if lexeme.text() == "\n" {
-                    tokens.push(Token::Header(Header::from_u8(n, false, None)));
-                    state.context.block = Block::None;
-                }
-            },
-        }
-
-        if point::puncture(lexeme, &mut state, &mut tokens) {
+        if context::block::parse(
+            lexeme,
+            &mut state,
+            &mut tokens,
+            &mut iterator,
+            config,
+        ) {
             continue;
         }
 
-        match state.context.inline {
-            Inline::None => {
-                if Code::probe(lexeme) {
-                    state.context.inline = Inline::Code;
-                    tokens.push(Token::Code(Code::new(true)));
-                    continue;
-                } else if Anchor::probe(lexeme) {
-                    state.context.inline = Inline::Anchor;
-                    state.buffers.anchor.clear();
+        if point::parse(lexeme, &mut state, &mut tokens) {
+            continue;
+        }
 
-                    if lexeme.match_as_char('|') {
-                        state.buffers.anchor.candidate.leading = true;
-                    } else {
-                        state.buffers.anchor.candidate.text = lexeme.text();
-                        // because we probed positively and this is not a pipe,
-                        // the next lexeme must be and so it was now parsed
-                        iterator.next();
-                    }
-                    continue;
-                }
-            },
-            Inline::Code => {
-                if Code::probe(lexeme) {
-                    state.context.inline = Inline::None;
-                    tokens.push(Token::Code(Code::new(false)));
-                    continue;
-                }
-            },
-            Inline::Anchor => {
-                if context::anchor::parse(lexeme, &mut state, &mut tokens) {
-                    continue;
-                }
-            },
+        if context::inline::parse(
+            lexeme,
+            &mut state,
+            &mut tokens,
+            &mut iterator,
+        ) {
+            continue;
         }
 
         for &(ref probe, lex) in map {
@@ -147,6 +82,7 @@ mod tests {
         types::Graph,
         syntax::content::parser::{state::State, token::header::Level},
     };
+    use token::{preformat::PreFormat};
 
     use super::*;
 

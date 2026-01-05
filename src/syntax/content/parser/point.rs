@@ -7,7 +7,7 @@ use crate::syntax::content::{
     },
 };
 
-pub fn puncture(
+pub fn parse(
     lexeme: &Lexeme,
     state: &mut State,
     tokens: &mut Vec<Token>,

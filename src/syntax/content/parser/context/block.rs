@@ -1,0 +1,73 @@
+use std::{iter::Peekable, slice::Iter};
+
+use crate::{
+    prelude::*,
+    syntax::content::{
+        Parseable as _,
+        parser::{
+            Block,
+            lexeme::Lexeme,
+            state::State,
+            token::{
+                Token, header::Header, preformat::PreFormat,
+                paragraph::Paragraph, literal::Literal,
+            },
+        },
+    },
+    types::Config,
+};
+
+pub fn parse(
+    lexeme: &Lexeme,
+    state: &mut State,
+    tokens: &mut Vec<Token>,
+    iterator: &mut Peekable<Iter<'_, Lexeme>>,
+    config: &Config,
+) -> bool {
+    match state.context.block {
+        Block::None => {
+            if PreFormat::probe(lexeme) {
+                state.context.block = Block::PreFormat;
+                tokens.push(Token::PreFormat(PreFormat::new(true)));
+                return true;
+            } else if Header::probe(lexeme) {
+                let mut header = Header::lex(lexeme);
+                header.dom_id = Some(Header::make_id(
+                    config,
+                    iterator.peek().map_or(&Lexeme::new("", ""), |l| l),
+                    &mut state.dom_ids,
+                ));
+                state.context.block = Block::Header(header.level());
+                tokens.push(Token::Header(header));
+                return true;
+            } else if Paragraph::probe(lexeme) {
+                log!("Block Context: None -> Paragraph on {lexeme}");
+                state.context.block = Block::Paragraph;
+                tokens.push(Token::Paragraph(Paragraph::new(true)));
+            }
+        },
+        Block::PreFormat => {
+            if PreFormat::probe(lexeme) {
+                tokens.push(Token::PreFormat(PreFormat::new(false)));
+                state.context.block = Block::None;
+            } else {
+                tokens.push(Token::Literal(Literal::lex(lexeme)));
+            }
+            return true;
+        },
+        Block::Paragraph => {
+            if Paragraph::probe_end(lexeme) {
+                log!("Block Context: Paragraph -> None on {lexeme}");
+                tokens.push(Token::Paragraph(Paragraph::new(false)));
+                state.context.block = Block::None;
+            }
+        },
+        Block::Header(n) => {
+            if lexeme.text() == "\n" {
+                tokens.push(Token::Header(Header::from_u8(n, false, None)));
+                state.context.block = Block::None;
+            }
+        },
+    }
+    false
+}

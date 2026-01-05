@@ -24,7 +24,7 @@ alias w := run-watch
 
 [private]
 quick-assess:
-    {{ just_cmd }} check lint test
+    {{ just_cmd }} test lint check
 
 [private]
 quick-assess-run:

@@ -55,7 +55,7 @@ impl std::fmt::Display for Anchor {
             None => "<unknown>",
         };
 
-        let mut tail = String::new();
+        let mut tail = String::default();
 
         if self.leading {
             tail.push_str(" [Leading]");

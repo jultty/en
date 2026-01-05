@@ -138,7 +138,7 @@ impl Lexeme {
         let mut iterator = raw_strings.iter().peekable();
 
         while let Some(raw) = iterator.next() {
-            let mut next = String::new();
+            let mut next = String::default();
             let mut last = false;
             if let Some(peeked) = iterator.peek() {
                 next.clone_from(*peeked);

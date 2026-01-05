@@ -9,7 +9,7 @@ use crate::{syntax::serial::populate_graph, router::handlers, types::Node};
 
 #[expect(clippy::unused_async)]
 pub async fn page(template: &str) -> Response<Body> {
-    let mut context = tera::Context::new();
+    let mut context = tera::Context::default();
     let graph = populate_graph();
     let root_node = graph.get_root().unwrap_or_default();
     let nodes: Vec<Node> = graph.nodes.into_values().collect();

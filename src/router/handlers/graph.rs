@@ -24,7 +24,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
             .into_response();
     }
 
-    let mut context = tera::Context::new();
+    let mut context = tera::Context::default();
     context.insert("node", &node);
     context.insert("text", &content::parse(&node.text, &graph.meta.config));
     context.insert("incoming", &graph.incoming.get(&id));

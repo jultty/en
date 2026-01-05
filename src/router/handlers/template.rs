@@ -37,7 +37,7 @@ pub(in crate::router::handlers) fn render(
     match tera.render(name, context) {
         Ok(t) => (t, 200),
         Err(e) => {
-            let mut error_context = tera::Context::new();
+            let mut error_context = tera::Context::default();
 
             let out_error_message = match error_message {
                 Some(s) => &format!(
@@ -108,15 +108,25 @@ mod tests {
 
     #[test]
     fn by_filename_forced_error() {
-        let response =
-            by_filename("index.html", &tera::Context::new(), 418, None, true);
+        let response = by_filename(
+            "index.html",
+            &tera::Context::default(),
+            418,
+            None,
+            true,
+        );
         assert_eq!(response.status(), 418);
     }
 
     #[test]
     fn by_filename_index() {
-        let response =
-            by_filename("index.html", &tera::Context::new(), 418, None, false);
+        let response = by_filename(
+            "index.html",
+            &tera::Context::default(),
+            418,
+            None,
+            false,
+        );
         assert_eq!(response.status(), 200);
     }
 
@@ -124,7 +134,7 @@ mod tests {
     fn by_filename_file_not_found() {
         let response = by_filename(
             "bwbl3BnWsluIgbO2NV9t3vtihwcjuF6t",
-            &tera::Context::new(),
+            &tera::Context::default(),
             418,
             None,
             false,
@@ -134,14 +144,15 @@ mod tests {
 
     #[test]
     fn by_filename_empty() {
-        let response = by_filename("", &tera::Context::new(), 418, None, false);
+        let response =
+            by_filename("", &tera::Context::default(), 418, None, false);
         assert_eq!(response.status(), 500);
     }
 
     #[test]
     fn render_with_context() {
         let payload = "dBgIw8DnNHxJojiXzu445qUC4UpxwZCy";
-        let mut context = tera::Context::new();
+        let mut context = tera::Context::default();
         let node = crate::types::Node::new(Some(payload.to_string()));
         let graph = crate::syntax::serial::populate_graph();
         context.insert("node", &node);
@@ -161,7 +172,7 @@ mod tests {
         let payload = "dBgIw8DnNHxJojiXzu445qUC4UpxwZCy";
         let (body, status) = render(
             "ObH9jYUl4wMhUNcXnuqwVVzHoqx4ufyN",
-            &tera::Context::new(),
+            &tera::Context::default(),
             Some(payload.to_string()),
         );
         assert_eq!(status, 500);
@@ -172,7 +183,7 @@ mod tests {
     fn render_empty() {
         let (body, status) = render(
             "R8D1pxwHZDxcH5SMjR7rZEnIzmpkiHkH",
-            &tera::Context::new(),
+            &tera::Context::default(),
             None,
         );
         assert_eq!(status, 500);
@@ -182,7 +193,7 @@ mod tests {
     #[test]
     fn render_not_found() {
         let payload = "OL6kb9qHe7Iwr7wFIRKUTeFhF34BRsQo";
-        let (body, status) = render(payload, &tera::Context::new(), None);
+        let (body, status) = render(payload, &tera::Context::default(), None);
 
         assert!(body.matches("TemplateNotFound").count() > 0);
         assert!(body.matches(payload).count() > 0);
@@ -191,7 +202,8 @@ mod tests {
 
     #[test]
     fn render_bad_context() {
-        let (body, status) = render("node.html", &tera::Context::new(), None);
+        let (body, status) =
+            render("node.html", &tera::Context::default(), None);
         assert!(body.matches("Template render failed.").count() > 0);
         assert_eq!(status, 500);
     }

@@ -5,7 +5,7 @@ use crate::{syntax::serial::Format, types::Graph};
 mod handlers;
 
 pub fn new(graph: &Graph) -> Router {
-    let mut router = Router::new()
+    let mut router = Router::default()
         .route(
             "/",
             get(|| handlers::navigation::page("index.html"))
@@ -91,7 +91,7 @@ mod tests {
 
     #[tokio::test]
     async fn smoke() {
-        let router = axum::Router::new();
+        let router = axum::Router::default();
         let response = router
             .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
             .await
@@ -121,7 +121,7 @@ mod tests {
 
     #[tokio::test]
     async fn no_about_page() {
-        let mut config = Config::new();
+        let mut config = Config::default();
         config.about = false;
 
         let response = request("/about", Some(&config)).await;
@@ -130,7 +130,7 @@ mod tests {
 
     #[tokio::test]
     async fn no_tree_page() {
-        let mut config = Config::new();
+        let mut config = Config::default();
         config.tree = false;
 
         let response = request("/tree", Some(&config)).await;
@@ -139,7 +139,7 @@ mod tests {
 
     #[tokio::test]
     async fn no_toml_raw_graph() {
-        let mut config = Config::new();
+        let mut config = Config::default();
         config.raw_toml = false;
 
         let response = request("/graph/toml", Some(&config)).await;
@@ -148,7 +148,7 @@ mod tests {
 
     #[tokio::test]
     async fn no_json_raw_graph() {
-        let mut config = Config::new();
+        let mut config = Config::default();
         config.raw_json = false;
 
         let response = request("/graph/json", Some(&config)).await;
@@ -157,7 +157,7 @@ mod tests {
 
     #[tokio::test]
     async fn no_raw_graph() {
-        let mut config = Config::new();
+        let mut config = Config::default();
         config.raw = false;
 
         let toml_response = request("/graph/toml", Some(&config)).await;

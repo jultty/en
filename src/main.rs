@@ -6,7 +6,7 @@ use en::{prelude::*, ONSET, syntax::serial::populate_graph, syntax};
 async fn main() -> io::Result<()> {
     print_debugging_state();
 
-    let args = syntax::command::Arguments::new().parse();
+    let args = syntax::command::Arguments::default().parse();
     let address = args.make_address();
 
     #[allow(clippy::print_stderr)]

@@ -60,7 +60,7 @@ fn mkversion() -> (u8, u8, u8) {
     (0, 0, 0)
 }
 
-#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Config {
     #[serde(default)]
     _private: bool,
@@ -118,12 +118,12 @@ fn mk8() -> u16 {
 impl Graph {
     pub fn new(message: Option<&str>) -> Graph {
         Graph {
-            nodes: HashMap::new(),
+            nodes: HashMap::default(),
             root_node: "VoidNode".to_string(),
-            incoming: HashMap::new(),
-            lowercase_keymap: HashMap::new(),
+            incoming: HashMap::default(),
+            lowercase_keymap: HashMap::default(),
             meta: Meta {
-                config: Config::new(),
+                config: Config::default(),
                 version: (0, 1, 0),
                 messages: message.map_or(vec![], |m| vec![m.to_string()]),
             },
@@ -155,24 +155,35 @@ impl Node {
             },
             connections: None,
             links: vec![],
-            redirect: String::new(),
+            redirect: String::default(),
             hidden: false,
         }
     }
 }
 
 impl Config {
-    pub fn new() -> Config {
+    #[must_use]
+    pub fn parse_text(self) -> Config {
+        Config {
+            footer_text: content::parse(&self.footer_text, &self),
+            about_text: content::parse(&self.about_text, &self),
+            ..self
+        }
+    }
+}
+
+impl Default for Config {
+    fn default() -> Config {
         Config {
             _private: true,
-            site_title: String::new(),
-            site_description: String::new(),
+            site_title: String::default(),
+            site_description: String::default(),
             footer: true,
             footer_credits: true,
             footer_date: true,
-            footer_text: String::new(),
+            footer_text: String::default(),
             about: true,
-            about_text: String::new(),
+            about_text: String::default(),
             tree: true,
             raw: true,
             raw_toml: true,
@@ -183,16 +194,7 @@ impl Config {
             index_root_node: true,
             tree_node_text: false,
             ascii_dom_ids: false,
-            content_language: String::new(),
-        }
-    }
-
-    #[must_use]
-    pub fn parse_text(self) -> Config {
-        Config {
-            footer_text: content::parse(&self.footer_text, &self),
-            about_text: content::parse(&self.about_text, &self),
-            ..self
+            content_language: String::default(),
         }
     }
 }
@@ -225,7 +227,7 @@ mod tests {
         let default_graph = populate_graph();
 
         let config = Config {
-            footer_text: String::new(),
+            footer_text: String::default(),
             ..default_graph.meta.config
         };
 

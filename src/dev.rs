@@ -9,7 +9,7 @@ pub const SKIP_PATHS: &[&str] = &["en::types::Config::parse_text"];
 #[macro_export]
 macro_rules! log {
         ($fmt:expr $(, $($arg:tt)+ )? ) => {{
-        let mut display_path = String::new();
+        let mut display_path = String::default();
         let mut path = std::any::type_name_of_val(&|| {})
             .to_string().replace("::{{closure}}", "");
 

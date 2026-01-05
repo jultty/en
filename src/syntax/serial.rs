@@ -6,7 +6,7 @@ use crate::{
 };
 
 pub fn populate_graph() -> Graph {
-    let args = Arguments::new().parse();
+    let args = Arguments::default().parse();
     let toml_source = match std::fs::read_to_string(args.graph_path) {
         Ok(s) => s,
         Err(e) => format!("Error: {e}"),
@@ -32,7 +32,7 @@ fn modulate_graph(graph: &Graph) -> Graph {
 }
 
 fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
-    let mut nodes: HashMap<String, Node> = HashMap::new();
+    let mut nodes: HashMap<String, Node> = HashMap::default();
 
     for (key, node) in old_nodes {
         let connections = node.connections.clone().unwrap_or_default();
@@ -61,7 +61,7 @@ fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
             new_edges.push(Edge {
                 from: key.clone(),
                 to: link.clone(),
-                anchor: String::new(),
+                anchor: String::default(),
                 detached: !old_nodes.contains_key(link),
             });
         }
@@ -119,7 +119,7 @@ pub fn deserialize_graph(in_format: &Format, serial: &str) -> Graph {
 
 // Construct a HashMap with incoming connections (reversed edges)
 fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
-    let mut incoming: HashMap<String, Vec<Edge>> = HashMap::new();
+    let mut incoming: HashMap<String, Vec<Edge>> = HashMap::default();
 
     for node in nodes.clone().into_values() {
         let empty_vec: Vec<Edge> = vec![];
@@ -137,7 +137,7 @@ fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
 fn map_lowercase_keys(
     source_map: &HashMap<String, Node>,
 ) -> HashMap<String, String> {
-    let mut out_map: HashMap<String, String> = HashMap::new();
+    let mut out_map: HashMap<String, String> = HashMap::default();
     let keys = source_map.keys();
     for key in keys {
         out_map.insert(key.clone().to_lowercase(), key.clone());
@@ -183,12 +183,12 @@ mod tests {
         let mut node = Node::new(None);
         node.connections = Some(vec![Edge {
             anchor: String::from("SomeAnchor"),
-            from: String::new(),
-            to: String::new(),
+            from: String::default(),
+            to: String::default(),
             detached: false,
         }]);
 
-        let mut map: HashMap<String, Node> = HashMap::new();
+        let mut map: HashMap<String, Node> = HashMap::default();
         map.insert(String::from("SomeNode"), node);
 
         let modulated_map = modulate_nodes(&map);

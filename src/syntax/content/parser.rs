@@ -24,7 +24,7 @@ const LEXMAP: LexMap = &[
 ];
 
 fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
-    let mut tokens: Vec<Token> = Vec::new();
+    let mut tokens: Vec<Token> = Vec::default();
     let mut state = state::State::default();
 
     let segments = segment::segment(text);

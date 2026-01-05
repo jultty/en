@@ -122,7 +122,7 @@ impl std::fmt::Display for Header {
 
         let display_dom_id = match self.dom_id {
             Some(ref dom_id) => format!(" DOM ID {dom_id}"),
-            None => String::new(),
+            None => String::default(),
         };
 
         write!(
@@ -193,7 +193,7 @@ mod tests {
 
     #[test]
     fn make_id() {
-        let mut map: HashMap<String, Vec<String>> = HashMap::new();
+        let mut map: HashMap<String, Vec<String>> = HashMap::default();
         let id = Header::make_id(
             &Config::default(),
             &Lexeme::new("##", "Title"),
@@ -204,33 +204,33 @@ mod tests {
 
     #[test]
     fn ascii_ids_set() {
-        let mut config = Config::new();
+        let mut config = Config::default();
         config.ascii_dom_ids = true;
 
         let id = Header::make_id(
             &config,
             &Lexeme::new("##", "駄目！"),
-            &mut HashMap::new(),
+            &mut HashMap::default(),
         );
         assert_eq!(id, "h");
     }
 
     #[test]
     fn ascii_ids_unset() {
-        let mut config = Config::new();
+        let mut config = Config::default();
         config.ascii_dom_ids = false;
 
         let id = Header::make_id(
             &config,
             &Lexeme::new("##", "駄目！"),
-            &mut HashMap::new(),
+            &mut HashMap::default(),
         );
         assert_eq!(id, "駄目！");
     }
 
     #[test]
     fn id_deduplication() {
-        let mut map: HashMap<String, Vec<String>> = HashMap::new();
+        let mut map: HashMap<String, Vec<String>> = HashMap::default();
         let config = Config::default();
         let id =
             Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ"), &mut map);

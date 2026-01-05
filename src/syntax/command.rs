@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::prelude::*;
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Arguments {
     pub hostname: String,
     pub port: u16,
@@ -14,18 +14,20 @@ impl Arguments {
         format!("{}:{}", self.hostname, self.port)
     }
 
-    pub fn new() -> Arguments {
+    #[must_use]
+    pub fn parse(&self) -> Arguments {
+        let args: Vec<String> = std::env::args().collect();
+        parse(self, &args)
+    }
+}
+
+impl Default for Arguments {
+    fn default() -> Arguments {
         Arguments {
             hostname: String::from("0.0.0.0"),
             port: 0,
             graph_path: PathBuf::from("./static/graph.toml"),
         }
-    }
-
-    #[must_use]
-    pub fn parse(&self) -> Arguments {
-        let args: Vec<String> = std::env::args().collect();
-        parse(self, &args)
     }
 }
 
@@ -67,7 +69,7 @@ mod tests {
         let args = Arguments {
             hostname: String::from("localhost"),
             port: 3007,
-            graph_path: PathBuf::new(),
+            graph_path: PathBuf::default(),
         };
 
         assert_eq!(args.make_address(), "localhost:3007");
@@ -75,7 +77,7 @@ mod tests {
 
     #[test]
     fn hostname() {
-        let defaults = Arguments::new();
+        let defaults = Arguments::default();
 
         let payload = String::from("olUCu7vWcUAsumv2xpj2Z55EDheWLTEu");
         let args =
@@ -85,7 +87,7 @@ mod tests {
 
     #[test]
     fn port() {
-        let defaults = Arguments::new();
+        let defaults = Arguments::default();
 
         let payload = 3901;
         let args = parse(&defaults, &[String::from("-p"), payload.to_string()]);
@@ -94,7 +96,7 @@ mod tests {
 
     #[test]
     fn graph_path() {
-        let defaults = Arguments::new();
+        let defaults = Arguments::default();
 
         let payload = PathBuf::from("/tmp/");
         let args = parse(
@@ -106,7 +108,7 @@ mod tests {
 
     #[test]
     fn empty() {
-        let defaults = Arguments::new();
+        let defaults = Arguments::default();
 
         let args = parse(&defaults, &[]);
         assert_eq!(defaults, args);

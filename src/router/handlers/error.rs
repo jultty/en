@@ -22,7 +22,7 @@ pub(in crate::router::handlers) fn by_code(
 }
 
 fn make_body(code: Option<u16>, message: Option<&str>) -> String {
-    let mut context = tera::Context::new();
+    let mut context = tera::Context::default();
 
     let out_code = code.unwrap_or(500);
     let out_message = &message.unwrap_or("Unknown error");

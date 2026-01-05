@@ -33,20 +33,20 @@ pub struct AnchorBuffer {
 impl AnchorBuffer {
     pub fn clear(&mut self) {
         self.candidate = Anchor::default();
-        self.text = String::new();
-        self.destination = String::new();
+        self.text = String::default();
+        self.destination = String::default();
     }
 }
 
 impl std::fmt::Display for AnchorBuffer {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let display_text = if self.text.is_empty() {
-            String::new()
+            String::default()
         } else {
             format!("text: {:?}", self.text)
         };
         let display_destination = if self.destination.is_empty() {
-            String::new()
+            String::default()
         } else {
             format!(", dest: {:?}", self.destination)
         };
@@ -69,13 +69,13 @@ impl Default for State {
                 inline: Inline::None,
                 block: Block::None,
             },
-            dom_ids: HashMap::new(),
+            dom_ids: HashMap::default(),
             switches: Switches { oblique: false },
             buffers: Buffers {
                 anchor: AnchorBuffer {
                     candidate: Anchor::default(),
-                    text: String::new(),
-                    destination: String::new(),
+                    text: String::default(),
+                    destination: String::default(),
                 },
             },
         }

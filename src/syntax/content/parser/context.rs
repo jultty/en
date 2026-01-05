@@ -23,7 +23,6 @@ pub enum Block {
 pub enum Inline {
     Anchor,
     Code,
-    Oblique,
     None,
 }
 

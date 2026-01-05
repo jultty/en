@@ -9,7 +9,13 @@ use crate::syntax::content::parser::{
 pub struct State {
     pub context: Context,
     pub dom_ids: HashMap<String, Vec<String>>,
+    pub switches: Switches,
     pub buffers: Buffers,
+}
+
+#[derive(Clone, Debug)]
+pub struct Switches {
+    pub oblique: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -56,14 +62,15 @@ impl std::fmt::Display for AnchorBuffer {
     }
 }
 
-impl State {
-    pub fn new() -> State {
+impl Default for State {
+    fn default() -> State {
         State {
             context: Context {
                 inline: Inline::None,
                 block: Block::None,
             },
             dom_ids: HashMap::new(),
+            switches: Switches { oblique: false },
             buffers: Buffers {
                 anchor: AnchorBuffer {
                     candidate: Anchor::default(),

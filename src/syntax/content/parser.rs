@@ -2,7 +2,7 @@ use crate::{prelude::*, types::Config};
 use super::{Parseable as _, Token, LexMap};
 use token::{
     anchor::Anchor, linebreak::LineBreak, paragraph::Paragraph, header::Header,
-    preformat::PreFormat, literal::Literal, code::Code, oblique::Oblique,
+    preformat::PreFormat, literal::Literal, code::Code,
 };
 use lexeme::Lexeme;
 use context::{Block, Inline};
@@ -11,6 +11,7 @@ pub mod token;
 pub mod lexeme;
 pub mod segment;
 pub mod context;
+pub mod point;
 pub mod state;
 
 const LEXMAP: LexMap = &[
@@ -24,7 +25,7 @@ const LEXMAP: LexMap = &[
 
 fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
-    let mut state = state::State::new();
+    let mut state = state::State::default();
 
     let segments = segment::segment(text);
     let lexemes = Lexeme::collect(&segments);
@@ -79,16 +80,15 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
             },
         }
 
+        if point::puncture(lexeme, &mut state, &mut tokens) {
+            continue;
+        }
+
         match state.context.inline {
             Inline::None => {
                 if Code::probe(lexeme) {
                     state.context.inline = Inline::Code;
                     tokens.push(Token::Code(Code::new(true)));
-                    continue;
-                } else if Oblique::probe(lexeme) {
-                    log!("Inline Context: None -> Oblique on {lexeme}");
-                    state.context.inline = Inline::Oblique;
-                    tokens.push(Token::Oblique(Oblique::new(true)));
                     continue;
                 } else if Anchor::probe(lexeme) {
                     state.context.inline = Inline::Anchor;
@@ -109,14 +109,6 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
                 if Code::probe(lexeme) {
                     state.context.inline = Inline::None;
                     tokens.push(Token::Code(Code::new(false)));
-                    continue;
-                }
-            },
-            Inline::Oblique => {
-                if Oblique::probe(lexeme) {
-                    log!("Inline Context: Oblique -> None on {lexeme}");
-                    state.context.inline = Inline::None;
-                    tokens.push(Token::Oblique(Oblique::new(false)));
                     continue;
                 }
             },
@@ -390,7 +382,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "End of input with open header")]
     fn end_with_open_header() {
-        let mut state = State::new();
+        let mut state = State::default();
         state.context.block = Block::Header(1);
 
         context::close(&state, &mut vec![]);
@@ -398,7 +390,7 @@ mod tests {
 
     #[test]
     fn end_with_open_preformat() {
-        let mut state = State::new();
+        let mut state = State::default();
         state.context.block = Block::PreFormat;
 
         let mut vec: Vec<Token> = vec![];

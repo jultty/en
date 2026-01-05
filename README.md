@@ -4,75 +4,11 @@ en is a tool to write non-linear, connected pieces of text and have their refere
 
 It works by ingesting a TOML file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
 
+## Roadmap
+
+For an outline of planned and completed features, see the [roadmap](./docs/development/roadmap.md).
+
 ## Learn more
 
 You can learn more and see what en looks like by visiting the [homepage](https://en.jutty.dev), which is rendered using en itself.
 
-## Roadmap
-
-- [x] Add tests
-    - [ ] Improve content syntax parser coverage
-- [x] Redirects
-- [ ] Strip/render some syntax in Tree text preview
-- [ ] Drop-down navigation
-- [ ] Meta-awareness
-    - [ ] Detached edges
-    - [ ] Most linked to nodes
-    - [ ] Most linked from nodes
-    - [ ] Most linked to nonexistent nodes
-    - [ ] Most linked
-- [ ] Special sections
-    - [ ] Definition (implies metadata `has_definition`)
-    - [ ] See also (implies a kind of connection, e.g. `related`)
-    - [ ] Not to be confused with (implies a kind of connection)
-    - [ ] Contrast with (implies a kind of connection)
-    - [ ] Example (implies metadata `has_example`)
-    - [ ] References/influences (implies metadata `has_references`)
-- [ ] Sorting of tree, index list and drop-down navigation
-    - [ ] Alphabetic
-    - [ ] By most linked to
-- [x] Anchors and connections
-    - [ ] Render detached anchors differently
-    - [ ] Suffix-aware anchors
-        - [x] Plural anchors (|node|s -> node)
-        - [x] Ignore trailing punctuation
-        - [ ] Conjugation anchors (|will|ed -> will)
-        - [ ] Configurable suffixes
-    - [ ] Spaced node anchor (|red fox| -> redfox -> RedFox)
-    - [ ] Automatic connections from anchors
-    - [ ] `#` syntax for header ID anchors
-    - [ ] Connection kinds
-        - [ ] Mutual
-        - [ ] Category <-> Membership
-        - [ ] Opposite <-> Equivalent
-        - [ ] Contrast <-> Similar
-        - [ ] Cognate <-> Unrelated
-        - [ ] Specialization <-> Generalization
-        - [ ] Custom connection kinds
-    - [x] External anchors
-- [ ] Richer text formatting
-    - [ ] Nested formatting
-    - [x] Headers
-    - [x] Preformatted blocks
-    - [x] Oblique,
-    - [ ] Underline
-    - [ ] Strikethrough
-    - [ ] Bold
-    - [x] Inline code
-    - [ ] Lists
-    - [ ] Checkboxes
-        - [ ] Move this roadmap to en
-- [ ] Full-text search
-- [ ] Begin centralizing state
-- [ ] Reduce O(n) calls in the formats module
-- [ ] Alternative rendering modes
-    - [ ] Render to filesystem
-    - [ ] Single-page rendering
-- [ ] Input formats
-    - [ ] Multi-file graphs
-    - [ ] Multi-graph
-- [ ] Themes
-- [x] Array syntax for lightweight connections
-- [x] Automatic IDs
-- [x] Automatic titles
-- [x] Mismatch between TOML ID and provided ID

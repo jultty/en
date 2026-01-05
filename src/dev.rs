@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn wrap_newline() {
-        assert_eq!(wrap("\n"), String::from(r"↳"));
+        assert_eq!(wrap("\n"), String::from("↳"));
     }
 
     #[test]

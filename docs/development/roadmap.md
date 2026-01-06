@@ -4,7 +4,7 @@
     - [ ] Improve content syntax parser coverage
 - [x] Redirects
 - [ ] Strip/render some syntax in Tree text preview
-- [ ] Drop-down navigation
+- [x] Drop-down navigation
 - [ ] Meta-awareness
     - [ ] Detached edges
     - [ ] Most linked to nodes
@@ -21,6 +21,7 @@
 - [ ] Sorting of tree, index list and drop-down navigation
     - [ ] Alphabetic
     - [ ] By most linked to
+    - [ ] By most linked
 - [x] Anchors and connections
     - [ ] Render detached anchors differently
     - [ ] Suffix-aware anchors
@@ -50,6 +51,7 @@
     - [ ] Bold
     - [x] Inline code
     - [ ] Lists
+        - [ ] Nested lists
     - [ ] Checkboxes
         - [ ] Move this roadmap to en
 - [ ] Full-text search

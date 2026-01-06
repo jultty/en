@@ -1,20 +1,22 @@
 use crate::syntax::content::Parseable as _;
 
-pub mod literal;
 pub mod anchor;
-pub mod linebreak;
-pub mod paragraph;
-pub mod span;
-pub mod header;
-pub mod preformat;
+pub mod bold;
 pub mod code;
-pub mod oblique;
-pub mod list;
+pub mod header;
 pub mod item;
+pub mod linebreak;
+pub mod list;
+pub mod literal;
+pub mod oblique;
+pub mod paragraph;
+pub mod preformat;
+pub mod span;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Token {
     Anchor(anchor::Anchor),
+    Bold(bold::Bold),
     Code(code::Code),
     Header(header::Header),
     Item(item::Item),
@@ -31,6 +33,7 @@ impl Token {
     pub fn render(&self) -> String {
         match *self {
             Token::Anchor(ref d) => d.render(),
+            Token::Bold(ref d) => d.render(),
             Token::Code(ref d) => d.render(),
             Token::Header(ref d) => d.render(),
             Token::Item(ref d) => d.render(),
@@ -49,6 +52,7 @@ impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let data = match *self {
             Token::Anchor(ref d) => format!("{d}"),
+            Token::Bold(ref d) => format!("{d}"),
             Token::Code(ref d) => format!("{d}"),
             Token::Header(ref d) => format!("{d}"),
             Token::Item(ref d) => format!("{d}"),

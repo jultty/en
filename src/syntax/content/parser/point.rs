@@ -4,7 +4,7 @@ use crate::{
         Parseable as _,
         parser::{
             lexeme::Lexeme,
-            token::{Token, oblique::Oblique},
+            token::{Token, oblique::Oblique, bold::Bold},
             state::State,
         },
     },
@@ -19,6 +19,11 @@ pub fn parse(
         log!("Oblique probed {lexeme}");
         tokens.push(Token::Oblique(Oblique::new(!state.switches.oblique)));
         state.switches.oblique = !state.switches.oblique;
+        return true;
+    } else if Bold::probe(lexeme) {
+        log!("Bold probed {lexeme}");
+        tokens.push(Token::Bold(Bold::new(!state.switches.bold)));
+        state.switches.bold = !state.switches.bold;
         return true;
     }
     false

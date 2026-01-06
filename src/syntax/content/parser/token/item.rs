@@ -8,7 +8,7 @@ pub struct Item {
 impl Parseable for Item {
     fn probe(lexeme: &Lexeme) -> bool {
         (lexeme.match_as_char('-') || lexeme.match_as_char('+'))
-        && lexeme.match_next_as_char(' ')
+            && lexeme.match_next_as_char(' ')
     }
 
     fn lex(_lexeme: &Lexeme) -> Item {

@@ -16,6 +16,7 @@ pub struct State {
 #[derive(Clone, Debug)]
 pub struct Switches {
     pub oblique: bool,
+    pub bold: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -70,7 +71,10 @@ impl Default for State {
                 block: Block::None,
             },
             dom_ids: HashMap::default(),
-            switches: Switches { oblique: false },
+            switches: Switches {
+                oblique: false,
+                bold: false,
+            },
             buffers: Buffers {
                 anchor: AnchorBuffer {
                     candidate: Anchor::default(),

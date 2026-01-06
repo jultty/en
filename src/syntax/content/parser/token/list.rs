@@ -17,7 +17,6 @@ impl Parseable for List {
     }
 
     fn render(&self) -> String {
-
         let bar = if self.open { "" } else { "/" };
         let tag = if self.ordered { "ol" } else { "ul" };
 

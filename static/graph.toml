@@ -39,6 +39,8 @@ If you need longer text, it's more convenient to use triple quotes:
 [nodes.Computer]
 text = \"""
 A computer is a machine capable of executing arbitrary instructions.
+
+The main electronic component of a computer is its |motherboard|.
 \"""
 `
 
@@ -48,9 +50,18 @@ A node can have several other attributes. See |Node| for details on all of them.
 
 ## Connections
 
-Nodes can have connections between each other.
+Nodes can have connections between each other. Each node page lists its outgoing and incoming connections.
 
-To add a simple connection without any associated properties, you can simply add links:
+The simplest kind of connection is achieved by creating an anchor to another node in the node text itself:
+
+`
+[nodes.Quark]
+text = "Quarks are subatomic particles that form |hadron|s".
+`
+
+Here, a connection is created from the node with ID `Quark` to the node with ID `Hadron`. See |AnchorSyntax| for the various ways you can link to other nodes from within the node text itself.
+
+Even if a node is not mentioned in the node text, you can still add connections to it. For simple connections without any associated properties, you can simply add links:
 
 `
 [nodes.Quark]
@@ -59,17 +70,17 @@ text = "A subatomic particle that forms hadrons."
 links = [ "Particle", "Hadron" ]
 `
 
-This will create two outgoing connections from Quark: to Particle and to Hadron. It will also list Quark as an incoming connection in these nodes' pages.
+This will create two outgoing connections from Quark: to Particle and to Hadron.
 
-If you want to add properties to the connection, you can use the connection syntax:
+For metadata-rich connections, which allow you to add properties to the connection, you can use the full connection syntax:
 
 `
-[[nodes.Quark.connections]]
-to = "Particle physics"
-anchor = "particle"
+[[nodes.Realism.connections]]
+to = "Surrealism"
+kind = "contrast"
 `
 
-This will create a connection from Quark to "Particle physics", and the first occurrence of the word "particle" in the text of Quark gets anchored to this connection.
+This will create a connection from the node with ID `Realism` to a node with ID `Surrealism` and add the "contrast" kind to the connection. See |Connections| for the existing kinds and how they affect your graph.
 """
 
 [nodes.Node] # foo
@@ -124,7 +135,7 @@ The default values for unset fields are:
 
 [nodes.CLI]
 title = "CLI Options"
-text = """ # bb
+text = """
 You can set the hostname, port and graph file path using CLI options:
 
 For the hostname, use `-h` or `--hostname`:
@@ -169,9 +180,13 @@ If an option is specified more than once, the last use will override any previou
 [nodes.Syntax]
 text= """
 
+Some fields of your en graph, namely the |Node| text field, have support for special syntax that allows you to apply formatting and create connections between your graph's nodes.
+
+If you are familiar with Markdown|https://en.wikipedia.org/wiki/Markdown|, you'll find that some features familiar, with some notable differences too.
+
 ## Anchors
 
-Anchors follow the following syntax:
+Anchors have the following basic syntax:
 
 `
 anchor|destination
@@ -180,19 +195,16 @@ anchor|destination
 For example:
 
 `
-docs|/node/Documentation
+DRC|DemocraticRepublicOfTheCongo
+docs|https://en.jutty.dev/node/Documentation
 `
+
+As shown above, anchors can point to external addresses. These are identified by the presence of a `:` character in the destination. Otherwise, the anchor will point to a node with an ID matching the destination.
 
 If the left side contains spaces, you need a leading `|` character:
 
 `
 |en docs|https://en.jutty.dev/node/Documentation
-`
-
-If you have a trailing character that you don't want to be considered as part of the destination, you can separate it with a third `|`:
-
-`
-This gem|PreciousStone|, though green, was not an emerald.
 `
 
 To make a plain address clickable, wrap it in two `|` characters:
@@ -201,23 +213,43 @@ To make a plain address clickable, wrap it in two `|` characters:
 |https://en.jutty.dev|
 `
 
+### Trailing characters
+
+For internal anchors, most punctuation is automatically separated from the anchor destination so you can simply write:
+
+`
+This gem|PreciousStone, though green, was not an emerald.
+`
+
+However, for external anchors, you want to add a third `|` to explicitly set the end because external URLs can have all sorts of arbitrary characters.
+
 ### Node anchors
 
-We saw above an example like `docs|/node/Documentation`, but there is a shorter syntax for node anchors.
+Because anchors between nodes are central to en, there is special syntax to make them as fluid as possible to create without cluttering the text too much.
 
-If the address doesn't contain any `/` or `:` characters, it will be interpreted as a node ID:
+A node ID wrapped in two `|` characters will become an anchor to that node:
+
+`
+|ParticlePhysics|
+`
+
+And two words separated by a single anchor allow you to set a display text and destination:
 
 `
 particles|ParticlePhysics
 `
 
+This example will render as "particles|ParticlePhysics": the word particles pointing to a node with id `ParticlePhysics`.
+
 This allows you to specify what to display as the anchor text, but just the ID wrapped inside two `|` characters also works:
 
+en can resolve IDs case insensitively (with priority to case-sensitive matches) and will also collapse spaces when trying to resolve an ID, so you can also write:
+
 `
-|Documentation|
+check out the |en documentation|
 `
 
-Because en can resolve IDs case insensitively (with priority to case-sensitive matches), you can also write the above anchor as `|documentation|`.
+And if an anchor with the id `enDocumentation` or any other case-insensitive combination exists, it will land on it.
 
 In summary, all of the anchors below are valid and lead to the same page:
 
@@ -234,21 +266,91 @@ Syntax|syntax|
 
 |Syntax|
 |syntax|
+|syn tax|
 `
 
 While flexible, this can sometimes be ambiguous. See |AnchorSyntax| for some caveats regarding anchors.
 
+## Preformatted and unformatted
+
+The backtick character can be used to render preformatted blocks and code tags:
+
+`
+The asterisk `*` is special in en markup syntax.
+`
+
+Using the syntax above, the asterisk won't be interpreted as the start of bold formatting.
+
+This is useful for code but also for escaping characters with special meaning you wish to mention literally or render text with all spacing and line breaks unchanged.
+
+Backticks on their own line will render a block of unformatted text such as the ones being used throughout this documentation to show code:
+
+`
+\\`
+everything in here will be rendered without formatting
+\\`
+`
+
+Finally, you can use the backslash `\\` anywhere to fully "escape" that character from being processed by en.
+
+## Lines
+
+A block of lines not separated by an empty line is always joined together. This means if you write:
+
+`
+a
+b
+c
+`
+
+You still get "a b c" as a result.
+
+The exception to this are lists, which are explained below and must have their lines grouped together.
+
+## Formatting
+
+Supported formatting syntax includes:
+
+- `*` for bold
+- `_` for italics
+- `__` for underline
+- `~~` for strikethrough
+
+### Lists
+
+A block of lines starting with a `-` character will be rendered as an unordered list:
+
+`
+- cyan
+- amber
+- crimson
+`
+
+Lines starting with a `+` character will create numbered lists instead:
+
+`
++ ichi
++ ni
++ san
+`
+
+Inside lists, you can use `[ ]` and `[x]`  to render checkboxes:
+
+`
+- [ ] not done
+- [x] done
+`
 """
 
 [nodes.AnchorSyntax]
 title = "Anchor Syntax"
 text = """
-Anchor syntax can be very concise, but some situations lead to ambiguity.
+en's anchor syntax can be very flexible, but some situations lead to ambiguity.
 
 In short, following these two rules should keep you out of trouble:
 
-- Avoid special characters in your node IDs
-- When needed, use full three-pipe `|text|destination|` syntax to fix ambiguity
+- *Avoid special characters in your node IDs*: TOML allows you to use a wide range of characters in identifiers, but when writing your graph it's better keep your IDs simple
+- When needed, use full three-pipe `|text|destination|` syntax to make your anchors fully unambiguous
 
 ## Punctuation in destinations
 
@@ -270,12 +372,12 @@ For this reason, some symbols are treated specially at the trailing boundary of 
 
 Punctuation won't be considered as a possible destination, so you can write the previous example and have it behave as expected.
 
-This also means you can't have punctuation symbols as node IDs or as their first character.
+This is one of the reasons special symbols in your node IDs can lead to trouble.
 
 These are the punctuation symbols that are treated specially:
 
 `
-, . : ; ? ! ( ) ' "
+, . : ; ? ! ( ) ' " ` | _ * \\
 `
 
 ## Plural node anchors
@@ -292,7 +394,7 @@ This conveniently lets you write plural words as anchors to their singular form 
 We found three boats|boat at the marina.
 `
 
-Which is annoyting to write and also makes the raw text a lot noisier.
+Which is annoyting to write and also makes the text a lot noisier.
 
 Unlike with punctuation, this doesn't mean you can't have a node with the ID `s`. You can, but you'll have to write your anchors to it always with a trailing pipe:
 
@@ -302,7 +404,7 @@ The |letter s|s| is important so we dedicated a whole page to it: |s|!
 
 ## Spaced node anchors
 
-Like punctuation, node IDs can't have spaces. If you write a node anchor with spaces, it will be collapsed:
+Like punctuation, node IDs shouldn't have spaces. If you write a node anchor with spaces, it will be collapsed:
 
 `
 This |Node Anchor| will work as if it were |Node Anchor|NodeAnchor|.
@@ -330,7 +432,7 @@ en must differentiate node anchors from outgoing URLs:
 |https://example.com|
 `
 
-It does this by looking at the destination and checking if it contains a `:` or `/`, so also avoid these in your node IDs.
+It does this by looking at the destination and checking if it contains a `:`. That's one more reason to avoid this character in your node IDs.
 
 """
 

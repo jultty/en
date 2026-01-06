@@ -179,6 +179,7 @@ alias t := test
 # Run tests with coverage
 [group: 'assess']
 test-cover:
+    {{ cover_cmd }} clean
     {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
 
@@ -188,6 +189,8 @@ alias o := test-cover
 [group: 'assess']
 cover-assess: test-cover
     {{ cover_cmd }} --fail-under-regions 95 report
+
+alias oa := cover-assess
 
 # Run all assessments
 [script, group: 'assess']

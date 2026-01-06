@@ -130,13 +130,18 @@ impl Graph {
         }
     }
 
-    pub fn find_node(&self, query: &str) -> Option<Node> {
-        self.nodes.get(query).cloned().or_else(|| {
-            self.lowercase_keymap
-                .get(query)
-                .and_then(|lower_key| self.nodes.get(lower_key))
-                .cloned()
-        })
+    pub fn find_node(&self, query: &str) -> (Option<Node>, bool) {
+        let collapsed_query = query.trim().replace(" ", "");
+
+        if let Some(exact_match) = self.nodes.get(query) {
+            (Some(exact_match.clone()), true)
+        } else if let Some(lower_key) =
+            self.lowercase_keymap.get(&collapsed_query)
+        {
+            (self.nodes.get(lower_key).cloned(), false)
+        } else {
+            (None, false)
+        }
     }
 
     pub fn get_root(&self) -> Option<Node> {

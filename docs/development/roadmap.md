@@ -1,6 +1,6 @@
 # Roadmap
 
-- [x] Add tests
+- [x] Setup tests
     - [ ] Improve content syntax parser coverage
 - [x] Redirects
 - [ ] Strip/render some syntax in Tree text preview
@@ -28,7 +28,7 @@
         - [x] Ignore trailing punctuation
         - [ ] Conjugation anchors (|will|ed -> will)
         - [ ] Configurable suffixes
-    - [ ] Spaced node anchor (|red fox| -> redfox -> RedFox)
+    - [x] Spaced node anchor (|red fox| -> redfox -> RedFox)
     - [ ] Automatic connections from anchors
     - [ ] `#` syntax for header ID anchors
     - [ ] Connection kinds

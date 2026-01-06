@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use axum::response::IntoResponse as _;
 use axum::{body::Body, extract::Path, http::Response, response::Redirect};
 
@@ -8,7 +9,8 @@ use crate::{syntax::serial::populate_graph, router::handlers, types::Node};
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let graph = populate_graph();
     let empty_node = Node::new(Some(format!("Could not find node ID {id}.")));
-    let node = graph.find_node(&id).unwrap_or(empty_node.clone());
+    let (node_match, exact) = graph.find_node(&id);
+    let node = node_match.unwrap_or(empty_node.clone());
 
     if !node.redirect.is_empty() {
         return Redirect::permanent(
@@ -17,9 +19,8 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
         .into_response();
     }
 
-    if !graph.nodes.contains_key(&id)
-        && graph.lowercase_keymap.contains_key(&id)
-    {
+    if !exact {
+        log!("Redirecting non-exact match to {}", node.id);
         return Redirect::permanent(format!("/node/{}", node.id).as_str())
             .into_response();
     }

@@ -19,6 +19,7 @@ pub fn new(graph: &Graph) -> Router {
                 .post(handlers::navigation::search),
         )
         .route("/redirect", get(handlers::navigation::redirect))
+        .route("/search", get(handlers::navigation::search))
         .route(
             "/static/style.css",
             get(|| handlers::fixed::file("./static/style.css", "text/css")),

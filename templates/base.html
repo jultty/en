@@ -35,7 +35,7 @@
             {% if config.node_selector or config.navbar_search %}
             <div class="nav-inputs">
                 {% if nodes and config.node_selector %}
-                <form class="node-selector" method="get" action="/redirect">
+                <form class="node-selector" action="/redirect">
                 <select class="node-selector" name="node">
                   <option value="">Nodes</option>
                   {% for node in nodes | filter(attribute="hidden", value=false) %}
@@ -46,7 +46,7 @@
                 </form>
                 {% endif %}
                 {% if config.navbar_search %}
-                <form class="navbar-search" method="post">
+                <form class="navbar-search" action="/search">
                     <input type="text" name="node" required/>
                     <input type="submit" value="Find"/>
                 </form>

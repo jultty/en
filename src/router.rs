@@ -2,7 +2,14 @@ use axum::{routing::get, Router};
 
 use crate::{syntax::serial::Format, types::Graph};
 
-mod handlers;
+mod handlers {
+    pub mod graph;
+    pub mod template;
+    pub mod raw;
+    pub mod navigation;
+    pub mod fixed;
+    pub mod error;
+}
 
 pub fn new(graph: &Graph) -> Router {
     let mut router = Router::default()
@@ -11,6 +18,7 @@ pub fn new(graph: &Graph) -> Router {
             get(|| handlers::navigation::page("index.html"))
                 .post(handlers::navigation::search),
         )
+        .route("/redirect", get(handlers::navigation::redirect))
         .route(
             "/static/style.css",
             get(|| handlers::fixed::file("./static/style.css", "text/css")),
@@ -38,6 +46,8 @@ pub fn new(graph: &Graph) -> Router {
     }
 
     if graph.meta.config.raw {
+        router = router
+            .route("/data", get(|| handlers::navigation::page("data.html")));
         if graph.meta.config.raw_json {
             router = router.route(
                 "/graph/json",

@@ -121,6 +121,11 @@ fn mk8() -> u16 {
     8
 }
 
+pub struct QueryResult {
+    pub node: Option<Node>,
+    pub redirect: bool,
+}
+
 impl Graph {
     pub fn new(message: Option<&str>) -> Graph {
         Graph {
@@ -136,17 +141,26 @@ impl Graph {
         }
     }
 
-    pub fn find_node(&self, query: &str) -> (Option<Node>, bool) {
+    pub fn find_node(&self, query: &str) -> QueryResult {
         let collapsed_query = query.trim().replace(" ", "");
 
         if let Some(exact_match) = self.nodes.get(query) {
-            (Some(exact_match.clone()), true)
+            QueryResult {
+                node: Some(exact_match.clone()),
+                redirect: false,
+            }
         } else if let Some(lower_key) =
-            self.lowercase_keymap.get(&collapsed_query)
+            self.lowercase_keymap.get(&collapsed_query.to_lowercase())
         {
-            (self.nodes.get(lower_key).cloned(), false)
+            QueryResult {
+                node: self.nodes.get(lower_key).cloned(),
+                redirect: true,
+            }
         } else {
-            (None, false)
+            QueryResult {
+                node: None,
+                redirect: false,
+            }
         }
     }
 
@@ -162,7 +176,7 @@ impl Node {
             title: "Not Found".to_string(),
             text: match message {
                 Some(s) => s,
-                None => "Node is empty, missing or wasn't found.".to_string(),
+                None => "Node not found.".to_string(),
             },
             connections: None,
             links: vec![],
@@ -233,7 +247,7 @@ mod tests {
     #[test]
     fn empty_node_message() {
         let node = Node::new(None);
-        assert_eq!(node.text, "Node is empty, missing or wasn't found.");
+        assert_eq!(node.text, "Node not found.");
     }
 
     #[test]

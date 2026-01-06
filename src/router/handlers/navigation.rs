@@ -25,6 +25,10 @@ pub async fn search(Form(query): Form<Query>) -> Redirect {
     Redirect::permanent(format!("/node/{}", query.node).as_str())
 }
 
+pub async fn redirect(Form(query): Form<Query>) -> Redirect {
+    Redirect::permanent(format!("/node/{}", query.node).as_str())
+}
+
 #[derive(serde::Deserialize)]
 pub struct Query {
     node: String,
@@ -62,5 +66,14 @@ mod tests {
     async fn inexistent_page_error() {
         let response = page("HBvcwqT8wLk6hxk1GdvNcEzJ6IiZ2Fod").await;
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[tokio::test]
+    async fn id_redirect() {
+        let query = Form(Query {
+            node: String::from("ancHOr syntaX"),
+        });
+        let response = search(query).await;
+        assert!(response.status_code() == StatusCode::PERMANENT_REDIRECT);
     }
 }

@@ -18,8 +18,9 @@
         {% endblock head %}
     </head>
     <body>
-        <nav id="main-menu">
-            <ul>
+        <nav id="nav-main">
+            <div {% if config.node_selector or config.navbar_search %}id="nav-main-spread"{% endif %}>
+            <ul id="nav-anchors">
                 <li><a href="/">Index</a></li>
                 {% if config.about %}
                 <li><a href="/about">About</a></li>
@@ -28,14 +29,31 @@
                 <li><a href="/tree">Tree</a></li>
                 {% endif %}
                 {% if config.raw %}
-                {% if config.raw_toml %}
-                <li><a href="/graph/toml">TOML Graph</a></li>
-                {% endif %}
-                {% if config.raw_json %}
-                <li><a href="/graph/json">JSON Graph</a></li>
-                {% endif %}
+                <li><a href="/data">Data</a></li>
                 {% endif %}
             </ul>
+            {% if config.node_selector or config.navbar_search %}
+            <div class="nav-inputs">
+                {% if nodes and config.node_selector %}
+                <form class="node-selector" method="get" action="/redirect">
+                <select class="node-selector" name="node">
+                  <option value="">Nodes</option>
+                  {% for node in nodes | filter(attribute="hidden", value=false) %}
+                  <option value="{{node.id}}">{{node.title}}</option>
+                  {% endfor %}
+                  </select>
+                  <button type="submit">Go</button>
+                </form>
+                {% endif %}
+                {% if config.navbar_search %}
+                <form class="navbar-search" method="post">
+                    <input type="text" name="node" required/>
+                    <input type="submit" value="Find"/>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+            </div>
         <hr>
         </nav>
         <main>

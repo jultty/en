@@ -1,0 +1,19 @@
+
+{% extends "base.html" %}
+
+{% block title %}Data{% endblock title %}
+
+{%- block body %}
+<h1>Data</h1>
+
+<p>The raw data used to render this graph is available in the following formats:</p>
+
+<ul>
+    {% if config.raw_toml %}
+    <li><a href="/graph/toml">TOML</a></li>
+    {% endif %}
+    {% if config.raw_json %}
+    <li><a href="/graph/json">JSON</a></li>
+    {% endif %}
+</ul>
+{%- endblock body %}

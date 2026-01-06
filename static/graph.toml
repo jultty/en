@@ -581,6 +581,9 @@ Syntax|syntax|
 [meta.config]
 content_language = "en"
 footer_credits = false
+error_poem = true
+node_selector = true
+navbar_search = true
 footer_text = """
 made by jutty|https://jutty.dev • acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
 """

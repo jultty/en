@@ -64,10 +64,16 @@ fn mkversion() -> (u8, u8, u8) {
 pub struct Config {
     #[serde(default)]
     _private: bool,
+    #[serde(default = "mktrue")]
+    pub about: bool,
     #[serde(default)]
-    pub site_title: String,
+    pub about_text: String,
+    #[serde(default = "mkfalse")]
+    pub ascii_dom_ids: bool,
     #[serde(default)]
-    pub site_description: String,
+    pub content_language: String,
+    #[serde(default = "mkfalse")]
+    error_poem: bool,
     #[serde(default = "mktrue")]
     pub footer: bool,
     #[serde(default = "mktrue")]
@@ -76,32 +82,32 @@ pub struct Config {
     pub footer_date: bool,
     #[serde(default)]
     pub footer_text: String,
-    #[serde(default = "mktrue")]
-    pub about: bool,
-    #[serde(default)]
-    pub about_text: String,
-    #[serde(default = "mktrue")]
-    pub tree: bool,
-    #[serde(default = "mktrue")]
-    pub raw: bool,
-    #[serde(default = "mktrue")]
-    pub raw_toml: bool,
-    #[serde(default = "mktrue")]
-    pub raw_json: bool,
-    #[serde(default = "mktrue")]
-    pub index_search: bool,
-    #[serde(default = "mktrue")]
-    pub index_node_list: bool,
     #[serde(default = "mk8")]
     pub index_node_count: u16,
     #[serde(default = "mktrue")]
+    pub index_node_list: bool,
+    #[serde(default = "mktrue")]
     pub index_root_node: bool,
+    #[serde(default = "mktrue")]
+    pub index_search: bool,
+    #[serde(default)]
+    node_selector: bool,
+    #[serde(default)]
+    navbar_search: bool,
+    #[serde(default = "mktrue")]
+    pub raw: bool,
+    #[serde(default = "mktrue")]
+    pub raw_json: bool,
+    #[serde(default = "mktrue")]
+    pub raw_toml: bool,
+    #[serde(default)]
+    pub site_description: String,
+    #[serde(default)]
+    pub site_title: String,
+    #[serde(default = "mktrue")]
+    pub tree: bool,
     #[serde(default = "mkfalse")]
     pub tree_node_text: bool,
-    #[serde(default = "mkfalse")]
-    pub ascii_dom_ids: bool,
-    #[serde(default)]
-    pub content_language: String,
 }
 
 // See: https://github.com/serde-rs/serde/issues/368
@@ -181,25 +187,28 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             _private: true,
-            site_title: String::default(),
-            site_description: String::default(),
+            about: true,
+            about_text: String::default(),
+            ascii_dom_ids: false,
+            content_language: String::default(),
+            error_poem: false,
             footer: true,
             footer_credits: true,
             footer_date: true,
             footer_text: String::default(),
-            about: true,
-            about_text: String::default(),
-            tree: true,
-            raw: true,
-            raw_toml: true,
-            raw_json: true,
-            index_search: true,
-            index_node_list: true,
             index_node_count: 8,
+            index_node_list: true,
             index_root_node: true,
+            index_search: true,
+            node_selector: true,
+            navbar_search: true,
+            raw: true,
+            raw_json: true,
+            raw_toml: true,
+            site_description: String::default(),
+            site_title: String::default(),
+            tree: true,
             tree_node_text: false,
-            ascii_dom_ids: false,
-            content_language: String::default(),
         }
     }
 }

@@ -107,18 +107,44 @@ span.detached-connection {
     filter: opacity(60%);
 }
 
-nav#main-menu {
+nav#nav-main {
     text-align: center;
 }
 
-nav#main-menu ul {
-    display: inline;
-    padding-left: 0;
+#nav-main-spread {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 10px;
 }
 
-nav#main-menu li {
+nav#nav-main ul {
+    display: inline;
+    padding-left: 0;
+    margin: 0;
+}
+
+nav#nav-main li {
     margin-right: 10px;
     display: inline;
+}
+
+.nav-inputs div {
+    margin-right: 10px;
+    display: flex;
+    align-items: right;
+}
+
+form.node-selector, form.navbar-search {
+    display: inline;
+}
+
+.node-selector select {
+    width: 100px;
+}
+
+.navbar-search input[type="text"] {
+    width: 100px;
 }
 
 div#error-poem {
@@ -173,5 +199,10 @@ em#index-node-count {
 
     div.header-row {
         display: block;
+    }
+
+    #nav-main-spread {
+        display: inline;
+        margin: 0;
     }
 }

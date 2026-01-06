@@ -4,7 +4,8 @@
     <h1>
         {{ title | default(value="Unknown error") }}
     </h1>
-    {{ message | default(value="This error has not been described in detail.") | linebreaksbr | safe }}
+    {{ message | default(value="Unexpected error") | linebreaksbr | safe }}
+    {% if config.error_poem %}
     <hr>
     <div id="error-poem">
     <em>
@@ -14,5 +15,5 @@
         back onto the {% if config.tree %}<a href="/tree">tree</a>{% else %}tree{% endif %}
     </em>
     </div>
-    </p>
+    {% endif %}
 {%- endblock body %}

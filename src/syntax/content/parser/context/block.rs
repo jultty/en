@@ -10,7 +10,7 @@ use crate::{
             state::State,
             token::{
                 Token, header::Header, preformat::PreFormat,
-                paragraph::Paragraph, literal::Literal,
+                paragraph::Paragraph, literal::Literal, list::List, item::Item,
             },
         },
     },
@@ -42,6 +42,16 @@ pub fn parse(
                 state.context.block = Block::Header(header.level());
                 tokens.push(Token::Header(header));
                 return true;
+            } else if List::probe(lexeme) {
+                let ordered = lexeme.match_as_char('+');
+                log!("Block Context: None -> Item on {lexeme}");
+                state.context.block = Block::Item(ordered);
+                tokens.push(Token::List(List::new(true, ordered)));
+                tokens.push(Token::Item(Item::new(true)));
+                // List::probe implies a dash followed by a space,
+                // both of which sould not be rendered literally
+                iterator.next();
+                return true;
             } else if Paragraph::probe(lexeme) {
                 log!("Block Context: None -> Paragraph on {lexeme}");
                 state.context.block = Block::Paragraph;
@@ -70,6 +80,28 @@ pub fn parse(
                 tokens.push(Token::Header(Header::from_u8(n, false, None)));
                 log!("Block Context: Header -> None on {lexeme}");
                 state.context.block = Block::None;
+            }
+        },
+        Block::List(ordered) => {
+            if List::probe_end(lexeme) {
+                tokens.push(Token::List(List::new(false, ordered)));
+                log!("Block Context: List -> None on {lexeme}");
+                state.context.block = Block::None;
+            } else if Item::probe(lexeme) {
+                tokens.push(Token::Item(Item::new(true)));
+                log!("Block Context: List -> Item on {lexeme}");
+                state.context.block = Block::Item(ordered);
+                // Item::probe implies a dash followed by a space,
+                // both of which sould not be rendered literally
+                iterator.next();
+                return true;
+            }
+        },
+        Block::Item(ordered) => {
+            if Item::probe_end(lexeme) {
+                tokens.push(Token::Item(Item::new(false)));
+                log!("Block Context: Item -> List on {lexeme}");
+                state.context.block = Block::List(ordered);
             }
         },
     }
@@ -138,5 +170,29 @@ mod tests {
         let u: usize = 999;
         let level = Level::from(u);
         assert_eq!(level.to_string(), "6");
+    }
+
+    #[test]
+    fn unordered_list_at_eoi() {
+        assert_eq!(
+            read("- a\n- b\n- c"),
+            "<ul><li>a</li>\n<li>b</li>\n<li>c</li></ul>"
+        );
+    }
+
+    #[test]
+    fn unordered_list_with_content_before() {
+        assert_eq!(
+            read("_e e_\n\n- a\n- b\n- c"),
+            "<p><em>e e</em></p>\n\n<ul><li>a</li>\n<li>b</li>\n<li>c</li></ul>",
+        );
+    }
+
+    #[test]
+    fn unordered_list_with_content_after() {
+        assert_eq!(
+            read("- a\n- b\n- c\n\nd",),
+            "<ul><li>a</li>\n<li>b</li>\n<li>c</li>\n</ul>\n<p>d</p>"
+        );
     }
 }

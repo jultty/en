@@ -1,6 +1,9 @@
 use crate::syntax::content::parser::{
     state::State,
-    token::{Token, paragraph::Paragraph, preformat::PreFormat},
+    token::{
+        Token, paragraph::Paragraph, preformat::PreFormat, list::List,
+        item::Item,
+    },
 };
 
 pub mod anchor;
@@ -17,6 +20,8 @@ pub struct Context {
 pub enum Block {
     Paragraph,
     Header(u8),
+    Item(bool),
+    List(bool),
     PreFormat,
     None,
 }
@@ -37,6 +42,13 @@ pub fn close(state: &State, tokens: &mut Vec<Token>) {
         },
         Block::Paragraph => {
             tokens.push(Token::Paragraph(Paragraph::new(false)));
+        },
+        Block::Item(ordered) => {
+            tokens.push(Token::Item(Item::new(false)));
+            tokens.push(Token::List(List::new(false, ordered)));
+        },
+        Block::List(ordered) => {
+            tokens.push(Token::List(List::new(false, ordered)));
         },
         Block::Header(_) => panic!("End of input with open header"),
         Block::None => (),

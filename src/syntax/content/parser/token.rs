@@ -9,13 +9,17 @@ pub mod header;
 pub mod preformat;
 pub mod code;
 pub mod oblique;
+pub mod list;
+pub mod item;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Token {
     Anchor(anchor::Anchor),
     Code(code::Code),
     Header(header::Header),
+    Item(item::Item),
     LineBreak(linebreak::LineBreak),
+    List(list::List),
     Literal(literal::Literal),
     Oblique(oblique::Oblique),
     Paragraph(paragraph::Paragraph),
@@ -29,7 +33,9 @@ impl Token {
             Token::Anchor(ref d) => d.render(),
             Token::Code(ref d) => d.render(),
             Token::Header(ref d) => d.render(),
+            Token::Item(ref d) => d.render(),
             Token::LineBreak(ref d) => d.render(),
+            Token::List(ref d) => d.render(),
             Token::Literal(ref d) => d.render(),
             Token::Oblique(ref d) => d.render(),
             Token::Paragraph(ref d) => d.render(),
@@ -45,7 +51,9 @@ impl std::fmt::Display for Token {
             Token::Anchor(ref d) => format!("{d}"),
             Token::Code(ref d) => format!("{d}"),
             Token::Header(ref d) => format!("{d}"),
+            Token::Item(ref d) => format!("{d}"),
             Token::LineBreak(ref d) => format!("{d}"),
+            Token::List(ref d) => format!("{d}"),
             Token::Literal(ref d) => format!("{d}"),
             Token::Oblique(ref d) => format!("{d}"),
             Token::Paragraph(ref d) => format!("{d}"),
@@ -55,11 +63,4 @@ impl std::fmt::Display for Token {
 
         write!(f, "Tk:{data}")
     }
-}
-
-#[cfg(test)]
-mod tests {
-
-    #[test]
-    fn smoke() {}
 }

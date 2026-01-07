@@ -8,7 +8,7 @@ use crate::{
             Inline, context,
             lexeme::Lexeme,
             state::{AnchorBuffer, State},
-            token::{Token, anchor::Anchor, code::Code},
+            token::{Token, anchor::Anchor, code::Code, literal::Literal},
         },
     },
 };
@@ -47,6 +47,9 @@ pub fn parse(
                 log!("Inline Context: Code -> None on {lexeme}");
                 state.context.inline = Inline::None;
                 tokens.push(Token::Code(Code::new(false)));
+                return true;
+            } else {
+                tokens.push(Token::Literal(Literal::lex(lexeme)));
                 return true;
             }
         },

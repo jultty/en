@@ -21,6 +21,12 @@ pub fn parse(
     tokens: &mut Vec<Token>,
     iterator: &mut Peekable<Iter<'_, Lexeme>>,
 ) -> bool {
+    if let super::context::Block::PreFormat = state.context.block {
+        return false;
+    } else if let super::context::Inline::Code = state.context.inline {
+        return false;
+    }
+
     if Underline::probe(lexeme) {
         log!("Underline probed: {lexeme}");
         tokens

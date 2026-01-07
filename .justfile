@@ -10,7 +10,7 @@ alias u := update
 # Build and serve
 [group: 'develop']
 run host='::1' port='3003' *args:
-    {{ debug_vars }} cargo run -- \
+    DEBUG=${DEBUG:-1} {{ debug_vars }} cargo run -- \
         --hostname {{ host }} --port {{ port }} {{ args }}
 
 alias r := run

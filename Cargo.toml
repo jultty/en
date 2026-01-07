@@ -39,6 +39,8 @@ keyword-idents = "warn"
 # levels: allow, warn, deny, forbid
 
 manual_non_exhaustive = "allow"
+collapsible_if = "allow"
+collapsible_else_if = "allow"
 
 # pedantic
 assigning_clones = "warn"
@@ -49,7 +51,6 @@ cast_ptr_alignment = "warn"
 cast_sign_loss = "warn"
 checked_conversions = "warn"
 cloned_instead_of_copied = "warn"
-comparison_chain = "warn"
 copy_iterator = "warn"
 default_trait_access = "warn"
 doc_broken_link = "warn"

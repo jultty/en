@@ -77,8 +77,8 @@ impl Lexeme {
 
     pub fn match_triple_as_char(&self, t: (char, char, char)) -> bool {
         self.match_as_char(t.0)
-        && self.match_next_as_char(t.1)
-        && self.match_third_as_char(t.2)
+            && self.match_next_as_char(t.1)
+            && self.match_third_as_char(t.2)
     }
 
     pub fn contains_as_char(&self, slice: &[char]) -> bool {
@@ -171,7 +171,9 @@ impl Lexeme {
         let mut out_vector = Vec::with_capacity(segments.len());
         let mut vec = segments.to_vec();
 
-        let Some(mut third) = vec.pop() else { return vec![] };
+        let Some(mut third) = vec.pop() else {
+            return vec![];
+        };
         let last_lexeme = Lexeme {
             text: third.clone(),
             next: String::default(),
@@ -179,7 +181,9 @@ impl Lexeme {
             last: true,
         };
 
-        let Some(mut next) = vec.pop() else { return vec![last_lexeme] };
+        let Some(mut next) = vec.pop() else {
+            return vec![last_lexeme];
+        };
         let penultimate_lexeme = Lexeme {
             text: next.clone(),
             next: third.clone(),

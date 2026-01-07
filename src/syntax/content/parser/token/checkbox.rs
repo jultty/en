@@ -16,7 +16,7 @@ impl CheckBox {
 impl Parseable for CheckBox {
     fn probe(lexeme: &Lexeme) -> bool {
         lexeme.match_triple_as_char(('[', ' ', ']'))
-        || lexeme.match_triple_as_char(('[', 'x', ']'))
+            || lexeme.match_triple_as_char(('[', 'x', ']'))
     }
 
     fn lex(lexeme: &Lexeme) -> CheckBox {
@@ -30,11 +30,7 @@ impl Parseable for CheckBox {
     }
 
     fn render(&self) -> String {
-        let toggle = if self.checked {
-            " checked "
-        } else {
-            ""
-        };
+        let toggle = if self.checked { " checked " } else { "" };
         format!(r#"<input type="checkbox"{toggle}/>"#)
     }
 }

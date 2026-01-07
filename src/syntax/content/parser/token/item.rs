@@ -1,41 +1,45 @@
 use crate::syntax::content::{Parseable, Lexeme};
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Item {
-    open: bool,
+    pub text: String,
+    pub depth: Option<u8>,
 }
 
 impl Parseable for Item {
-    fn probe(lexeme: &Lexeme) -> bool {
-        (lexeme.match_as_char('-') || lexeme.match_as_char('+'))
-            && lexeme.match_next_as_char(' ')
+    fn probe(_: &Lexeme) -> bool {
+        false
     }
 
-    fn lex(_lexeme: &Lexeme) -> Item {
-        Item { open: false }
+    fn lex(_: &Lexeme) -> Item {
+        panic!("Attempt to lex an item directly from a lexeme")
     }
 
     fn render(&self) -> String {
-        if self.open {
-            String::from("<li>")
-        } else {
-            String::from("</li>")
-        }
+        panic!("Items should only be rendered by a list's render method")
     }
 }
 
 impl Item {
-    pub fn new(open: bool) -> Item {
-        Item { open }
-    }
-
-    pub fn probe_end(lexeme: &Lexeme) -> bool {
-        lexeme.match_as_char('\n')
+    pub fn new(text: &str, depth: Option<u8>) -> Item {
+        Item {
+            text: String::from(text),
+            depth,
+        }
     }
 }
 
 impl std::fmt::Display for Item {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Item [{}]", if self.open { "open" } else { "closed" })
+        write!(
+            f,
+            "Item [{}] {}",
+            if let Some(depth) = self.depth {
+                format!("D{depth}")
+            } else {
+                "<unknown>".to_string()
+            },
+            self.text,
+        )
     }
 }

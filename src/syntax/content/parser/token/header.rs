@@ -232,16 +232,25 @@ mod tests {
     fn id_deduplication() {
         let mut map: HashMap<String, Vec<String>> = HashMap::default();
         let config = Config::default();
-        let id =
-            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ", ""), &mut map);
+        let id = Header::make_id(
+            &config,
+            &Lexeme::new("##", "UVrcCUjoQ", ""),
+            &mut map,
+        );
         assert_eq!(id, "UVrcCUjoQ");
 
-        let double =
-            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ", ""), &mut map);
+        let double = Header::make_id(
+            &config,
+            &Lexeme::new("##", "UVrcCUjoQ", ""),
+            &mut map,
+        );
         assert_eq!(double, "UVrcCUjoQ-1");
 
-        let double2 =
-            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ", ""), &mut map);
+        let double2 = Header::make_id(
+            &config,
+            &Lexeme::new("##", "UVrcCUjoQ", ""),
+            &mut map,
+        );
         assert_eq!(double2, "UVrcCUjoQ-2");
     }
 

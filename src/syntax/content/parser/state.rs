@@ -1,8 +1,8 @@
-use std::collections::{HashMap};
+use std::collections::HashMap;
 
 use crate::syntax::content::parser::{
-    token::{anchor::Anchor},
-    context::{Context, Block, Inline},
+    context::{Block, Context, Inline},
+    token::{anchor::Anchor, item::Item, list::List},
 };
 
 #[derive(Clone, Debug)]
@@ -24,6 +24,14 @@ pub struct Switches {
 #[derive(Clone, Debug)]
 pub struct Buffers {
     pub anchor: AnchorBuffer,
+    pub list: ListBuffer,
+}
+
+#[derive(Default, Clone, Debug)]
+pub struct ListBuffer {
+    pub candidate: List,
+    pub item_candidate: Item,
+    pub depth: u8,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -76,6 +84,11 @@ impl Default for State {
                     candidate: Anchor::default(),
                     text: String::default(),
                     destination: String::default(),
+                },
+                list: ListBuffer {
+                    candidate: List::default(),
+                    item_candidate: Item::default(),
+                    depth: 0,
                 },
             },
         }

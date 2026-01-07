@@ -46,11 +46,11 @@
     - [x] Headers
     - [x] Preformatted blocks
     - [x] Oblique,
-    - [ ] Underline
-    - [ ] Strikethrough
-    - [ ] Bold
+    - [x] Underline
+    - [x] Strikethrough
+    - [x] Bold
     - [x] Inline code
-    - [ ] Lists
+    - [x] Lists
         - [ ] Nested lists
     - [ ] Checkboxes
         - [ ] Move this roadmap to en

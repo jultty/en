@@ -5,10 +5,10 @@ use crate::{
     syntax::content::{
         Parseable as _,
         parser::{
-            context, Inline,
+            Inline, context,
             lexeme::Lexeme,
-            state::State,
-            token::{Token, code::Code, anchor::Anchor},
+            state::{AnchorBuffer, State},
+            token::{Token, anchor::Anchor, code::Code},
         },
     },
 };
@@ -29,7 +29,7 @@ pub fn parse(
             } else if Anchor::probe(lexeme) {
                 log!("Inline Context: None -> Anchor on {lexeme}");
                 state.context.inline = Inline::Anchor;
-                state.buffers.anchor.clear();
+                state.buffers.anchor = AnchorBuffer::default();
 
                 if lexeme.match_as_char('|') {
                     state.buffers.anchor.candidate.leading = true;

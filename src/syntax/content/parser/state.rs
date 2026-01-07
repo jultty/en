@@ -15,8 +15,10 @@ pub struct State {
 
 #[derive(Clone, Debug)]
 pub struct Switches {
-    pub oblique: bool,
     pub bold: bool,
+    pub oblique: bool,
+    pub crossout: bool,
+    pub underline: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -24,19 +26,11 @@ pub struct Buffers {
     pub anchor: AnchorBuffer,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug)]
 pub struct AnchorBuffer {
     pub candidate: Anchor,
     pub text: String,
     pub destination: String,
-}
-
-impl AnchorBuffer {
-    pub fn clear(&mut self) {
-        self.candidate = Anchor::default();
-        self.text = String::default();
-        self.destination = String::default();
-    }
 }
 
 impl std::fmt::Display for AnchorBuffer {
@@ -72,8 +66,10 @@ impl Default for State {
             },
             dom_ids: HashMap::default(),
             switches: Switches {
-                oblique: false,
                 bold: false,
+                crossout: false,
+                oblique: false,
+                underline: false,
             },
             buffers: Buffers {
                 anchor: AnchorBuffer {

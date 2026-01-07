@@ -9,13 +9,15 @@ pub mod delimiter {
         pub flanking: Vec<char>,
         pub punctuation: Vec<char>,
         pub whitespace: Vec<char>,
+        pub double: Vec<char>,
     }
 
     impl Default for Delimiters {
         fn default() -> Self {
             Delimiters {
                 atomic: vec!['`', '|'],
-                flanking: vec!['_', '*', '(', ')', '\'', '"'],
+                double: vec!['_', '~'],
+                flanking: vec!['_', '*', '~', '(', ')', '\'', '"'],
                 punctuation: vec![',', '.', ';', ':', '?', '!'],
                 whitespace: vec!['\n', ' '],
             }
@@ -55,12 +57,21 @@ pub mod delimiter {
 
         let mut iterator = text.chars().peekable();
         while let Some(c) = iterator.next() {
-            // if the current char is a boundary
+            // if current char is a boundary
             if delimiters.is_boundary(c) {
                 atomized.push(c.to_string());
                 continue;
 
-            // if the current char is a flanking delimiter
+            // if current char is a double delimiter and the next its double
+            } else if delimiters.double.contains(&c)
+                && iterator.peek().is_some_and(|n| *n == c)
+            {
+                atomized.push(c.to_string());
+                iterator.next();
+                atomized.push(c.to_string());
+                continue;
+
+            // if current char is a flanking delimiter
             } else if delimiters.flanking.contains(&c) {
                 // if next char is a boundary
                 if iterator
@@ -70,7 +81,7 @@ pub mod delimiter {
                     atomized.push(c.to_string());
                     continue;
 
-                // if the previous char was whitespace
+                // if previous char was whitespace
                 } else if let Some(last_string) = atomized.last()
                     && let Some(last_char) = last_string.chars().last()
                     && delimiters.whitespace.contains(&last_char)
@@ -82,7 +93,7 @@ pub mod delimiter {
 
             // if there is a last atomized element
             if let Some(last) = atomized.last_mut() {
-                // if the last atomized element is a boundary
+                // if last atomized element is a boundary
                 if delimiters.is_str_delimiter(last) {
                     atomized.push(c.to_string());
                 } else {

@@ -1,10 +1,15 @@
+use std::{iter::Peekable, slice::Iter};
+
 use crate::{
     prelude::*,
     syntax::content::{
         Parseable as _,
         parser::{
             lexeme::Lexeme,
-            token::{Token, oblique::Oblique, bold::Bold},
+            token::{
+                Token, oblique::Oblique, bold::Bold, underline::Underline,
+                strike::Strike,
+            },
             state::State,
         },
     },
@@ -14,14 +19,28 @@ pub fn parse(
     lexeme: &Lexeme,
     state: &mut State,
     tokens: &mut Vec<Token>,
+    iterator: &mut Peekable<Iter<'_, Lexeme>>,
 ) -> bool {
-    if Oblique::probe(lexeme) {
-        log!("Oblique probed {lexeme}");
+    if Underline::probe(lexeme) {
+        log!("Underline probed: {lexeme}");
+        tokens
+            .push(Token::Underline(Underline::new(!state.switches.underline)));
+        state.switches.underline = !state.switches.underline;
+        iterator.next();
+        return true;
+    } else if Oblique::probe(lexeme) {
+        log!("Oblique probed: {lexeme}");
         tokens.push(Token::Oblique(Oblique::new(!state.switches.oblique)));
         state.switches.oblique = !state.switches.oblique;
         return true;
+    } else if Strike::probe(lexeme) {
+        log!("Strike probed: {lexeme}");
+        tokens.push(Token::Strike(Strike::new(!state.switches.crossout)));
+        state.switches.crossout = !state.switches.crossout;
+        iterator.next();
+        return true;
     } else if Bold::probe(lexeme) {
-        log!("Bold probed {lexeme}");
+        log!("Bold probed: {lexeme}");
         tokens.push(Token::Bold(Bold::new(!state.switches.bold)));
         state.switches.bold = !state.switches.bold;
         return true;

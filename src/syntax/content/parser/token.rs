@@ -12,12 +12,15 @@ pub mod oblique;
 pub mod paragraph;
 pub mod preformat;
 pub mod span;
+pub mod strike;
+pub mod underline;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Token {
     Anchor(anchor::Anchor),
     Bold(bold::Bold),
     Code(code::Code),
+    Strike(strike::Strike),
     Header(header::Header),
     Item(item::Item),
     LineBreak(linebreak::LineBreak),
@@ -27,6 +30,7 @@ pub enum Token {
     Paragraph(paragraph::Paragraph),
     PreFormat(preformat::PreFormat),
     Span(span::Span),
+    Underline(underline::Underline),
 }
 
 impl Token {
@@ -35,6 +39,7 @@ impl Token {
             Token::Anchor(ref d) => d.render(),
             Token::Bold(ref d) => d.render(),
             Token::Code(ref d) => d.render(),
+            Token::Strike(ref d) => d.render(),
             Token::Header(ref d) => d.render(),
             Token::Item(ref d) => d.render(),
             Token::LineBreak(ref d) => d.render(),
@@ -44,6 +49,7 @@ impl Token {
             Token::Paragraph(ref d) => d.render(),
             Token::PreFormat(ref d) => d.render(),
             Token::Span(ref d) => d.render(),
+            Token::Underline(ref d) => d.render(),
         }
     }
 }
@@ -54,6 +60,7 @@ impl std::fmt::Display for Token {
             Token::Anchor(ref d) => format!("{d}"),
             Token::Bold(ref d) => format!("{d}"),
             Token::Code(ref d) => format!("{d}"),
+            Token::Strike(ref d) => format!("{d}"),
             Token::Header(ref d) => format!("{d}"),
             Token::Item(ref d) => format!("{d}"),
             Token::LineBreak(ref d) => format!("{d}"),
@@ -63,6 +70,7 @@ impl std::fmt::Display for Token {
             Token::Paragraph(ref d) => format!("{d}"),
             Token::PreFormat(ref d) => format!("{d}"),
             Token::Span(ref d) => format!("{d}"),
+            Token::Underline(ref d) => format!("{d}"),
         };
 
         write!(f, "Tk:{data}")

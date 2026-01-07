@@ -41,7 +41,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
             continue;
         }
 
-        if point::parse(lexeme, &mut state, &mut tokens) {
+        if point::parse(lexeme, &mut state, &mut tokens, &mut iterator) {
             continue;
         }
 

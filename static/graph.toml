@@ -213,7 +213,7 @@ To make a plain address clickable, wrap it in two `|` characters:
 |https://en.jutty.dev|
 `
 
-### Trailing characters
+### Trailing characters in anchors
 
 For internal anchors, most punctuation is automatically separated from the anchor destination so you can simply write:
 
@@ -272,30 +272,7 @@ Supported formatting syntax includes:
 - `__` for underline
 - `~~` for strikethrough
 
-To apply these, you can wrap a word in the formatting operators, so for instance `*this*` will be rnered as the word "this" in bold: *this*.
-
-## Rendering unformatted text
-
-The backtick character `\\`` can be used to render unformatted blocks and inline text:
-
-`
-The asterisk `*` is special in en markup syntax.
-`
-
-Using the syntax above, the asterisk won't be interpreted as the start of bold formatting.
-
-This is useful for code but also for rendering characters with special meaning you wish to mention literally.
-
-Backticks on their own line will render a block of unformatted text such as the ones being used throughout this documentation to show code:
-
-`
-\\`
-everything in here will be rendered without formatting
-\\`
-`
-
-Finally, you can precede any character with a `\\\\` to fully _escape_ that character from being interpreted. Because |TOML| also treats backslashes specially, you'll likely need to use double slashes, as in `\\\\\\\\`. See |Escaping| for more details and examples.
-
+To apply these, you can wrap a word in the formatting operators, so for instance `*this*` will be rendered as *this* and `~~this~~` as ~~this~~.
 
 ## Paragraphs
 
@@ -311,7 +288,7 @@ You still get "a b c" as a result.
 
 The exception to this are lists, which are explained below and must have their lines grouped together.
 
-### Lists
+## Lists
 
 A block of lines starting with a `-` character will be rendered as an unordered list:
 
@@ -335,6 +312,28 @@ Inside lists, you can use `[ ]` and `[x]`  to render checkboxes:
 - [ ] not done
 - [x] done
 `
+
+## Rendering unformatted text
+
+The backtick character `\\`` can be used to render unformatted blocks and inline text:
+
+`
+The asterisk `*` is special in en markup syntax.
+`
+
+Using the syntax above, the asterisk won't be interpreted as the start of bold formatting and instead will be shown like this: `*`.
+
+This is useful for code but also for rendering characters with special meaning you wish to mention literally.
+
+Backticks on their own line will start and close a block of unformatted text such as the ones being used throughout this documentation to show code:
+
+`
+\\`
+everything in here will be rendered without formatting
+\\`
+`
+
+Finally, you can precede any character with a `\\\\` to fully _escape_ that character from being interpreted. Because |TOML| also treats backslashes specially, you'll likely need to use double slashes, as in `\\\\\\\\`, unless you wrap your TOML strings in single quotes. See |Escaping| for more details and examples.
 """
 
 [nodes.Escaping]
@@ -355,7 +354,7 @@ text = "You need double slashes to escape an asterisk here: \\\\\\\\*"
 
 [node.TripleDouble]
 text = \"""
-Just as here: \\\\\\\\*
+Just like here: \\\\\\\\*
 \"""
 
 [node.Single]
@@ -513,6 +512,78 @@ en is only possible thanks to a number of projects and people:
 - Axum|https://github.com/tokio-rs/axum
 - Tera|https://keats.github.io/tera/
 - Serde|https://serde.rs/ and the |toml crate|https://github.com/toml-rs/toml
+"""
+
+[nodes.Roadmap]
+text = """
+- [x] Setup tests
+    - [ ] Improve content syntax parser coverage
+- [x] Redirects
+- [ ] Strip/render some syntax in Tree text preview
+- [x] Drop-down navigation
+- [ ] Meta-awareness
+    - [ ] Detached edges
+    - [ ] Most linked to nodes
+    - [ ] Most linked from nodes
+    - [ ] Most linked to nonexistent nodes
+    - [ ] Most linked
+- [ ] Special sections
+    - [ ] Definition (implies metadata `has_definition`)
+    - [ ] See also (implies a kind of connection, e.g. `related`)
+    - [ ] Not to be confused with (implies a kind of connection)
+    - [ ] Contrast with (implies a kind of connection)
+    - [ ] Example (implies metadata `has_example`)
+    - [ ] References/influences (implies metadata `has_references`)
+- [ ] Sorting of tree, index list and drop-down navigation
+    - [ ] Alphabetic
+    - [ ] By most linked to
+    - [ ] By most linked
+- [x] Anchors and connections
+    - [ ] Render detached anchors differently
+    - [ ] Suffix-aware anchors
+        - [x] Plural anchors (`|node|s` -> `node`)
+        - [x] Ignore trailing punctuation
+        - [ ] Conjugation anchors (`|will|ed` -> `will`)
+        - [ ] Configurable suffixes
+    - [x] Spaced node anchor (`|red fox|` -> `redfox` -> `RedFox`)
+    - [ ] Automatic connections from anchors
+    - [ ] `#` syntax for header ID anchors
+    - [ ] Connection kinds
+        - [ ] Mutual
+        - [ ] Category <-> Membership
+        - [ ] Opposite <-> Equivalent
+        - [ ] Contrast <-> Similar
+        - [ ] Cognate <-> Unrelated
+        - [ ] Specialization <-> Generalization
+        - [ ] Custom connection kinds
+    - [x] External anchors
+- [ ] Richer text formatting
+    - [ ] Nested formatting
+    - [x] Headers
+    - [x] Preformatted blocks
+    - [x] Oblique,
+    - [x] Underline
+    - [x] Strikethrough
+    - [x] Bold
+    - [x] Inline code
+    - [x] Lists
+        - [ ] Nested lists
+    - [x] Checkboxes
+        - [ ] Move this roadmap to en
+- [ ] Full-text search
+- [ ] Begin centralizing state
+- [ ] Reduce O(n) calls in the formats module
+- [ ] Alternative rendering modes
+    - [ ] Render to filesystem
+    - [ ] Single-page rendering
+- [ ] Input formats
+    - [ ] Multi-file graphs
+    - [ ] Multi-graph
+- [ ] Themes
+- [x] Array syntax for lightweight connections
+- [x] Automatic IDs
+- [x] Automatic titles
+- [x] Mismatch between TOML ID and provided ID
 """
 
 [meta.config]

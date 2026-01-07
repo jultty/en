@@ -52,7 +52,7 @@
     - [x] Inline code
     - [x] Lists
         - [ ] Nested lists
-    - [ ] Checkboxes
+    - [x] Checkboxes
         - [ ] Move this roadmap to en
 - [ ] Full-text search
 - [ ] Begin centralizing state

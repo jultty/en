@@ -2,6 +2,7 @@ use crate::syntax::content::Parseable as _;
 
 pub mod anchor;
 pub mod bold;
+pub mod checkbox;
 pub mod code;
 pub mod header;
 pub mod item;
@@ -19,6 +20,7 @@ pub mod underline;
 pub enum Token {
     Anchor(anchor::Anchor),
     Bold(bold::Bold),
+    CheckBox(checkbox::CheckBox),
     Code(code::Code),
     Strike(strike::Strike),
     Header(header::Header),
@@ -38,6 +40,7 @@ impl Token {
         match *self {
             Token::Anchor(ref d) => d.render(),
             Token::Bold(ref d) => d.render(),
+            Token::CheckBox(ref d) => d.render(),
             Token::Code(ref d) => d.render(),
             Token::Strike(ref d) => d.render(),
             Token::Header(ref d) => d.render(),
@@ -59,6 +62,7 @@ impl std::fmt::Display for Token {
         let data = match *self {
             Token::Anchor(ref d) => format!("{d}"),
             Token::Bold(ref d) => format!("{d}"),
+            Token::CheckBox(ref d) => format!("{d}"),
             Token::Code(ref d) => format!("{d}"),
             Token::Strike(ref d) => format!("{d}"),
             Token::Header(ref d) => format!("{d}"),

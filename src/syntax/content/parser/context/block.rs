@@ -9,8 +9,7 @@ use crate::{
             lexeme::Lexeme,
             state::State,
             token::{
-                Token, header::Header, preformat::PreFormat,
-                paragraph::Paragraph, literal::Literal, list::List, item::Item,
+                Token, checkbox::CheckBox, header::Header, item::Item, list::List, literal::Literal, paragraph::Paragraph, preformat::PreFormat
             },
         },
     },
@@ -98,7 +97,13 @@ pub fn parse(
             }
         },
         Block::Item(ordered) => {
-            if Item::probe_end(lexeme) {
+            if CheckBox::probe(lexeme) {
+                log!("Probed CheckBox: {lexeme}");
+                tokens.push(Token::CheckBox(CheckBox::lex(lexeme)));
+                iterator.next();
+                iterator.next();
+                return true
+            } else if Item::probe_end(lexeme) {
                 tokens.push(Token::Item(Item::new(false)));
                 log!("Block Context: Item -> List on {lexeme}");
                 state.context.block = Block::List(ordered);

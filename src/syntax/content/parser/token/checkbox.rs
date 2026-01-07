@@ -1,0 +1,61 @@
+use crate::{
+    syntax::content::{Parseable, Lexeme},
+};
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct CheckBox {
+    checked: bool,
+}
+
+impl CheckBox {
+    pub fn new(checked: bool) -> CheckBox {
+        CheckBox { checked }
+    }
+}
+
+impl Parseable for CheckBox {
+    fn probe(lexeme: &Lexeme) -> bool {
+        lexeme.match_triple_as_char(('[', ' ', ']'))
+        || lexeme.match_triple_as_char(('[', 'x', ']'))
+    }
+
+    fn lex(lexeme: &Lexeme) -> CheckBox {
+        use crate::prelude::*;
+        log!("Lexing: {lexeme}");
+        if lexeme.match_next_as_char('x') {
+            CheckBox::new(true)
+        } else {
+            CheckBox::new(false)
+        }
+    }
+
+    fn render(&self) -> String {
+        let toggle = if self.checked {
+            " checked "
+        } else {
+            ""
+        };
+        format!(r#"<input type="checkbox"{toggle}/>"#)
+    }
+}
+
+impl std::fmt::Display for CheckBox {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let display_state = if self.checked { "checked" } else { "empty" };
+        write!(f, "CheckBox [{display_state}]")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn render() {
+        let code_open = CheckBox::new(true);
+        assert_eq!(code_open.render(), r#"<input type="checkbox" checked />"#);
+
+        let code_closed = CheckBox::new(false);
+        assert_eq!(code_closed.render(), r#"<input type="checkbox"/>"#);
+    }
+}

@@ -17,7 +17,7 @@ pub mod delimiter {
             Delimiters {
                 atomic: vec!['`', '|', '\\'],
                 double: vec!['_', '~'],
-                flanking: vec!['_', '*', '~', '(', ')', '\'', '"'],
+                flanking: vec!['_', '*', '~', '(', ')', '[', ']', '\'', '"'],
                 punctuation: vec![',', '.', ';', ':', '?', '!'],
                 whitespace: vec!['\n', ' '],
             }

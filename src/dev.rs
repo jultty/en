@@ -38,11 +38,11 @@ macro_rules! log {
                 path_vec.get(path_vec.len().saturating_sub(2)),
                 path_vec.get(path_vec.len().saturating_sub(3)),
             ) {
-                display_path = if level > 3 {
+                display_path = if level > 4 {
                     format!("{} -> {}", trace, path.clone())
-                } else if level > 2 {
+                } else if level > 3 {
                     path.clone()
-                } else if level > 0 {
+                } else if level > 1 {
                     format!("{third_to_last}::{second_to_last}::{last}")
                 } else {
                     format!("{second_to_last}::{last}")
@@ -55,7 +55,9 @@ macro_rules! log {
         let filter = std::env::var("DEBUG_FILTER").unwrap_or("any".to_string());
 
         if $crate::dev::SKIP_PATHS.iter().all(|&s| !trace.contains(s)) &&
-        (filter == "any" || filter.is_empty() || path.contains(&filter)) {
+        (filter == "any" || filter.is_empty() || path.contains(&filter)) &&
+        level > 0
+        {
             $crate::dev::elog(&display_path, &format!($fmt $(, $($arg)+ )?));
         };
 

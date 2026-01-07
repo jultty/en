@@ -53,6 +53,6 @@ mod tests {
         expected = "Attempt to lex a strike tag directly from a lexeme"
     )]
     fn lex() {
-        Strike::lex(&Lexeme::new("", ""));
+        Strike::lex(&Lexeme::default());
     }
 }

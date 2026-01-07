@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn lex() {
-        let p = Paragraph::lex(&Lexeme::new("", ""));
+        let p = Paragraph::lex(&Lexeme::default());
         assert!(p.open.is_none());
     }
 
@@ -71,7 +71,7 @@ mod tests {
         expected = "Attempt to render a paragraph tag while open state is unknown"
     )]
     fn render_state_unknown() {
-        let p = Paragraph::lex(&Lexeme::new("", ""));
+        let p = Paragraph::lex(&Lexeme::default());
         drop(p.render());
     }
 }

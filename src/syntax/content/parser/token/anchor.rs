@@ -124,7 +124,7 @@ mod tests {
         expected = "Attempt to lex an anchor directly from a lexeme"
     )]
     fn lex() {
-        Anchor::lex(&Lexeme::new("", ""));
+        Anchor::lex(&Lexeme::default());
     }
 
     #[test]

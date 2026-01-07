@@ -56,6 +56,6 @@ mod tests {
         expected = "Attempt to lex an underline tag directly from a lexeme"
     )]
     fn lex() {
-        Underline::lex(&Lexeme::new("", ""));
+        Underline::lex(&Lexeme::default());
     }
 }

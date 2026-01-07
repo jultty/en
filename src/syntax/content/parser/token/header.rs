@@ -196,7 +196,7 @@ mod tests {
         let mut map: HashMap<String, Vec<String>> = HashMap::default();
         let id = Header::make_id(
             &Config::default(),
-            &Lexeme::new("##", "Title"),
+            &Lexeme::new("##", "Title", ""),
             &mut map,
         );
         assert_eq!(id, "Title");
@@ -209,7 +209,7 @@ mod tests {
 
         let id = Header::make_id(
             &config,
-            &Lexeme::new("##", "駄目！"),
+            &Lexeme::new("##", "駄目！", ""),
             &mut HashMap::default(),
         );
         assert_eq!(id, "h");
@@ -222,7 +222,7 @@ mod tests {
 
         let id = Header::make_id(
             &config,
-            &Lexeme::new("##", "駄目！"),
+            &Lexeme::new("##", "駄目！", ""),
             &mut HashMap::default(),
         );
         assert_eq!(id, "駄目！");
@@ -233,15 +233,15 @@ mod tests {
         let mut map: HashMap<String, Vec<String>> = HashMap::default();
         let config = Config::default();
         let id =
-            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ"), &mut map);
+            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ", ""), &mut map);
         assert_eq!(id, "UVrcCUjoQ");
 
         let double =
-            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ"), &mut map);
+            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ", ""), &mut map);
         assert_eq!(double, "UVrcCUjoQ-1");
 
         let double2 =
-            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ"), &mut map);
+            Header::make_id(&config, &Lexeme::new("##", "UVrcCUjoQ", ""), &mut map);
         assert_eq!(double2, "UVrcCUjoQ-2");
     }
 

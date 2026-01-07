@@ -35,7 +35,7 @@ pub fn parse(
                 let mut header = Header::lex(lexeme);
                 header.dom_id = Some(Header::make_id(
                     config,
-                    iterator.peek().map_or(&Lexeme::new("", ""), |l| l),
+                    iterator.peek().map_or(&Lexeme::default(), |l| l),
                     &mut state.dom_ids,
                 ));
                 log!("Block Context: None -> Header on {lexeme}");

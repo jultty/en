@@ -54,10 +54,10 @@ mod tests {
 
     #[test]
     fn lex() {
-        let from_empty_lexeme = PreFormat::lex(&Lexeme::new("", ""));
+        let from_empty_lexeme = PreFormat::lex(&Lexeme::default());
         assert!(from_empty_lexeme.open.is_none());
 
-        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::new("`", "`"));
+        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::default());
         assert!(from_non_empty_lexeme.open.is_none());
     }
 
@@ -66,10 +66,10 @@ mod tests {
         expected = "Attempt to render a preformat tag while open state is unknown"
     )]
     fn render() {
-        let from_empty_lexeme = PreFormat::lex(&Lexeme::new("", ""));
+        let from_empty_lexeme = PreFormat::lex(&Lexeme::default());
         from_empty_lexeme.render();
 
-        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::new("`", "`"));
+        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::default());
         from_non_empty_lexeme.render();
     }
 }

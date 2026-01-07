@@ -2,18 +2,20 @@ use std::fmt;
 
 use crate::{prelude::*, syntax::content::parser::segment::delimiter::Delimiters};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Lexeme {
     text: String,
     next: String,
+    third: String,
     last: bool,
 }
 
 impl Lexeme {
-    pub fn new(raw: &str, next: &str) -> Lexeme {
+    pub fn new(raw: &str, next: &str, third: &str) -> Lexeme {
         Lexeme {
             text: raw.to_owned(),
             next: next.to_owned(),
+            third: third.to_owned(),
             last: false,
         }
     }
@@ -53,6 +55,14 @@ impl Lexeme {
         }
     }
 
+    pub fn third_as_char(&self) -> Option<char> {
+        if self.third.chars().count() == 1 {
+            self.third.chars().nth(0)
+        } else {
+            None
+        }
+    }
+
     pub fn match_as_char(&self, c: char) -> bool {
         self.as_char().is_some_and(|as_char| as_char == c)
     }
@@ -61,27 +71,38 @@ impl Lexeme {
         self.next_as_char().is_some_and(|next| next == c)
     }
 
+    pub fn match_third_as_char(&self, c: char) -> bool {
+        self.third_as_char().is_some_and(|third| third == c)
+    }
+
+    pub fn match_triple_as_char(&self, t: (char, char, char)) -> bool {
+        self.match_as_char(t.0)
+        && self.match_next_as_char(t.1)
+        && self.match_third_as_char(t.2)
+    }
+
+    pub fn contains_as_char(&self, slice: &[char]) -> bool {
+        self.as_char().is_some_and(|c| slice.contains(&c))
+    }
+
+    pub fn contains_next_as_char(&self, slice: &[char]) -> bool {
+        self.next_as_char().is_some_and(|c| slice.contains(&c))
+    }
+
     pub fn is_punctuation(&self) -> bool {
-        let punctuation = Delimiters::default().punctuation;
-        self.as_char().is_some_and(|c| punctuation.contains(&c))
+        self.contains_as_char(&Delimiters::default().punctuation)
     }
 
     pub fn is_whitespace(&self) -> bool {
-        let delimiters = Delimiters::default();
-        self.as_char()
-            .is_some_and(|c| delimiters.whitespace.contains(&c))
+        self.contains_as_char(&Delimiters::default().whitespace)
     }
 
     pub fn is_next_whitespace(&self) -> bool {
-        let delimiters = Delimiters::default();
-        self.next_as_char()
-            .is_some_and(|c| delimiters.whitespace.contains(&c))
+        self.contains_next_as_char(&Delimiters::default().whitespace)
     }
 
     pub fn is_next_punctuation(&self) -> bool {
-        let delimiters = Delimiters::default();
-        self.next_as_char()
-            .is_some_and(|c| delimiters.punctuation.contains(&c))
+        self.contains_next_as_char(&Delimiters::default().punctuation)
     }
 
     pub fn is_next_boundary(&self) -> bool {
@@ -146,25 +167,41 @@ impl Lexeme {
         self.split_words().first().map(String::to_owned)
     }
 
-    pub fn collect(raw_strings: &[String]) -> Vec<Lexeme> {
-        let mut out_vector = Vec::with_capacity(raw_strings.len());
-        let mut iterator = raw_strings.iter().peekable();
+    pub fn collect(segments: &[String]) -> Vec<Lexeme> {
+        let mut out_vector = Vec::with_capacity(segments.len());
+        let mut vec = segments.to_vec();
 
-        while let Some(raw) = iterator.next() {
-            let mut next = String::default();
-            let mut last = false;
-            if let Some(peeked) = iterator.peek() {
-                next.clone_from(*peeked);
-            } else {
-                last = true;
-            }
+        let Some(mut third) = vec.pop() else { return vec![] };
+        let last_lexeme = Lexeme {
+            text: third.clone(),
+            next: String::default(),
+            third: String::default(),
+            last: true,
+        };
+
+        let Some(mut next) = vec.pop() else { return vec![last_lexeme] };
+        let penultimate_lexeme = Lexeme {
+            text: next.clone(),
+            next: third.clone(),
+            third: String::default(),
+            last: false,
+        };
+
+        for current in vec.iter().rev() {
             out_vector.push(Lexeme {
-                text: raw.to_owned(),
-                next,
-                last,
+                text: current.to_owned(),
+                next: next.clone(),
+                third: third.clone(),
+                last: false,
             });
+
+            third.clone_from(&next);
+            next.clone_from(current);
         }
 
+        out_vector.reverse();
+        out_vector.push(penultimate_lexeme);
+        out_vector.push(last_lexeme);
         out_vector
     }
 }
@@ -175,8 +212,10 @@ impl fmt::Display for Lexeme {
 
         let next_display = if self.last() {
             " <EOI>"
+        } else if self.third.is_empty() {
+            &format!("-> {} -! EOI", wrap(&self.next))
         } else {
-            &format!("-> {}", wrap(&self.next))
+            &format!("-> {} -> {}", wrap(&self.next), wrap(&self.third))
         };
         write!(f, "{} {}", wrap(&self.text), next_display)
     }
@@ -190,50 +229,44 @@ mod tests {
     fn new_lexeme() {
         let raw = "3PKK4RzfGgUL58rU2NZbAiGN1o5dOfNu";
         let next = "wAcZe8iVEEcZLp20PP9KKf07zJbeZafa";
-        let lexeme = Lexeme::new(raw, next);
+        let third = "K0QTlujGjL2qxBzs16g8oyiCYSuQaRVE";
+        let lexeme = Lexeme::new(raw, next, third);
         assert_eq!(lexeme.text, raw);
         assert_eq!(lexeme.next, next);
+        assert_eq!(lexeme.third, third);
     }
 
     #[test]
     fn next_first_char() {
         let payload = "4IU";
-        let lexeme = Lexeme::new(payload, payload);
+        let lexeme = Lexeme::new("", payload, "");
         assert_eq!(lexeme.next_first_char().unwrap(), '4');
     }
 
     #[test]
     fn match_first_char() {
         let payload = "MKY";
-        let lexeme = Lexeme::new(payload, payload);
+        let lexeme = Lexeme::new(payload, "", "");
         assert!(lexeme.match_first_char('M'));
     }
 
     #[test]
     fn match_absent_first_char() {
-        let payload = "";
-        let lexeme = Lexeme::new(payload, payload);
+        let lexeme = Lexeme::new("", "", "");
         assert!(!lexeme.match_first_char('x'));
     }
 
     #[test]
     fn first_word() {
         let payload = "nhNc fGev QnGW E4hj ExyZ";
-        let lexeme = Lexeme::new(payload, payload);
+        let lexeme = Lexeme::new(payload, "", "");
         assert_eq!(lexeme.first(), Some(String::from("nhNc")));
     }
 
     #[test]
     fn count_char() {
         let payload = "6Ur3UjnndhENjFNSYWF7bhej2NZKLwdY";
-        let lexeme = Lexeme::new(payload, payload);
-        assert_eq!(lexeme.count_char('j'), 3);
-    }
-
-    #[test]
-    fn count_char_huge_number() {
-        let payload = "6Ur3UjnndhENjFNSYWF7bhej2NZKLwdY";
-        let lexeme = Lexeme::new(payload, payload);
+        let lexeme = Lexeme::new(payload, "", "");
         assert_eq!(lexeme.count_char('j'), 3);
     }
 }

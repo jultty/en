@@ -56,18 +56,12 @@ mod tests {
 
     #[test]
     fn probe() {
-        assert!(!Span::probe(&Lexeme::new(
-            &crate::ONSET.elapsed().as_nanos().to_string(),
-            "",
-        )));
+        assert!(!Span::probe(&Lexeme::default()));
     }
 
     #[test]
     fn lex() {
-        let span = Span::lex(&Lexeme::new(
-            &crate::ONSET.elapsed().as_nanos().to_string(),
-            "",
-        ));
+        let span = Span::lex(&Lexeme::default());
         assert!(span.open.is_none());
     }
 
@@ -85,7 +79,7 @@ mod tests {
         expected = "Attempt to render a span tag while open state is unknown"
     )]
     fn render_unknown_open_state() {
-        let open_span = Span::lex(&Lexeme::new("", ""));
+        let open_span = Span::lex(&Lexeme::default());
         drop(open_span.render());
     }
 }

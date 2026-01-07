@@ -56,6 +56,6 @@ mod tests {
         expected = "Attempt to lex a bold tag directly from a lexeme"
     )]
     fn lex() {
-        Bold::lex(&Lexeme::new("", ""));
+        Bold::lex(&Lexeme::default());
     }
 }

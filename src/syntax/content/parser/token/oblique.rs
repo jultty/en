@@ -56,6 +56,6 @@ mod tests {
         expected = "Attempt to lex an oblique tag directly from a lexeme"
     )]
     fn lex() {
-        Oblique::lex(&Lexeme::new("", ""));
+        Oblique::lex(&Lexeme::default());
     }
 }

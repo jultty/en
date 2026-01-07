@@ -56,6 +56,6 @@ mod tests {
         expected = "Attempt to lex a code tag directly from a lexeme"
     )]
     fn lex() {
-        Code::lex(&Lexeme::new("", ""));
+        Code::lex(&Lexeme::default());
     }
 }

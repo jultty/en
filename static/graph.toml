@@ -26,7 +26,7 @@ See |CLI| for defaults and details on the CLI options.
 
 ## Graph Syntax
 
-The graph is a TOML file. You can create nodes by adding text such as:
+The graph is a |TOML| file. You can create nodes by adding text such as:
 
 `
 [nodes.Computer]
@@ -241,8 +241,6 @@ particles|ParticlePhysics
 
 This example will render as "particles|ParticlePhysics": the word particles pointing to a node with id `ParticlePhysics`.
 
-This allows you to specify what to display as the anchor text, but just the ID wrapped inside two `|` characters also works:
-
 en can resolve IDs case insensitively (with priority to case-sensitive matches) and will also collapse spaces when trying to resolve an ID, so you can also write:
 
 `
@@ -254,15 +252,9 @@ And if an anchor with the id `enDocumentation` or any other case-insensitive com
 In summary, all of the anchors below are valid and lead to the same page:
 
 `
-|en Syntax|https://en.jutty.dev/node/Syntax|
-|en Syntax|https://en.jutty.dev/node/Syntax
-Syntax|https://en.jutty.dev/node/Syntax
-
-Syntax|/node/syntax
-
 |syntax|Syntax
 Syntax|syntax
-Syntax|syntax|
+Syntax|syn tax|
 
 |Syntax|
 |syntax|
@@ -271,9 +263,20 @@ Syntax|syntax|
 
 While flexible, this can sometimes be ambiguous. See |AnchorSyntax| for some caveats regarding anchors.
 
-## Preformatted and unformatted
+## Formatting
 
-The backtick character can be used to render preformatted blocks and code tags:
+Supported formatting syntax includes:
+
+- `*` for bold
+- `_` for italics
+- `__` for underline
+- `~~` for strikethrough
+
+To apply these, you can wrap a word in the formatting operators, so for instance `*this*` will be rnered as the word "this" in bold: *this*.
+
+## Rendering unformatted text
+
+The backtick character `\\`` can be used to render unformatted blocks and inline text:
 
 `
 The asterisk `*` is special in en markup syntax.
@@ -281,7 +284,7 @@ The asterisk `*` is special in en markup syntax.
 
 Using the syntax above, the asterisk won't be interpreted as the start of bold formatting.
 
-This is useful for code but also for escaping characters with special meaning you wish to mention literally or render text with all spacing and line breaks unchanged.
+This is useful for code but also for rendering characters with special meaning you wish to mention literally.
 
 Backticks on their own line will render a block of unformatted text such as the ones being used throughout this documentation to show code:
 
@@ -291,9 +294,10 @@ everything in here will be rendered without formatting
 \\`
 `
 
-Finally, you can use the backslash `\\` anywhere to fully "escape" that character from being processed by en.
+Finally, you can precede any character with a `\\\\` to fully _escape_ that character from being interpreted. Because |TOML| also treats backslashes specially, you'll likely need to use double slashes, as in `\\\\\\\\`. See |Escaping| for more details and examples.
 
-## Lines
+
+## Paragraphs
 
 A block of lines not separated by an empty line is always joined together. This means if you write:
 
@@ -306,15 +310,6 @@ c
 You still get "a b c" as a result.
 
 The exception to this are lists, which are explained below and must have their lines grouped together.
-
-## Formatting
-
-Supported formatting syntax includes:
-
-- `*` for bold
-- `_` for italics
-- `__` for underline
-- `~~` for strikethrough
 
 ### Lists
 
@@ -342,6 +337,39 @@ Inside lists, you can use `[ ]` and `[x]`  to render checkboxes:
 `
 """
 
+[nodes.Escaping]
+text = """
+The backslash (`\\\\`) works by immediately adding the following character as a literal and skipping any further interpretation of it.
+
+For example, if you want to write inline unformatted text containing a backtick, you will need to escape it, so that to render `println!("\\`")` as unformatted inline text, you'd write `\\`println!("\\\\\\`")\\``, otherwise the second backtick would close the code tag midway through it.
+
+If you want to render a literal backslash, you can escape the backslash itself by using two backslashes: `\\\\\\\\`.
+
+## Interactions with TOML escaping
+
+Notice that TOML itself also handles escape codes, so to pass a backslash you will need to escape it as a double backslash inside strings delimited by double quotes or triple double quotes. You can use a single backslash inside a string delimited by single quotes:
+
+`
+[node.Double]
+text = "You need double slashes to escape an asterisk here: \\\\\\\\*"
+
+[node.TripleDouble]
+text = \"""
+Just as here: \\\\\\\\*
+\"""
+
+[node.Single]
+text = 'Here you need just one: \\\\*"
+
+[node.TripleSingle]
+text = '''
+Here too: \\\\*
+'''
+`
+
+This has nothing to do with en's markup syntax per se, it's just a consequence of how newlines are also special in |TOML| syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
+"""
+
 [nodes.AnchorSyntax]
 title = "Anchor Syntax"
 text = """
@@ -349,7 +377,7 @@ en's anchor syntax can be very flexible, but some situations lead to ambiguity.
 
 In short, following these two rules should keep you out of trouble:
 
-- *Avoid special characters in your node IDs*: TOML allows you to use a wide range of characters in identifiers, but when writing your graph it's better keep your IDs simple
+- *Avoid special characters in your node IDs*: |TOML| allows you to use a wide range of characters in identifiers, but when writing your graph it's better keep your IDs simple
 - When needed, use full three-pipe `|text|destination|` syntax to make your anchors fully unambiguous
 
 ## Punctuation in destinations
@@ -440,7 +468,7 @@ It does this by looking at the destination and checking if it contains a `:`. Th
 text = """
 en is a tool to write non-linear, connected pieces of text and have their references mapped out as a graph of connected information.
 
-It works by ingesting a TOML file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
+It works by ingesting a |TOML| file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
 
 ## Motivation
 
@@ -486,97 +514,6 @@ en is only possible thanks to a number of projects and people:
 - Tera|https://keats.github.io/tera/
 - Serde|https://serde.rs/ and the |toml crate|https://github.com/toml-rs/toml
 """
-
-[nodes.Test]
-hidden = true
-text = """
-
-This node is just for testing syntax rendering, but I appreciate your curiosity.
-
-`
-|en purple|https://purple.en/n/purple
-cyan|https://cyan.en/n/cyan
-
-|en Giraffe|/node/Giraffe
-|Gorilla|/node/Gorilla
-Crow|/node/Crow
-
-|Circle|Circle
-Circle|Circle
-|Circle|
-`
-
-|en purple|https://purple.en/n/purple
-cyan|https://cyan.en/n/cyan
-
-|en Giraffe|/node/Giraffe
-Crow|/node/Crow
-
-Circle|Circle
-|Circle|
-
-These `|anchors|` are inside `|backticks|Backtick` and should `|not render|https://test.com` as backticks but as `|raw text|` instead. This `|syntax is|` now `being demonstrated|https://test.com` here.
-
-Well |have I ever found such a long anchor in my entire life|Nowhere|, have I?
-
-This failed to parse due to a misunderstanding about what `parts.push(peaker.next().unwrap_or_else(|| unreachable!() ));` really meant.
-
-This greedy anchor is |at the end of a line|Somewhere
-This greedy anchor is |at the end of a line|Somewhere|
-This greedy anchor is |at the end of a line with a period|Somewhere|.
-This inline code is `at the end of a line`
-This inline code is `at the end of a line with a period`.
-
----
-
-For trailing characters you don't want as part of destination, add a third `|`:
-
-`
-This gem|PreciousStone|, though green, was not an emerald.
-`
-
-Which renders as:
-
-This gem|PreciousStone|, though green, was not an emerald.
-
-Supported for punctuation only.
-
-### Node anchors
-
-We saw example `docs|/node/Documentation`, but shorter syntax exists.
-
-## Green
-## Green
-## Green
-## Purple
-## Purple
-## Purple
-## Cyan
-### Cyan
-#### Cyan
-### Cyan
-## Cyan
-## Épistème
-## Épistème
-## Epistème
-## Epistēmē
-### Epistēmē
-#### Epistēmē
-#### Epistēmē
-
-|en Syntax|https://en.jutty.dev/node/Syntax|
-|en Syntax|https://en.jutty.dev/node/Syntax
-Syntax|https://en.jutty.dev/node/Syntax
-
-Syntax|/node/syntax
-
-|syntax|Syntax
-Syntax|syntax
-Syntax|syntax|
-
-|Syntax|
-|syntax|
-`"""
 
 [meta.config]
 content_language = "en"

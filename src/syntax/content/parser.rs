@@ -31,7 +31,7 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
 
     let mut iterator = lexemes.iter().peekable();
     while let Some(lexeme) = iterator.next() {
-        if lexeme.match_as_char('\\') {
+        if lexeme.match_char('\\') {
             if let Some(next) = iterator.next() {
                 tokens.push(Token::Literal(Literal::lex(next)));
             }

@@ -15,14 +15,14 @@ impl CheckBox {
 
 impl Parseable for CheckBox {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.match_triple_as_char(('[', ' ', ']'))
-            || lexeme.match_triple_as_char(('[', 'x', ']'))
+        lexeme.match_char_triple('[', ' ', ']')
+            || lexeme.match_char_triple('[', 'x', ']')
     }
 
     fn lex(lexeme: &Lexeme) -> CheckBox {
         use crate::prelude::*;
         log!("Lexing: {lexeme}");
-        if lexeme.match_next_as_char('x') {
+        if lexeme.match_next_char('x') {
             CheckBox::new(true)
         } else {
             CheckBox::new(false)

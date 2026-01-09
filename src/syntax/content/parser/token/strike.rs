@@ -15,7 +15,7 @@ impl Strike {
 
 impl Parseable for Strike {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.match_as_char('~') && lexeme.match_next_as_char('~')
+        lexeme.match_char('~') && lexeme.match_next_char('~')
     }
 
     fn lex(_lexeme: &Lexeme) -> Strike {

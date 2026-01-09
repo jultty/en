@@ -53,9 +53,9 @@ pub fn parse(
 
         // Conditions in this decision tree should match the destination end
         // or some intermediary state necessary to finding it
-        if lexeme.match_as_char('s')
+        if lexeme.match_char('s')
             && lexeme.is_next_boundary()
-            && !lexeme.match_next_as_char('|')
+            && !lexeme.match_next_char('|')
         {
             log!("End: Plural anchor");
             candidate.destination = Some(candidate.text.clone());
@@ -65,7 +65,7 @@ pub fn parse(
                 state.context.inline = Inline::None;
             }
             return true;
-        } else if lexeme.match_as_char('|') && lexeme.is_next_delimiter() {
+        } else if lexeme.match_char('|') && lexeme.is_next_delimiter() {
             log!("End: Pipe followed by delimiter");
             if buffer.destination.is_empty() {
                 candidate.destination = Some(candidate.text.clone());
@@ -75,16 +75,16 @@ pub fn parse(
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
             return true;
-        } else if lexeme.match_as_char('|') && !candidate.balanced {
+        } else if lexeme.match_char('|') && !candidate.balanced {
             log!("State: Found a pipe, but no boundary: destination follows");
             candidate.balanced = true;
             return true;
-        } else if lexeme.match_as_char(':') {
+        } else if lexeme.match_char(':') {
             log!("State: Found a colon, marking anchor as external");
             candidate.external = true;
             buffer.destination.push_str(&lexeme.text());
             return true;
-        } else if lexeme.match_as_char('|') {
+        } else if lexeme.match_char('|') {
             log!("End: Explicit end-of-destination pipe");
             candidate.destination = Some(buffer.destination.clone());
             return true;

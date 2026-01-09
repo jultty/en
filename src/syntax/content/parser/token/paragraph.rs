@@ -11,7 +11,7 @@ impl Paragraph {
     }
 
     pub fn probe_end(lexeme: &Lexeme) -> bool {
-        lexeme.match_as_char('\n') && lexeme.match_next_as_char('\n')
+        lexeme.match_char('\n') && lexeme.match_next_char('\n')
     }
 }
 

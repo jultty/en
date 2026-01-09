@@ -83,7 +83,9 @@ impl Parseable for Header {
             == 0
         {
             let level = lexeme.text().len();
-            lexeme.clone().split_words().len() == 1 && level > 0 && level <= 6
+            lexeme.clone().split_segments().len() == 1
+                && level > 0
+                && level <= 6
         } else {
             false
         }

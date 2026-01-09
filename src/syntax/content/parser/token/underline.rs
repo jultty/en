@@ -15,7 +15,7 @@ impl Underline {
 
 impl Parseable for Underline {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.match_as_char('_') && lexeme.match_next_as_char('_')
+        lexeme.match_char('_') && lexeme.match_next_char('_')
     }
 
     fn lex(_lexeme: &Lexeme) -> Underline {

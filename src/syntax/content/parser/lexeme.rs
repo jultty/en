@@ -7,6 +7,7 @@ pub struct Lexeme {
     text: String,
     next: String,
     third: String,
+    first: bool,
     last: bool,
 }
 
@@ -16,6 +17,7 @@ impl Lexeme {
             text: raw.to_owned(),
             next: next.to_owned(),
             third: third.to_owned(),
+            first: false,
             last: false,
         }
     }
@@ -33,6 +35,10 @@ impl Lexeme {
 
     pub fn last(&self) -> bool {
         self.last
+    }
+
+    pub fn first(&self) -> bool {
+        self.first
     }
 
     pub fn mutate_text(&mut self, new: &str) {
@@ -63,46 +69,58 @@ impl Lexeme {
         }
     }
 
-    pub fn match_as_char(&self, c: char) -> bool {
+    pub fn match_char(&self, c: char) -> bool {
         self.as_char().is_some_and(|as_char| as_char == c)
     }
 
-    pub fn match_next_as_char(&self, c: char) -> bool {
+    pub fn match_next_char(&self, c: char) -> bool {
         self.next_as_char().is_some_and(|next| next == c)
     }
 
-    pub fn match_third_as_char(&self, c: char) -> bool {
+    pub fn match_third_char(&self, c: char) -> bool {
         self.third_as_char().is_some_and(|third| third == c)
     }
 
-    pub fn match_triple_as_char(&self, t: (char, char, char)) -> bool {
-        self.match_as_char(t.0)
-            && self.match_next_as_char(t.1)
-            && self.match_third_as_char(t.2)
+    pub fn match_either_char(&self, c1: char, c2: char) -> bool {
+        self.as_char().is_some_and(|c| c == c1 || c == c2)
     }
 
-    pub fn contains_as_char(&self, slice: &[char]) -> bool {
+    pub fn match_next_either_char(&self, c1: char, c2: char) -> bool {
+        self.next_as_char().is_some_and(|c| c == c1 || c == c2)
+    }
+
+    pub fn match_char_sequence(&self, c1: char, c2: char) -> bool {
+        self.match_char(c1) && self.match_next_char(c2)
+    }
+
+    pub fn match_char_triple(&self, c1: char, c2: char, c3: char) -> bool {
+        self.match_char(c1)
+            && self.match_next_char(c2)
+            && self.match_third_char(c3)
+    }
+
+    pub fn match_char_in(&self, slice: &[char]) -> bool {
         self.as_char().is_some_and(|c| slice.contains(&c))
     }
 
-    pub fn contains_next_as_char(&self, slice: &[char]) -> bool {
+    pub fn match_next_char_in(&self, slice: &[char]) -> bool {
         self.next_as_char().is_some_and(|c| slice.contains(&c))
     }
 
     pub fn is_punctuation(&self) -> bool {
-        self.contains_as_char(&Delimiters::default().punctuation)
+        self.match_char_in(&Delimiters::default().punctuation)
     }
 
     pub fn is_whitespace(&self) -> bool {
-        self.contains_as_char(&Delimiters::default().whitespace)
+        self.match_char_in(&Delimiters::default().whitespace)
     }
 
     pub fn is_next_whitespace(&self) -> bool {
-        self.contains_next_as_char(&Delimiters::default().whitespace)
+        self.match_next_char_in(&Delimiters::default().whitespace)
     }
 
     pub fn is_next_punctuation(&self) -> bool {
-        self.contains_next_as_char(&Delimiters::default().punctuation)
+        self.match_next_char_in(&Delimiters::default().punctuation)
     }
 
     pub fn is_next_boundary(&self) -> bool {
@@ -159,54 +177,63 @@ impl Lexeme {
         vector
     }
 
-    pub fn split_words(self) -> Vec<String> {
+    pub fn split_segments(self) -> Vec<String> {
         self.text().split(' ').map(str::to_string).collect()
     }
 
-    pub fn first(self) -> Option<String> {
-        self.split_words().first().map(String::to_owned)
+    pub fn first_segment(self) -> Option<String> {
+        self.split_segments().first().map(String::to_owned)
     }
 
-    pub fn collect(segments: &[String]) -> Vec<Lexeme> {
-        let mut out_vector = Vec::with_capacity(segments.len());
-        let mut vec = segments.to_vec();
+    pub fn collect(segments_slice: &[String]) -> Vec<Lexeme> {
+        let mut lexemes = Vec::with_capacity(segments_slice.len());
+        let mut segments = segments_slice.to_vec();
 
-        let Some(mut third) = vec.pop() else {
+        let Some(last) = segments.pop() else {
             return vec![];
         };
         let last_lexeme = Lexeme {
-            text: third.clone(),
+            text: last.clone(),
             next: String::default(),
             third: String::default(),
+            first: false,
             last: true,
         };
 
-        let Some(mut next) = vec.pop() else {
+        let Some(penultimate) = segments.pop() else {
             return vec![last_lexeme];
         };
         let penultimate_lexeme = Lexeme {
-            text: next.clone(),
-            next: third.clone(),
+            text: penultimate.clone(),
+            next: last.clone(),
             third: String::default(),
+            first: false,
             last: false,
         };
 
-        for current in vec.iter().rev() {
-            out_vector.push(Lexeme {
+        let mut third = last;
+        let mut next = penultimate;
+
+        let mut iterator = segments.iter().rev().peekable();
+        while let Some(current) = iterator.next() {
+            let lexeme = Lexeme {
                 text: current.to_owned(),
                 next: next.clone(),
                 third: third.clone(),
+                first: iterator.peek().is_none(),
                 last: false,
-            });
+            };
+
+            lexemes.push(lexeme);
 
             third.clone_from(&next);
             next.clone_from(current);
         }
 
-        out_vector.reverse();
-        out_vector.push(penultimate_lexeme);
-        out_vector.push(last_lexeme);
-        out_vector
+        lexemes.reverse();
+        lexemes.push(penultimate_lexeme);
+        lexemes.push(last_lexeme);
+        lexemes
     }
 }
 
@@ -214,14 +241,24 @@ impl fmt::Display for Lexeme {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use crate::dev::wrap;
 
-        let next_display = if self.last() {
+        let properties = if self.first {
+            "[F] "
+        } else if self.last {
+            "[L] "
+        } else if self.last && self.first {
+            "[FL] "
+        } else {
+            ""
+        };
+
+        let next_display = if self.last {
             " <EOI>"
         } else if self.third.is_empty() {
             &format!("-> {} -! EOI", wrap(&self.next))
         } else {
             &format!("-> {} -> {}", wrap(&self.next), wrap(&self.third))
         };
-        write!(f, "{} {}", wrap(&self.text), next_display)
+        write!(f, "Lx {}{} {}", properties, wrap(&self.text), next_display)
     }
 }
 
@@ -261,10 +298,19 @@ mod tests {
     }
 
     #[test]
-    fn first_word() {
+    fn first_segment() {
         let payload = "nhNc fGev QnGW E4hj ExyZ";
         let lexeme = Lexeme::new(payload, "", "");
-        assert_eq!(lexeme.first(), Some(String::from("nhNc")));
+        assert_eq!(lexeme.clone().first_segment(), Some(String::from("nhNc")));
+    }
+
+    #[test]
+    fn first_lexeme() {
+        let input = ["h015r", "cvYde", "aw1Ui", "ASwew"].map(str::to_string);
+        let lexemes = Lexeme::collect(&input);
+        let first = lexemes.first().unwrap();
+        assert!(first.clone().first());
+        assert_eq!(first.text(), "h015r".to_string());
     }
 
     #[test]

@@ -47,3 +47,16 @@ pub fn close(state: &State, tokens: &mut Vec<Token>) {
         Block::None => (),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::syntax::content::parser::{context::Block, state::State};
+
+    #[test]
+    #[should_panic(expected = "End of input with open list")]
+    fn open_list_eoi() {
+        let mut state = State::default();
+        state.context.block = Block::List;
+        super::close(&state, &mut vec![]);
+    }
+}

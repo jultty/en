@@ -83,6 +83,9 @@ kind = "contrast"
 This will create a connection from the node with ID `Realism` to a node with ID `Surrealism` and add the "contrast" kind to the connection. See |Connections| for the existing kinds and how they affect your graph.
 """
 
+[nodes.docs]
+redirect = "Documentation"
+
 [nodes.Node] # foo
 text = """
 A node is defined in your graph file starting with a table header of the form:

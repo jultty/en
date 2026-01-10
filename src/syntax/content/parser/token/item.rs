@@ -43,3 +43,46 @@ impl std::fmt::Display for Item {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::syntax::content::parser::token::Token;
+
+    use super::*;
+
+    #[test]
+    #[should_panic(
+        expected = "Items should only be rendered by a list's render method"
+    )]
+    fn render() {
+        let item = Item::new("aCNuZwwzrt", None);
+        item.render();
+    }
+
+    #[test]
+    fn probe() {
+        let lexeme = Lexeme::new("bOa", "2R6", "4Mp");
+        assert!(!Item::probe(&lexeme));
+    }
+
+    #[test]
+    #[should_panic(expected = "Attempt to lex an item directly from a lexeme")]
+    fn lex() {
+        let lexeme = Lexeme::new("8kbX", "Qzqu", "iDpg");
+        Item::lex(&lexeme);
+    }
+
+    #[test]
+    fn token_display() {
+        let mut item = Item::new("dRMy4", Some(4));
+        assert_eq!(
+            format!("{}", Token::Item(item.clone())),
+            "Tk:Item [D4] dRMy4"
+        );
+        item.depth = None;
+        assert_eq!(
+            format!("{}", Token::Item(item.clone())),
+            "Tk:Item [<unknown>] dRMy4"
+        );
+    }
+}

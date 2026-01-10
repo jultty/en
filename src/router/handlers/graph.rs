@@ -88,4 +88,10 @@ mod tests {
         let response = node(Path("syntax".to_string())).await;
         assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
     }
+
+    #[tokio::test]
+    async fn docs_redirect() {
+        let response = node(Path("docs".to_string())).await;
+        assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
+    }
 }

@@ -103,4 +103,15 @@ mod tests {
     fn trailing_oblique_with_newline() {
         assert_eq!(read("see _acks_\n"), "<p>see <em>acks</em></p>");
     }
+
+    #[test]
+    fn underline() {
+        assert_eq!(read("__u__"), "<p><u>u</u></p>");
+    }
+
+    #[test]
+    fn checkbox() {
+        assert_eq!(read("[ ]"), r#"<p><input type="checkbox"/></p>"#);
+        assert_eq!(read("[x]"), r#"<p><input type="checkbox" checked /></p>"#);
+    }
 }

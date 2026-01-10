@@ -40,6 +40,8 @@ impl std::fmt::Display for Underline {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -57,5 +59,20 @@ mod tests {
     )]
     fn lex() {
         Underline::lex(&Lexeme::default());
+    }
+
+    #[test]
+    fn token_display() {
+        let mut underline = Underline::new(true);
+        assert_eq!(
+            format!("{}", Token::Underline(underline.clone())),
+            "Tk:Underline [open]"
+        );
+
+        underline.open = false;
+        assert_eq!(
+            format!("{}", Token::Underline(underline.clone())),
+            "Tk:Underline [closed]"
+        );
     }
 }

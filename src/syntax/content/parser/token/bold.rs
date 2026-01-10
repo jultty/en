@@ -40,6 +40,8 @@ impl std::fmt::Display for Bold {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -57,5 +59,17 @@ mod tests {
     )]
     fn lex() {
         Bold::lex(&Lexeme::default());
+    }
+
+    #[test]
+    fn token_display() {
+        let mut bold = Bold::new(true);
+        assert_eq!(format!("{}", Token::Bold(bold.clone())), "Tk:Bold [open]");
+
+        bold.open = false;
+        assert_eq!(
+            format!("{}", Token::Bold(bold.clone())),
+            "Tk:Bold [closed]"
+        );
     }
 }

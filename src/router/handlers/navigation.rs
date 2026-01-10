@@ -76,4 +76,13 @@ mod tests {
         let response = search(query).await;
         assert!(response.status_code() == StatusCode::PERMANENT_REDIRECT);
     }
+
+    #[tokio::test]
+    async fn dedicated_redirect_endpoint() {
+        let query = Form(Query {
+            node: String::from("syNTaX"),
+        });
+        let response = redirect(query).await;
+        assert!(response.status_code() == StatusCode::PERMANENT_REDIRECT);
+    }
 }

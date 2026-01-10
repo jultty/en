@@ -191,6 +191,8 @@ impl Display for Level {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -284,5 +286,14 @@ mod tests {
         };
 
         header.render();
+    }
+
+    #[test]
+    fn token_display() {
+        let header = Header::from_u8(2, false, None);
+        assert_eq!(
+            format!("{}", Token::Header(header)),
+            "Tk:Header [closed L2]"
+        );
     }
 }

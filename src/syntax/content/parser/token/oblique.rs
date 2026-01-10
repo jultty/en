@@ -40,6 +40,8 @@ impl std::fmt::Display for Oblique {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -57,5 +59,20 @@ mod tests {
     )]
     fn lex() {
         Oblique::lex(&Lexeme::default());
+    }
+
+    #[test]
+    fn token_display() {
+        let mut oblique = Oblique::new(true);
+        assert_eq!(
+            format!("{}", Token::Oblique(oblique.clone())),
+            "Tk:Oblique [open]"
+        );
+
+        oblique.open = false;
+        assert_eq!(
+            format!("{}", Token::Oblique(oblique.clone())),
+            "Tk:Oblique [closed]"
+        );
     }
 }

@@ -45,6 +45,20 @@ quick-assess-run-watch:
 
 alias qr := quick-assess-run-watch
 
+[private]
+quick-test-cover:
+    {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
+    {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
+    {{ cover_cmd }} report --html
+    @{{ cover_cmd }} report | tail -1 | awk '{ print " [ Regions:", $4, "• Functions:", $7, "• Lines:", $10, "]" }'
+
+# Quickly update coverage reports (inaccurate)
+[group: 'assess']
+quick-test-cover-watch:
+    {{ watch_cmd }} {{ just_cmd }} quick-test-cover
+
+alias qo := quick-test-cover-watch
+
 # Format all files
 [group: 'develop']
 format:
@@ -110,7 +124,7 @@ alias or := cover-report
 
 # Open coverage report
 [group: 'develop']
-cover-open: test-cover
+cover-open:
     {{ cover_cmd }} report --open
 
 alias oo := cover-open
@@ -176,10 +190,16 @@ test:
 
 alias t := test
 
+# Clean test coverage data
+[group: 'assess']
+test-cover-clean:
+    {{ cover_cmd }} clean
+
+alias oc := test-cover-clean
+
 # Run tests with coverage
 [group: 'assess']
-test-cover:
-    {{ cover_cmd }} clean
+test-cover: test-cover-clean
     {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
 

@@ -26,3 +26,27 @@ impl std::fmt::Display for Literal {
         write!(f, "Literal {}", crate::dev::wrap(&self.text))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::syntax::content::parser::token::Token;
+
+    use super::*;
+
+    #[test]
+    fn token_display() {
+        let mut literal = Literal {
+            text: String::from("MYpDT"),
+        };
+        assert_eq!(
+            format!("{}", Token::Literal(literal.clone())),
+            "Tk:Literal MYpDT"
+        );
+
+        literal.text = String::from("TjY02");
+        assert_eq!(
+            format!("{}", Token::Literal(literal.clone())),
+            "Tk:Literal TjY02"
+        );
+    }
+}

@@ -31,7 +31,6 @@ pub enum Token {
     Oblique(oblique::Oblique),
     Paragraph(paragraph::Paragraph),
     PreFormat(preformat::PreFormat),
-    Span(span::Span),
     Underline(underline::Underline),
 }
 
@@ -51,7 +50,6 @@ impl Token {
             Token::Oblique(ref d) => d.render(),
             Token::Paragraph(ref d) => d.render(),
             Token::PreFormat(ref d) => d.render(),
-            Token::Span(ref d) => d.render(),
             Token::Underline(ref d) => d.render(),
         }
     }
@@ -73,7 +71,6 @@ impl std::fmt::Display for Token {
             Token::Oblique(ref d) => format!("{d}"),
             Token::Paragraph(ref d) => format!("{d}"),
             Token::PreFormat(ref d) => format!("{d}"),
-            Token::Span(ref d) => format!("{d}"),
             Token::Underline(ref d) => format!("{d}"),
         };
 

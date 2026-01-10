@@ -94,3 +94,56 @@ impl Default for State {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn anchor_buffer_display() {
+        let buffer = AnchorBuffer::default();
+        println!("{buffer:#?}");
+        println!("{buffer}");
+        assert_eq!(
+            format!("{buffer}"),
+            "AnchorBuffer [] >> Anchor <empty> -> <unknown>"
+        );
+    }
+
+    #[test]
+    fn anchor_buffer_display_with_text_set() {
+        let mut buffer = AnchorBuffer::default();
+        buffer.text = String::from("mX8Z7yWmsK");
+        println!("{buffer:#?}");
+        println!("{buffer}");
+        assert_eq!(
+            format!("{buffer}"),
+            r#"AnchorBuffer [text: "mX8Z7yWmsK"] >> Anchor <empty> -> <unknown>"#
+        );
+    }
+
+    #[test]
+    fn anchor_buffer_display_with_destination_set() {
+        let mut buffer = AnchorBuffer::default();
+        buffer.destination = String::from("VP2aqGngAq");
+        println!("{buffer:#?}");
+        println!("{buffer}");
+        assert_eq!(
+            format!("{buffer}"),
+            r#"AnchorBuffer [, dest: "VP2aqGngAq"] >> Anchor <empty> -> <unknown>"#
+        );
+    }
+
+    #[test]
+    fn anchor_buffer_display_with_text_and_destination_set() {
+        let mut buffer = AnchorBuffer::default();
+        buffer.text = String::from("ECJrzgkBHg");
+        buffer.destination = String::from("9dy6gQ2g3E");
+        println!("{buffer:#?}");
+        println!("{buffer}");
+        assert_eq!(
+            format!("{buffer}"),
+            r#"AnchorBuffer [text: "ECJrzgkBHg", dest: "9dy6gQ2g3E"] >> Anchor <empty> -> <unknown>"#
+        );
+    }
+}

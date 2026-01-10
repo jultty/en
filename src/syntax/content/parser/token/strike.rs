@@ -37,6 +37,8 @@ impl std::fmt::Display for Strike {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -54,5 +56,20 @@ mod tests {
     )]
     fn lex() {
         Strike::lex(&Lexeme::default());
+    }
+
+    #[test]
+    fn token_display() {
+        let mut strike = Strike::new(true);
+        assert_eq!(
+            format!("{}", Token::Strike(strike.clone())),
+            "Tk:Strike [open]"
+        );
+
+        strike.open = false;
+        assert_eq!(
+            format!("{}", Token::Strike(strike.clone())),
+            "Tk:Strike [closed]"
+        );
     }
 }

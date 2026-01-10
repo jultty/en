@@ -85,7 +85,12 @@ pub fn parse(
 
 #[cfg(test)]
 mod tests {
-    use crate::{syntax::content::parser, types::Graph};
+    use crate::{
+        syntax::content::parser::{
+            self, context::list::parse, lexeme::Lexeme, state::State,
+        },
+        types::{Config, Graph},
+    };
 
     fn read(input: &str) -> String {
         parser::read(input, &Graph::new(None).meta.config)
@@ -258,6 +263,23 @@ mod tests {
             <li>8Fa</li></ul></li></ul></li>\n\
             <li>0Ga</li>\n\
             </ul>\n\n"
+        );
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "List context parser called to handle non-list context"
+    )]
+    fn bad_context() {
+        let mut state = State::default();
+        let lexemes = Lexeme::collect(&["a", "b", "c"].map(str::to_string));
+        let config = Config::default();
+        parse(
+            &Lexeme::default(),
+            &mut state,
+            &mut vec![],
+            &mut lexemes.iter().peekable(),
+            &config,
         );
     }
 }

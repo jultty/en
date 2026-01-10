@@ -45,15 +45,22 @@ impl std::fmt::Display for Anchor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         use crate::dev::wrap;
 
+        let wrapped_text = wrap(&self.text);
+        let display_text = if wrapped_text.is_empty() {
+            "<empty>"
+        } else {
+            wrapped_text.as_str()
+        };
+
         let display_destination = match self.destination {
             Some(ref destination) => {
                 if destination.is_empty() {
-                    "<empty>"
+                    String::from("<empty>")
                 } else {
-                    destination
+                    format!("{destination:?}")
                 }
             },
-            None => "<unknown>",
+            None => String::from("<unknown>"),
         };
 
         let mut tail = String::default();
@@ -68,13 +75,7 @@ impl std::fmt::Display for Anchor {
             tail.push_str(" +External");
         }
 
-        write!(
-            f,
-            "Anchor {:?} -> {:?}{}",
-            wrap(&self.text),
-            display_destination,
-            tail
-        )
+        write!(f, "Anchor {display_text} -> {display_destination}{tail}")
     }
 }
 
@@ -107,6 +108,8 @@ impl Anchor {
 #[cfg(test)]
 mod tests {
 
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -132,5 +135,37 @@ mod tests {
     fn unknown_destination_render() {
         let anchor = Anchor::default();
         drop(anchor.render());
+    }
+
+    #[test]
+    fn token_display() {
+        let mut anchor = Anchor::default();
+        assert_eq!(
+            format!("{}", Token::Anchor(anchor.clone())),
+            "Tk:Anchor <empty> -> <unknown>",
+        );
+
+        anchor.text = String::from("FsJAt RTggA");
+        assert_eq!(
+            format!("{}", Token::Anchor(anchor.clone())),
+            "Tk:Anchor 'FsJAt RTggA' -> <unknown>",
+        );
+
+        anchor.text = String::from("wPVo1 0OmYm");
+        anchor.destination = Some(String::from("M1UEp 1gbfr"));
+        assert_eq!(
+            format!("{}", Token::Anchor(anchor.clone())),
+            r#"Tk:Anchor 'wPVo1 0OmYm' -> "M1UEp 1gbfr""#,
+        );
+
+        anchor.balanced = true;
+        anchor.leading = true;
+        anchor.external = true;
+
+        assert_eq!(
+            format!("{}", Token::Anchor(anchor.clone())),
+            "Tk:Anchor 'wPVo1 0OmYm' -> \"M1UEp 1gbfr\" \
+            +Leading +Balanced +External",
+        );
     }
 }

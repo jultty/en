@@ -196,7 +196,7 @@ impl Lexeme {
             text: last.clone(),
             next: String::default(),
             third: String::default(),
-            first: false,
+            first: segments.is_empty(),
             last: true,
         };
 
@@ -241,12 +241,12 @@ impl fmt::Display for Lexeme {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use crate::dev::wrap;
 
-        let properties = if self.first {
-            "[F] "
+        let properties = if self.last && self.first {
+            "[S] "
         } else if self.last {
             "[L] "
-        } else if self.last && self.first {
-            "[FL] "
+        } else if self.first {
+            "[F] "
         } else {
             ""
         };
@@ -254,11 +254,11 @@ impl fmt::Display for Lexeme {
         let next_display = if self.last {
             " <EOI>"
         } else if self.third.is_empty() {
-            &format!("-> {} -! EOI", wrap(&self.next))
+            &format!(" -> {} <EOI>", wrap(&self.next))
         } else {
-            &format!("-> {} -> {}", wrap(&self.next), wrap(&self.third))
+            &format!(" -> {} -> {}", wrap(&self.next), wrap(&self.third))
         };
-        write!(f, "Lx {}{} {}", properties, wrap(&self.text), next_display)
+        write!(f, "Lx {}{}{}", properties, wrap(&self.text), next_display)
     }
 }
 
@@ -318,5 +318,115 @@ mod tests {
         let payload = "6Ur3UjnndhENjFNSYWF7bhej2NZKLwdY";
         let lexeme = Lexeme::new(payload, "", "");
         assert_eq!(lexeme.count_char('j'), 3);
+    }
+
+    #[test]
+    fn mutate_text() {
+        let mut lexeme = Lexeme::new("b71Je", "I6y3i", "LC8na");
+        lexeme.mutate_text("qkjjK2");
+        assert_eq!(lexeme.text(), "qkjjK2");
+    }
+
+    #[test]
+    fn third_as_char() {
+        let lexeme_a = Lexeme::new("1", "2", "3");
+        assert_eq!(lexeme_a.third_as_char().unwrap(), '3');
+        let lexeme_c = Lexeme::new("a", "b", "");
+        assert!(lexeme_c.third_as_char().is_none());
+    }
+
+    #[test]
+    fn match_third_char() {
+        let lexeme = Lexeme::new("1", "2", "3");
+        assert!(lexeme.match_third_char('3'));
+    }
+
+    #[test]
+    fn match_next_either_char() {
+        let lexeme = Lexeme::new("1", "2", "3");
+        assert!(lexeme.match_next_either_char('x', '2'));
+        assert!(lexeme.match_next_either_char('2', 'x'));
+    }
+
+    #[test]
+    fn match_triple() {
+        let lexeme = Lexeme::new("1", "2", "3");
+        assert!(lexeme.match_char_triple('1', '2', '3'));
+    }
+
+    #[test]
+    fn is_punctuation() {
+        let delimiters = Delimiters::default();
+        let mut lexemes: Vec<Lexeme> = vec![];
+        for p in delimiters.punctuation {
+            lexemes.push(Lexeme::new(&p.to_string(), "", ""));
+        }
+        for lexeme in lexemes {
+            assert!(lexeme.is_punctuation());
+        }
+    }
+
+    #[test]
+    fn is_next_punctuation() {
+        let delimiters = Delimiters::default();
+        let mut lexemes: Vec<Lexeme> = vec![];
+        for p in delimiters.punctuation {
+            lexemes.push(Lexeme::new("", &p.to_string(), ""));
+        }
+        for lexeme in lexemes {
+            assert!(lexeme.is_next_punctuation());
+        }
+    }
+
+    #[test]
+    fn match_last_char() {
+        let lexeme = Lexeme::new("qYBWuNX", "", "");
+        assert!(lexeme.match_last_char('X'));
+    }
+
+    #[test]
+    fn match_next_last_char() {
+        let lexeme = Lexeme::new("", "teDAqVx", "");
+        assert!(lexeme.match_next_first_char('t'));
+    }
+
+    #[test]
+    fn display() {
+        let input = ["pcdA", "o32X", "kz2i", "79Lz"].map(str::to_string);
+        let lexemes = Lexeme::collect(&input);
+
+        let first = lexemes.first().unwrap();
+        let second = lexemes.get(1).unwrap();
+        let third = lexemes.get(2).unwrap();
+        let last = lexemes.last().unwrap();
+
+        assert_eq!(
+            format!("{first}"),
+            String::from("Lx [F] pcdA -> o32X -> kz2i"),
+            "first"
+        );
+        assert_eq!(
+            format!("{second}"),
+            String::from("Lx o32X -> kz2i -> 79Lz"),
+            "second"
+        );
+        assert_eq!(
+            format!("{third}"),
+            String::from("Lx kz2i -> 79Lz <EOI>"),
+            "third"
+        );
+        assert_eq!(
+            format!("{last}"),
+            String::from("Lx [L] 79Lz <EOI>"),
+            "last"
+        );
+
+        let input_single = ["9fOC"].map(str::to_string);
+
+        let lexemes_single = Lexeme::collect(&input_single);
+        let single = lexemes_single.first().unwrap();
+        println!("{single:#?}");
+        assert!(input_single.to_vec().len() == 1);
+        assert_eq!(format!("{single}"), "Lx [S] 9fOC <EOI>");
     }
 }

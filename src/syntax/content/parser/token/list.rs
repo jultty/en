@@ -90,6 +90,8 @@ impl std::fmt::Display for List {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -163,5 +165,21 @@ mod tests {
             <li>0Ga</li>\n\
             </ul>\n\n"
         );
+    }
+
+    #[test]
+    fn token_display() {
+        let list = List::new(false);
+        assert_eq!(
+            format!("{}", Token::List(list.clone())),
+            "Tk:List [0 unordered items]"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "Attempt to lex a List directly from a lexeme")]
+    fn lex() {
+        let lexeme = Lexeme::new("SL6PX", "6xsNB", "oeAHa");
+        List::lex(&lexeme);
     }
 }

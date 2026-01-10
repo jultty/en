@@ -117,6 +117,7 @@ mod tests {
             "/",
             "/about",
             "/tree",
+            "/data",
             "/node/Syntax",
             "/static/style.css",
             "/static/favicon.svg",

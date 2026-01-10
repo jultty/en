@@ -40,6 +40,8 @@ impl std::fmt::Display for Code {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -57,5 +59,17 @@ mod tests {
     )]
     fn lex() {
         Code::lex(&Lexeme::default());
+    }
+
+    #[test]
+    fn token_display() {
+        let mut code = Code::new(true);
+        assert_eq!(format!("{}", Token::Code(code.clone())), "Tk:Code [open]");
+
+        code.open = false;
+        assert_eq!(
+            format!("{}", Token::Code(code.clone())),
+            "Tk:Code [closed]"
+        );
     }
 }

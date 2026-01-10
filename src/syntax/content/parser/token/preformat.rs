@@ -50,6 +50,8 @@ impl Parseable for PreFormat {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -71,5 +73,26 @@ mod tests {
 
         let from_non_empty_lexeme = PreFormat::lex(&Lexeme::default());
         from_non_empty_lexeme.render();
+    }
+
+    #[test]
+    fn token_display() {
+        let mut preformat = PreFormat::new(true);
+        assert_eq!(
+            format!("{}", Token::PreFormat(preformat.clone())),
+            "Tk:PreFormat [open]"
+        );
+
+        preformat.open = Some(false);
+        assert_eq!(
+            format!("{}", Token::PreFormat(preformat.clone())),
+            "Tk:PreFormat [closed]"
+        );
+
+        preformat.open = None;
+        assert_eq!(
+            format!("{}", Token::PreFormat(preformat.clone())),
+            "Tk:PreFormat [unknown]"
+        );
     }
 }

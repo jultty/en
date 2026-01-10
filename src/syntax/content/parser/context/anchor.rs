@@ -208,6 +208,43 @@ mod tests {
     }
 
     #[test]
+    fn leading_multiword_anchor() {
+        assert_eq!(
+            read("interactions are |basic elements| of systems"),
+            r#"<p>interactions are <a href="/node/basic elements">basic elements</a> of systems</p>"#
+        );
+    }
+
+    #[test]
+    fn explicit_end_of_destination() {
+        assert_eq!(
+            read("interactions are |basic elements|BasicElements| of systems"),
+            r#"<p>interactions are <a href="/node/BasicElements">basic elements</a> of systems</p>"#
+        );
+    }
+
+    #[test]
+    fn explicit_end_of_external_destination() {
+        assert_eq!(
+            read("this |anchor example|https://example.com| is external"),
+            r#"<p>this <a href="https://example.com">anchor example</a> is external</p>"#
+        );
+    }
+
+    #[test]
+    fn anchor_destination_at_eoi() {
+        assert_eq!(read("a |b c|d"), r#"<p>a <a href="/node/d">b c</a></p>"#);
+    }
+
+    #[test]
+    fn external_anchor_destination_at_eoi() {
+        assert_eq!(
+            read("a b|https://example.com"),
+            r#"<p>a <a href="https://example.com">b</a></p>"#
+        );
+    }
+
+    #[test]
     fn nonleading_plural_anchor_at_eoi() {
         assert_eq!(
             read("element|s"),

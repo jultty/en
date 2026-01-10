@@ -44,6 +44,8 @@ impl std::fmt::Display for CheckBox {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -53,5 +55,20 @@ mod tests {
 
         let code_closed = CheckBox::new(false);
         assert_eq!(code_closed.render(), r#"<input type="checkbox"/>"#);
+    }
+
+    #[test]
+    fn token_display() {
+        let mut checkbox = CheckBox::new(true);
+        assert_eq!(
+            format!("{}", Token::CheckBox(checkbox.clone())),
+            "Tk:CheckBox [checked]"
+        );
+
+        checkbox.checked = false;
+        assert_eq!(
+            format!("{}", Token::CheckBox(checkbox.clone())),
+            "Tk:CheckBox [empty]"
+        );
     }
 }

@@ -58,6 +58,8 @@ impl std::fmt::Display for Paragraph {
 
 #[cfg(test)]
 mod tests {
+    use crate::syntax::content::parser::token::Token;
+
     use super::*;
 
     #[test]
@@ -73,5 +75,26 @@ mod tests {
     fn render_state_unknown() {
         let p = Paragraph::lex(&Lexeme::default());
         drop(p.render());
+    }
+
+    #[test]
+    fn token_display() {
+        let mut paragraph = Paragraph::new(true);
+        assert_eq!(
+            format!("{}", Token::Paragraph(paragraph.clone())),
+            "Tk:Paragraph [open]"
+        );
+
+        paragraph.open = Some(false);
+        assert_eq!(
+            format!("{}", Token::Paragraph(paragraph.clone())),
+            "Tk:Paragraph [closed]"
+        );
+
+        paragraph.open = None;
+        assert_eq!(
+            format!("{}", Token::Paragraph(paragraph.clone())),
+            "Tk:Paragraph [unknown]"
+        );
     }
 }

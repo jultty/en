@@ -20,7 +20,7 @@ const LEXMAP: LexMap = &[
     }),
 ];
 
-fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
+fn lex(text: &str, map: LexMap, config: &Config, blocking: bool) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::default();
     let mut state = state::State::default();
 
@@ -38,14 +38,16 @@ fn lex(text: &str, map: LexMap, config: &Config) -> Vec<Token> {
             continue;
         }
 
-        if context::block::parse(
-            lexeme,
-            &mut state,
-            &mut tokens,
-            &mut iterator,
-            config,
-        ) {
-            continue;
+        if blocking {
+            if context::block::parse(
+                lexeme,
+                &mut state,
+                &mut tokens,
+                &mut iterator,
+                config,
+            ) {
+                continue;
+            }
         }
 
         if point::parse(lexeme, &mut state, &mut tokens, &mut iterator) {
@@ -79,8 +81,14 @@ fn parse(tokens: &[Token]) -> String {
     tokens.iter().map(Token::render).collect::<String>()
 }
 
-pub(super) fn read(text: &str, config: &Config) -> String {
-    parse(&lex(text, LEXMAP, config))
+/// Apply end-to-end point and inline parsing for nested contexts, such as
+/// inside the displayed text of other tokens like anchors and list items
+pub fn nest(input: &str, config: &Config) -> String {
+    parse(&lex(input, LEXMAP, config, false))
+}
+
+pub(super) fn read(input: &str, config: &Config) -> String {
+    parse(&lex(input, LEXMAP, config, true))
 }
 
 #[cfg(test)]

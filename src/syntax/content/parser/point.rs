@@ -6,11 +6,11 @@ use crate::{
         Parseable as _,
         parser::{
             lexeme::Lexeme,
-            token::{
-                Token, oblique::Oblique, bold::Bold, underline::Underline,
-                strike::Strike,
-            },
             state::State,
+            token::{
+                Token, bold::Bold, checkbox::CheckBox, oblique::Oblique,
+                strike::Strike, underline::Underline,
+            },
         },
     },
 };
@@ -49,6 +49,12 @@ pub fn parse(
         log!("Bold probed: {lexeme}");
         tokens.push(Token::Bold(Bold::new(!state.switches.bold)));
         state.switches.bold = !state.switches.bold;
+        return true;
+    } else if CheckBox::probe(lexeme) {
+        log!("CheckBox probed: {lexeme}");
+        tokens.push(Token::CheckBox(CheckBox::lex(lexeme)));
+        iterator.next();
+        iterator.next();
         return true;
     }
     false

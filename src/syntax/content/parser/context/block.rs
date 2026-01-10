@@ -46,7 +46,9 @@ pub fn parse(
                 log!("Block Context: None -> List on {lexeme}");
                 state.context.block = Block::List;
                 state.buffers.list.candidate.ordered = lexeme.match_char('+');
-                return super::list::parse(lexeme, state, tokens, iterator);
+                return super::list::parse(
+                    lexeme, state, tokens, iterator, config,
+                );
             } else if Paragraph::probe(lexeme) {
                 log!("Block Context: None -> Paragraph on {lexeme}");
                 state.context.block = Block::Paragraph;
@@ -78,7 +80,7 @@ pub fn parse(
             }
         },
         Block::List => {
-            return super::list::parse(lexeme, state, tokens, iterator);
+            return super::list::parse(lexeme, state, tokens, iterator, config);
         },
     }
     false

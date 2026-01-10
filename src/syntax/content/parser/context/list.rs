@@ -5,9 +5,11 @@ use crate::{
     syntax::content::parser::{
         context::Block,
         lexeme::Lexeme,
+        nest,
         state::{ListBuffer, State},
         token::{Token, item::Item},
     },
+    types::Config,
 };
 
 /// Handles open list contexts until a list is fully parsed.
@@ -23,6 +25,7 @@ pub fn parse(
     state: &mut State,
     tokens: &mut Vec<Token>,
     iterator: &mut Peekable<Iter<'_, Lexeme>>,
+    config: &Config,
 ) -> bool {
     let buffer = &mut state.buffers.list;
     let candidate = &mut buffer.candidate;
@@ -49,6 +52,7 @@ pub fn parse(
                 }
                 if item_candidate.depth.is_some() {
                     // if the current item candidate has a known depth, push it
+                    item_candidate.text = nest(&item_candidate.text, config);
                     candidate.items.push(item_candidate.clone());
                 }
                 // push list candidate, reset state and exit context
@@ -60,6 +64,7 @@ pub fn parse(
             } else if lexeme.match_char('\n') {
                 // found end of item, push it and reset state
                 log!("Accepting item candidate {item_candidate}");
+                item_candidate.text = nest(&item_candidate.text, config);
                 candidate.items.push(item_candidate.clone());
                 *item_candidate = Item::default();
                 buffer.depth = 0;

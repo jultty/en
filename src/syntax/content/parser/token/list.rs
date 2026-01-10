@@ -1,7 +1,4 @@
-use std::fmt::Write as _;
-
 use crate::{
-    prelude::*,
     syntax::content::{Lexeme, Parseable, parser::token::item::Item},
 };
 
@@ -23,41 +20,31 @@ impl Parseable for List {
     fn render(&self) -> String {
         let tag = if self.ordered { "ol" } else { "ul" };
         let mut output = String::new();
-
-        let indent_width = self
-            .items
-            .windows(2)
-            .find_map(|pair| {
-                let a = pair[0].depth?;
-                let b = pair[1].depth?;
-                (b > a).then_some(b - a)
-            })
-            .unwrap_or(1);
+        let scale = self.scale_indent();
 
         let mut iterator = self.items.iter().peekable();
-
         while let Some(item) = iterator.next() {
-            let current_level = item.depth.unwrap_or(0) / indent_width;
-            let next_level = iterator.peek().and_then(|n| n.depth).unwrap_or(0)
-                / indent_width;
+            let level = item.depth.unwrap_or(0).strict_div(scale);
+            let next_level = iterator
+                .peek()
+                .and_then(|n| n.depth)
+                .unwrap_or(0)
+                .strict_div(scale);
 
-            output.push_str("<li>");
-            output.push_str(&item.text);
+            output.push_str(&format!("<li>{}", item.text));
 
-            if next_level > current_level {
-                // Open nested list(s), keep <li> open
-                for _ in 0..(next_level - current_level) {
+            if next_level > level {
+                // open nested lists
+                for _ in 0..(next_level.saturating_sub(level)) {
                     output.push_str(&format!("<{tag}>\n"));
                 }
             } else {
-                // close current <li>
+                // close current item
                 output.push_str("</li>");
-
-                // close nested lists inline
-                for _ in 0..(current_level - next_level) {
+                // close nested lists
+                for _ in 0..(level.saturating_sub(next_level)) {
                     output.push_str(&format!("</{tag}></li>"));
                 }
-
                 output.push('\n');
             }
         }
@@ -72,6 +59,21 @@ impl List {
             ordered,
             items: vec![],
         }
+    }
+
+    fn scale_indent(&self) -> u8 {
+        let width = self
+            .items
+            .windows(2)
+            .find_map(|pair| {
+                let outer = pair.first()?.depth?;
+                let inner = pair.get(1)?.depth?;
+                (inner > outer).then_some(inner.saturating_sub(outer))
+            })
+            .unwrap_or(1);
+
+        assert!(width != 0, "Width of zero can't be a divisor");
+        width
     }
 }
 

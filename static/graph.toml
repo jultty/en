@@ -516,8 +516,6 @@ en is only possible thanks to a number of projects and people:
 
 [nodes.Roadmap]
 text = """
-- [x] Setup tests
-    - [ ] Improve content syntax parser coverage
 - [x] Redirects
 - [ ] Strip/render some syntax in Tree text preview
 - [x] Drop-down navigation
@@ -557,19 +555,19 @@ text = """
         - [ ] Specialization <-> Generalization
         - [ ] Custom connection kinds
     - [x] External anchors
-- [ ] Richer text formatting
-    - [ ] Nested formatting
+- [x] Richer text formatting
+    - [x] Nested formatting
     - [x] Headers
     - [x] Preformatted blocks
-    - [x] Oblique,
-    - [x] Underline
-    - [x] Strikethrough
-    - [x] Bold
-    - [x] Inline code
+    - [x] _Oblique_,
+    - [x] __Underline__
+    - [x] ~~Strikethrough~~
+    - [x] *Bold*
+    - [x] `Inline code`
     - [x] Lists
-        - [ ] Nested lists
+        - [x] Nested lists
     - [x] Checkboxes
-        - [ ] Move this roadmap to en
+        - [x] Move this roadmap to en
 - [ ] Full-text search
 - [ ] Begin centralizing state
 - [ ] Reduce O(n) calls in the formats module
@@ -577,6 +575,7 @@ text = """
     - [ ] Render to filesystem
     - [ ] Single-page rendering
 - [ ] Input formats
+    - [ ] Frontmatter format
     - [ ] Multi-file graphs
     - [ ] Multi-graph
 - [ ] Themes

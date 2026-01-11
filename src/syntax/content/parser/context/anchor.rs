@@ -23,7 +23,7 @@ pub fn parse(
 
     // This is only true if the anchor is leading, otherwise the outer parser
     // would already have set its text to the word before the first pipe
-    if candidate.text.is_empty() {
+    if candidate.text().is_empty() {
         log!(
             "Seeking end of text at {:#?} -> {:#?}",
             lexeme.text(),
@@ -32,7 +32,7 @@ pub fn parse(
         if lexeme.next() == "|" {
             log!("End: Next lexeme is a pipe");
             buffer.text.push_str(&lexeme.text());
-            candidate.text.clone_from(&buffer.text);
+            candidate.set_text(&buffer.text.clone());
         } else {
             log!(
                 "Pushing non-terminal {:#?} into buffer {:#?}",
@@ -44,7 +44,7 @@ pub fn parse(
         return true;
     }
 
-    if candidate.destination.is_none() {
+    if candidate.destination().is_none() {
         log!(
             "Seeking end of destination at {:#?} -> {:#?}",
             lexeme.text(),
@@ -58,8 +58,8 @@ pub fn parse(
             && !lexeme.match_next_char('|')
         {
             log!("End: Plural anchor");
-            candidate.destination = Some(candidate.text.clone());
-            candidate.text.push('s');
+            candidate.set_destination(Some(&candidate.text().clone()));
+            candidate.text_push("s");
             if lexeme.last() {
                 tokens.push(Token::Anchor(candidate.clone()));
                 state.context.inline = Inline::None;
@@ -68,43 +68,43 @@ pub fn parse(
         } else if lexeme.match_char('|') && lexeme.is_next_delimiter() {
             log!("End: Pipe followed by delimiter");
             if buffer.destination.is_empty() {
-                candidate.destination = Some(candidate.text.clone());
+                candidate.set_destination(Some(&candidate.text().clone()));
             } else {
-                candidate.destination = Some(buffer.destination.clone());
+                candidate.set_destination(Some(&buffer.destination.clone()));
             }
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
             return true;
-        } else if lexeme.match_char('|') && !candidate.balanced {
+        } else if lexeme.match_char('|') && !candidate.balanced() {
             log!("State: Found a pipe, but no boundary: destination follows");
-            candidate.balanced = true;
+            candidate.set_balanced(true);
             return true;
         } else if lexeme.match_char(':') {
             log!("State: Found a colon, marking anchor as external");
-            candidate.external = true;
+            candidate.set_external(true);
             buffer.destination.push_str(&lexeme.text());
             return true;
         } else if lexeme.match_char('|') {
             log!("End: Explicit end-of-destination pipe");
-            candidate.destination = Some(buffer.destination.clone());
+            candidate.set_destination(Some(&buffer.destination.clone()));
             return true;
-        } else if !candidate.external && lexeme.is_delimiter() {
+        } else if !candidate.external() && lexeme.is_delimiter() {
             log!("End: Internal anchor trailed by delimiter");
-            candidate.destination = Some(buffer.destination.clone());
+            candidate.set_destination(Some(&buffer.destination.clone()));
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
             return false;
         } else if lexeme.is_next_whitespace() {
             log!("End: next is whitespace");
             buffer.destination.push_str(&lexeme.text());
-            candidate.destination = Some(buffer.destination.clone());
+            candidate.set_destination(Some(&buffer.destination.clone()));
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
             return true;
         } else if lexeme.last() {
             log!("End: end of input");
             buffer.destination.push_str(&lexeme.text());
-            candidate.destination = Some(buffer.destination.clone());
+            candidate.set_destination(Some(&buffer.destination.clone()));
             tokens.push(Token::Anchor(candidate.clone()));
             state.context.inline = Inline::None;
             return true;
@@ -119,7 +119,7 @@ pub fn parse(
             );
             buffer.destination.push_str(&lexeme.text());
             if lexeme.last() {
-                candidate.destination = Some(buffer.destination.clone());
+                candidate.set_destination(Some(&buffer.destination.clone()));
                 tokens.push(Token::Anchor(candidate.clone()));
                 state.context.inline = Inline::None;
             }
@@ -132,7 +132,7 @@ pub fn parse(
     // was never found and we kept filling the buffer endlessly,
     // causing the program to panic anyways when rendering anchors
     assert!(
-        candidate.destination.is_some(),
+        candidate.destination().is_some(),
         "Anchor context parsing done but no destination found: {:#?}",
         state.buffers.anchor
     );
@@ -147,6 +147,11 @@ mod tests {
 
     fn read(input: &str) -> String {
         parser::read(input, &Graph::new(None).meta.config)
+    }
+
+    #[test]
+    fn flanking() {
+        assert_eq!(read("|Node|"), r#"<p><a href="/node/Node">Node</a></p>"#);
     }
 
     #[test]

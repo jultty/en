@@ -32,9 +32,9 @@ pub fn parse(
                 state.buffers.anchor = AnchorBuffer::default();
 
                 if lexeme.match_char('|') {
-                    state.buffers.anchor.candidate.leading = true;
+                    state.buffers.anchor.candidate.set_leading(true);
                 } else {
-                    state.buffers.anchor.candidate.text = lexeme.text();
+                    state.buffers.anchor.candidate.set_text(&lexeme.text());
                     // because we probed positively and this is not a pipe,
                     // the next lexeme must be and so it was now parsed
                     iterator.next();

@@ -1,12 +1,96 @@
-use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
+use crate::{
+    syntax::content::{Parseable, parser::lexeme::Lexeme},
+    types::Node,
+};
 
-#[derive(Debug, Clone, Eq, PartialEq, Default)]
+#[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Anchor {
-    pub text: String,
-    pub destination: Option<String>,
-    pub leading: bool,
-    pub balanced: bool,
-    pub external: bool,
+    text: String,
+    destination: Option<String>,
+    node: Option<Node>,
+    leading: bool,
+    balanced: bool,
+    external: bool,
+}
+
+impl Anchor {
+    pub fn new(
+        text: &str,
+        destination: &str,
+        node: Option<Node>,
+        leading: bool,
+        external: bool,
+        balanced: bool,
+    ) -> Anchor {
+        let mut anchor = Anchor {
+            text: text.to_owned(),
+            destination: Some(String::from(destination)),
+            node,
+            leading,
+            external,
+            balanced,
+        };
+
+        anchor.route();
+        anchor
+    }
+
+    pub fn text(&self) -> String {
+        self.text.clone()
+    }
+
+    pub fn set_text(&mut self, text: &str) {
+        self.text = String::from(text);
+    }
+
+    pub fn text_push(&mut self, text: &str) {
+        self.text.push_str(text);
+    }
+
+    pub fn destination(&self) -> Option<String> {
+        self.destination.clone()
+    }
+
+    pub fn set_destination(&mut self, destination: Option<&str>) {
+        self.destination = destination.map(str::to_string);
+        self.route();
+    }
+
+    pub fn balanced(&self) -> bool {
+        self.balanced
+    }
+
+    pub fn set_balanced(&mut self, balanced: bool) {
+        self.balanced = balanced;
+    }
+
+    pub fn external(&self) -> bool {
+        self.external
+    }
+
+    pub fn set_external(&mut self, external: bool) {
+        self.external = external;
+    }
+
+    pub fn set_leading(&mut self, leading: bool) {
+        self.leading = leading;
+    }
+
+    fn route(&mut self) {
+        self.destination = if let Some(destination) = self.destination.clone() {
+            if destination.contains(":") || destination.contains("/") {
+                Some(destination)
+            } else if destination.is_empty() && self.text.is_empty() {
+                None
+            } else if destination.is_empty() {
+                Some(format!("/node/{}", self.text))
+            } else {
+                Some(format!("/node/{destination}"))
+            }
+        } else {
+            None
+        }
+    }
 }
 
 impl Parseable for Anchor {
@@ -27,17 +111,7 @@ impl Parseable for Anchor {
             )
         };
 
-        let non_empty_destination = if destination.is_empty() {
-            self.text.clone()
-        } else {
-            destination.to_owned()
-        };
-
-        format!(
-            r#"<a href="{}">{}</a>"#,
-            Anchor::resolve_destination(&non_empty_destination),
-            &self.text
-        )
+        format!(r#"<a href="{}">{}</a>"#, destination, &self.text)
     }
 }
 
@@ -79,32 +153,6 @@ impl std::fmt::Display for Anchor {
     }
 }
 
-impl Anchor {
-    pub fn new(
-        text: &str,
-        destination: &str,
-        leading: bool,
-        external: bool,
-        balanced: bool,
-    ) -> Anchor {
-        Anchor {
-            text: text.to_owned(),
-            destination: Some(Anchor::resolve_destination(destination)),
-            leading,
-            external,
-            balanced,
-        }
-    }
-
-    fn resolve_destination(raw: &str) -> String {
-        if raw.contains(":") || raw.contains("/") {
-            raw.to_owned()
-        } else {
-            format!("/node/{raw}")
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -114,8 +162,9 @@ mod tests {
 
     #[test]
     fn render_anchor() {
-        let anchor =
-            Anchor::new("AnchorText", "AnchorDest", true, false, false);
+        let mut anchor = Anchor::default();
+        anchor.set_text("AnchorText");
+        anchor.set_destination(Some("AnchorDest"));
         assert_eq!(
             anchor.render(),
             r#"<a href="/node/AnchorDest">AnchorText</a>"#
@@ -167,5 +216,28 @@ mod tests {
             "Tk:Anchor 'wPVo1 0OmYm' -> \"M1UEp 1gbfr\" \
             +Leading +Balanced +External",
         );
+    }
+
+    #[test]
+    fn display_empty_destination() {
+        let mut anchor = Anchor::default();
+        anchor.set_destination(Some(""));
+        assert_eq!(format!("{anchor}"), "Anchor <empty> -> <unknown>");
+    }
+
+    #[test]
+    fn render_empty_destination() {
+        let mut anchor = Anchor::default();
+        anchor.set_text("BSThI");
+        anchor.set_destination(Some(""));
+        assert_eq!(anchor.render(), r#"<a href="/node/BSThI">BSThI</a>"#);
+    }
+
+    #[test]
+    fn resolve_none_destination() {
+        let mut anchor = Anchor::default();
+        anchor.set_destination(None);
+        anchor.route(); // set_destination also called this
+        assert!(anchor.destination().is_none());
     }
 }

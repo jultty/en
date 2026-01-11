@@ -202,7 +202,7 @@ DRC|DemocraticRepublicOfTheCongo
 docs|https://en.jutty.dev/node/Documentation
 `
 
-As shown above, anchors can point to external addresses. These are identified by the presence of a `:` character in the destination. Otherwise, the anchor will point to a node with an ID matching the destination.
+As shown above, anchors can point to external addresses. These are identified by the presence of either a `:` or a `/` character in the destination. Otherwise, the anchor will point to a node with an ID matching the destination. This means your anchors to external URLs, special handlers such as `mailto:user@domain.com` and destinations relative to the website root like `/about` will all work as intended without being interpreted as node IDs.
 
 If the left side contains spaces, you need a leading `|` character:
 

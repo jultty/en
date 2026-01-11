@@ -1,6 +1,8 @@
 use crate::syntax::content::parser::{
     state::State,
-    token::{Token, paragraph::Paragraph, preformat::PreFormat},
+    token::{
+        Token, header::Header, paragraph::Paragraph, preformat::PreFormat,
+    },
 };
 
 pub mod block;
@@ -31,7 +33,7 @@ pub enum Inline {
 }
 
 /// # Panics
-/// Panics if there is an open header at end of input.
+/// Panics if there is an open header or list at end of input.
 pub fn close(state: &State, tokens: &mut Vec<Token>) {
     match state.context.block {
         Block::PreFormat => {
@@ -43,7 +45,9 @@ pub fn close(state: &State, tokens: &mut Vec<Token>) {
         Block::List => {
             panic!("End of input with open list")
         },
-        Block::Header(_) => panic!("End of input with open header"),
+        Block::Header(level) => {
+            tokens.push(Token::Header(Header::from_u8(level, false, None)));
+        },
         Block::None => (),
     }
 }

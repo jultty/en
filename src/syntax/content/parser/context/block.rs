@@ -90,16 +90,15 @@ pub fn parse(
 mod tests {
 
     use crate::{
-        types::Graph,
-        syntax::content::{
-            parser,
-            parser::{
-                token::{preformat::PreFormat},
-                state::State,
-                token::header::Level,
-                Block, context, Token,
+        syntax::content::parser::{
+            self, Block, Token, context,
+            state::State,
+            token::{
+                header::{Header, Level},
+                preformat::PreFormat,
             },
         },
+        types::Graph,
     };
 
     fn read(input: &str) -> String {
@@ -125,12 +124,13 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "End of input with open header")]
     fn end_with_open_header() {
         let mut state = State::default();
         state.context.block = Block::Header(1);
 
-        context::close(&state, &mut vec![]);
+        let mut vec: Vec<Token> = vec![];
+        context::close(&state, &mut vec);
+        assert_eq!(vec, vec![Token::Header(Header::from_u8(1, false, None))]);
     }
 
     #[test]

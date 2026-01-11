@@ -85,8 +85,9 @@ This will create a connection from the node with ID `Realism` to a node with ID 
 
 [nodes.docs]
 redirect = "Documentation"
+hidden = true
 
-[nodes.Node] # foo
+[nodes.Node]
 text = """
 A node is defined in your graph file starting with a table header of the form:
 
@@ -182,10 +183,9 @@ If an option is specified more than once, the last use will override any previou
 
 [nodes.Syntax]
 text= """
-
 Some fields of your en graph, namely the |Node| text field, have support for special syntax that allows you to apply formatting and create connections between your graph's nodes.
 
-If you are familiar with Markdown|https://en.wikipedia.org/wiki/Markdown|, you'll find that some features familiar, with some notable differences too.
+If you are familiar with Markdown|https://en.wikipedia.org/wiki/Markdown|, you'll find some features familiar, with some notable differences too.
 
 ## Anchors
 
@@ -369,7 +369,7 @@ Here too: \\\\*
 '''
 `
 
-This has nothing to do with en's markup syntax per se, it's just a consequence of how newlines are also special in |TOML| syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
+This has nothing to do with en's markup syntax per se, it's just a consequence of how backslashes are also special in |TOML| syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
 """
 
 [nodes.AnchorSyntax]
@@ -519,9 +519,22 @@ en is only possible thanks to a number of projects and people:
 
 [nodes.Roadmap]
 text = """
-- [x] Redirects
-- [x] Strip/render some syntax in Tree text preview
-- [x] Drop-down navigation
+- [x] Formatting
+    - [ ] Blockquotes
+    - [x] Nested formatting
+    - [x] Headers
+    - [x] Preformatted blocks
+    - [x] _Oblique_,
+    - [x] __Underline__
+    - [x] ~~Strikethrough~~
+    - [x] *Bold*
+    - [x] `Inline code`
+    - [x] Lists
+        - [x] Nested lists
+    - [x] Checkboxes
+        - [x] Move this roadmap to en
+- [ ] Caching
+- [ ] Invert where redirects are set
 - [ ] Meta-awareness
     - [ ] Detached edges
     - [ ] Most linked to nodes
@@ -541,13 +554,14 @@ text = """
     - [ ] By most linked
 - [x] Anchors and connections
     - [x] Render detached anchors differently
+    - [ ] Count connection to a redirect as a connection to the target
     - [ ] Suffix-aware anchors
         - [x] Plural anchors (`|node|s` -> `node`)
         - [x] Ignore trailing punctuation
         - [ ] Conjugation anchors (`|will|ed` -> `will`)
         - [ ] Configurable suffixes
     - [x] Spaced node anchor (`|red fox|` -> `redfox` -> `RedFox`)
-    - [ ] Automatic connections from anchors
+    - [x] Automatic connections from anchors
     - [ ] `#` syntax for header ID anchors
     - [ ] Connection kinds
         - [ ] Mutual
@@ -558,20 +572,6 @@ text = """
         - [ ] Specialization <-> Generalization
         - [ ] Custom connection kinds
     - [x] External anchors
-- [x] Richer text formatting
-    - [x] Nested formatting
-    - [ ] Blockquotes
-    - [x] Headers
-    - [x] Preformatted blocks
-    - [x] _Oblique_,
-    - [x] __Underline__
-    - [x] ~~Strikethrough~~
-    - [x] *Bold*
-    - [x] `Inline code`
-    - [x] Lists
-        - [x] Nested lists
-    - [x] Checkboxes
-        - [x] Move this roadmap to en
 - [ ] Full-text search
 - [ ] Begin centralizing state
 - [ ] Reduce O(n) calls in the formats module
@@ -583,6 +583,12 @@ text = """
     - [ ] Multi-file graphs
     - [ ] Multi-graph
 - [ ] Themes
+
+## Done
+
+- [x] Redirects
+- [x] Strip/render some syntax in Tree text preview
+- [x] Drop-down navigation
 - [x] Array syntax for lightweight connections
 - [x] Automatic IDs
 - [x] Automatic titles

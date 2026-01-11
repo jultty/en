@@ -145,10 +145,7 @@ fn push(
     if let Some(node_id) = candidate.node_id()
         && let Some(node) = graph.find_node(&node_id).node
     {
-        log!("Found matching node {node:?} for anchor candidate {candidate}");
         candidate.set_node(&node);
-    } else {
-        log!("Could not find a matching node for anchor candidate {candidate}");
     }
 
     tokens.push(Token::Anchor(Box::new(candidate.clone())));

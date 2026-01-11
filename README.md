@@ -6,7 +6,7 @@ It works by ingesting a TOML file containing your node specification and serving
 
 ## Roadmap
 
-For an outline of planned and completed features, see the [roadmap](./docs/development/roadmap.md).
+For an outline of planned and completed features, see the [roadmap](https://en.jutty.dev/node/Roadmap).
 
 ## Learn more
 

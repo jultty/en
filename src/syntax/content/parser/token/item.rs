@@ -18,6 +18,10 @@ impl Parseable for Item {
     fn render(&self) -> String {
         panic!("Items should only be rendered by a list's render method")
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl Item {

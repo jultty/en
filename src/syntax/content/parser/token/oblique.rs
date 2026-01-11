@@ -29,6 +29,10 @@ impl Parseable for Oblique {
             String::from("</em>")
         }
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for Oblique {

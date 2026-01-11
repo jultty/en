@@ -65,14 +65,14 @@ mod tests {
     use crate::{syntax::content::parser, types::Graph};
 
     fn read(input: &str) -> String {
-        parser::read(input, &Graph::new(None).meta.config)
+        parser::read(input, &Graph::default())
     }
 
     #[test]
     fn oblique_anchor() {
         assert_eq!(
             read("w _|S|_ w"),
-            r#"<p>w <em><a href="/node/S">S</a></em> w</p>"#
+            r#"<p>w <em><a class="detached" title="" href="/node/S">S</a></em> w</p>"#
         );
     }
 
@@ -80,7 +80,7 @@ mod tests {
     fn oblique_anchor_with_trailing_comma() {
         assert_eq!(
             read("w _|S|_, w"),
-            r#"<p>w <em><a href="/node/S">S</a></em>, w</p>"#
+            r#"<p>w <em><a class="detached" title="" href="/node/S">S</a></em>, w</p>"#
         );
     }
 
@@ -88,9 +88,9 @@ mod tests {
     fn oblique() {
         assert_eq!(
             read(
-                "_|this anchor is oblique|o as are these literals_ but not these _just these_, not this _and these with an |anchor| again_"
+                "_|this anchor is oblique|o as are these literals_ but not these _just these_, not this _and these with an |anc80r| again_"
             ),
-            r#"<p><em><a href="/node/o">this anchor is oblique</a> as are these literals</em> but not these <em>just these</em>, not this <em>and these with an <a href="/node/anchor">anchor</a> again</em></p>"#
+            r#"<p><em><a class="detached" title="" href="/node/o">this anchor is oblique</a> as are these literals</em> but not these <em>just these</em>, not this <em>and these with an <a class="detached" title="" href="/node/anc80r">anc80r</a> again</em></p>"#
         );
     }
 

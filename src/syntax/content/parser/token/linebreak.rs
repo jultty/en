@@ -17,6 +17,10 @@ impl Parseable for LineBreak {
     fn render(&self) -> String {
         "\n".to_owned()
     }
+
+    fn flatten(&self) -> String {
+        String::from('\n')
+    }
 }
 
 impl std::fmt::Display for LineBreak {

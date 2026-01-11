@@ -29,6 +29,10 @@ impl Parseable for Bold {
             String::from("</strong>")
         }
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for Bold {

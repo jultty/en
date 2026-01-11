@@ -46,6 +46,10 @@ impl Parseable for PreFormat {
             )
         }
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 #[cfg(test)]

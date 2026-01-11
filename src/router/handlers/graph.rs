@@ -8,7 +8,7 @@ use crate::{syntax::serial::populate_graph, router::handlers, types::Node};
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let graph = populate_graph();
     let result = graph.find_node(&id);
-    let nodes: Vec<Node> = graph.nodes.into_values().collect();
+    let nodes: Vec<Node> = graph.nodes.clone().into_values().collect();
     let not_found = result.node.is_none();
     let node = result
         .node
@@ -29,7 +29,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let mut context = tera::Context::default();
     context.insert("node", &node);
     context.insert("nodes", &nodes);
-    context.insert("text", &content::parse(&node.text, &graph.meta.config));
+    context.insert("text", &content::parse(&node.text, &graph));
     context.insert("incoming", &graph.incoming.get(&id));
     context.insert("config", &graph.meta.config);
 

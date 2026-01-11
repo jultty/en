@@ -33,6 +33,10 @@ impl Parseable for CheckBox {
         let toggle = if self.checked { " checked " } else { "" };
         format!(r#"<input type="checkbox"{toggle}/>"#)
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for CheckBox {

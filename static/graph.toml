@@ -520,7 +520,7 @@ en is only possible thanks to a number of projects and people:
 [nodes.Roadmap]
 text = """
 - [x] Redirects
-- [ ] Strip/render some syntax in Tree text preview
+- [x] Strip/render some syntax in Tree text preview
 - [x] Drop-down navigation
 - [ ] Meta-awareness
     - [ ] Detached edges
@@ -540,7 +540,7 @@ text = """
     - [ ] By most linked to
     - [ ] By most linked
 - [x] Anchors and connections
-    - [ ] Render detached anchors differently
+    - [x] Render detached anchors differently
     - [ ] Suffix-aware anchors
         - [x] Plural anchors (`|node|s` -> `node`)
         - [x] Ignore trailing punctuation
@@ -560,6 +560,7 @@ text = """
     - [x] External anchors
 - [x] Richer text formatting
     - [x] Nested formatting
+    - [ ] Blockquotes
     - [x] Headers
     - [x] Preformatted blocks
     - [x] _Oblique_,

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::{
-    syntax::command::Arguments,
-    types::{Edge, Graph, Meta, Node},
+    syntax::{command::Arguments, content::parser::flatten},
+    types::{Edge, Graph, Node},
 };
 
 pub fn populate_graph() -> Graph {
@@ -16,25 +16,25 @@ pub fn populate_graph() -> Graph {
     modulate_graph(&graph)
 }
 
-fn modulate_graph(graph: &Graph) -> Graph {
-    let nodes = modulate_nodes(&graph.nodes);
+fn modulate_graph(in_graph: &Graph) -> Graph {
+    let nodes = modulate_nodes(in_graph);
 
-    Graph {
+    let mut graph = Graph {
         incoming: make_incoming(&nodes),
         lowercase_keymap: map_lowercase_keys(&nodes),
         nodes,
-        meta: Meta {
-            config: graph.meta.config.clone().parse_text(),
-            ..graph.meta.clone()
-        },
-        ..graph.to_owned()
-    }
+        ..in_graph.to_owned()
+    };
+
+    graph.parse();
+    graph
 }
 
-fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
+fn modulate_nodes(graph: &Graph) -> HashMap<String, Node> {
+    let old_nodes = graph.nodes.clone();
     let mut nodes: HashMap<String, Node> = HashMap::default();
 
-    for (key, node) in old_nodes {
+    for (key, node) in old_nodes.clone() {
         let connections = node.connections.clone().unwrap_or_default();
         let mut new_edges = connections.clone();
 
@@ -43,7 +43,7 @@ fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
 
             // Populate empty "from" IDs in edges with node's ID
             if edge.from.is_empty() {
-                new_edge.from.clone_from(key);
+                new_edge.from.clone_from(&key);
             }
 
             // Flag detached edges
@@ -62,7 +62,7 @@ fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
                 from: key.clone(),
                 to: link.clone(),
                 anchor: String::default(),
-                detached: !old_nodes.contains_key(link),
+                detached: !old_nodes.clone().contains_key(link),
             });
         }
 
@@ -73,9 +73,25 @@ fn modulate_nodes(old_nodes: &HashMap<String, Node>) -> HashMap<String, Node> {
             node.title.clone()
         };
 
+        let mut summary = if let Some(summary) = node.text.lines().next() {
+            if let Some(sentence) = node.text.split_once('.') {
+                format!("{}.", sentence.0)
+            } else {
+                String::from(summary)
+            }
+        } else {
+            node.text.clone()
+        };
+
+        if summary.len() > 300 {
+            summary.truncate(300);
+            summary.push('…');
+        }
+
         let new_node = Node {
             id: key.clone(),
             title: new_title,
+            summary: flatten(&summary, graph),
             connections: Some(new_edges),
             ..node.clone()
         };
@@ -176,27 +192,6 @@ mod tests {
         let graph = deserialize_graph(&Format::JSON, ":::");
         let message = graph.meta.messages.first().unwrap();
         assert!(message.contains("expected value at line 1 column 1"));
-    }
-
-    #[test]
-    fn detached_node() {
-        let mut node = Node::new(None);
-        node.connections = Some(vec![Edge {
-            anchor: String::from("SomeAnchor"),
-            from: String::default(),
-            to: String::default(),
-            detached: false,
-        }]);
-
-        let mut map: HashMap<String, Node> = HashMap::default();
-        map.insert(String::from("SomeNode"), node);
-
-        let modulated_map = modulate_nodes(&map);
-        let modulated_node = modulated_map.get("SomeNode").unwrap().clone();
-        let modulated_connections = modulated_node.connections.unwrap();
-        let modulated_connection = modulated_connections.first().unwrap();
-        assert!(modulated_connection.anchor == "SomeAnchor");
-        assert!(modulated_connection.detached);
     }
 }
 

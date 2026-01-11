@@ -9,7 +9,7 @@ use crate::{
         state::{ListBuffer, State},
         token::{Token, item::Item},
     },
-    types::Config,
+    types::Graph,
 };
 
 /// Handles open list contexts until a list is fully parsed.
@@ -25,7 +25,7 @@ pub fn parse(
     state: &mut State,
     tokens: &mut Vec<Token>,
     iterator: &mut Peekable<Iter<'_, Lexeme>>,
-    config: &Config,
+    graph: &Graph,
 ) -> bool {
     let buffer = &mut state.buffers.list;
     let candidate = &mut buffer.candidate;
@@ -52,7 +52,7 @@ pub fn parse(
                 }
                 if item_candidate.depth.is_some() {
                     // if the current item candidate has a known depth, push it
-                    item_candidate.text = nest(&item_candidate.text, config);
+                    item_candidate.text = nest(&item_candidate.text, graph);
                     candidate.items.push(item_candidate.clone());
                 }
                 // push list candidate, reset state and exit context
@@ -64,7 +64,7 @@ pub fn parse(
             } else if lexeme.match_char('\n') {
                 // found end of item, push it and reset state
                 log!("Accepting item candidate {item_candidate}");
-                item_candidate.text = nest(&item_candidate.text, config);
+                item_candidate.text = nest(&item_candidate.text, graph);
                 candidate.items.push(item_candidate.clone());
                 *item_candidate = Item::default();
                 buffer.depth = 0;
@@ -89,11 +89,11 @@ mod tests {
         syntax::content::parser::{
             self, context::list::parse, lexeme::Lexeme, state::State,
         },
-        types::{Config, Graph},
+        types::Graph,
     };
 
     fn read(input: &str) -> String {
-        parser::read(input, &Graph::new(None).meta.config)
+        parser::read(input, &Graph::default())
     }
 
     #[test]
@@ -273,13 +273,13 @@ mod tests {
     fn bad_context() {
         let mut state = State::default();
         let lexemes = Lexeme::collect(&["a", "b", "c"].map(str::to_string));
-        let config = Config::default();
+        let graph = Graph::default();
         parse(
             &Lexeme::default(),
             &mut state,
             &mut vec![],
             &mut lexemes.iter().peekable(),
-            &config,
+            &graph,
         );
     }
 }

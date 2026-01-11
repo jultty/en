@@ -51,6 +51,10 @@ impl Parseable for List {
 
         format!("\n<{tag}>\n{output}</{tag}>\n\n")
     }
+
+    fn flatten(&self) -> String {
+        format!("[List: {} items]", self.items.len())
+    }
 }
 
 impl List {

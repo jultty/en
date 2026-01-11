@@ -23,6 +23,8 @@ pub struct Node {
     #[serde(default)]
     pub text: String,
     #[serde(default)]
+    pub summary: String,
+    #[serde(default)]
     pub title: String,
     #[serde(default)]
     pub links: Vec<String>,
@@ -107,7 +109,7 @@ pub struct Config {
     #[serde(default = "mktrue")]
     pub tree: bool,
     #[serde(default = "mkfalse")]
-    pub tree_node_text: bool,
+    pub tree_node_summary: bool,
 }
 
 // See: https://github.com/serde-rs/serde/issues/368
@@ -121,6 +123,7 @@ fn mk8() -> u16 {
     8
 }
 
+#[derive(Clone)]
 pub struct QueryResult {
     pub node: Option<Node>,
     pub redirect: bool,
@@ -144,7 +147,7 @@ impl Graph {
     pub fn find_node(&self, query: &str) -> QueryResult {
         let collapsed_query = query.trim().replace(" ", "");
 
-        if let Some(exact_match) = self.nodes.get(query) {
+        let candidate = if let Some(exact_match) = self.nodes.get(query) {
             QueryResult {
                 node: Some(exact_match.clone()),
                 redirect: false,
@@ -161,11 +164,29 @@ impl Graph {
                 node: None,
                 redirect: false,
             }
+        };
+
+        if let Some(ref candidate_node) = candidate.node
+            && !candidate_node.redirect.is_empty()
+        {
+            QueryResult {
+                node: self.find_node(&candidate_node.redirect).node,
+                redirect: true,
+            }
+        } else {
+            candidate
         }
     }
 
     pub fn get_root(&self) -> Option<Node> {
         self.nodes.get(&self.root_node).cloned()
+    }
+
+    pub fn parse(&mut self) {
+        self.meta.config.footer_text =
+            content::parse(&self.meta.config.footer_text, self);
+        self.meta.config.about_text =
+            content::parse(&self.meta.config.about_text, self);
     }
 }
 
@@ -182,17 +203,7 @@ impl Node {
             links: vec![],
             redirect: String::default(),
             hidden: false,
-        }
-    }
-}
-
-impl Config {
-    #[must_use]
-    pub fn parse_text(self) -> Config {
-        Config {
-            footer_text: content::parse(&self.footer_text, &self),
-            about_text: content::parse(&self.about_text, &self),
-            ..self
+            summary: String::default(),
         }
     }
 }
@@ -222,7 +233,7 @@ impl Default for Config {
             site_description: String::default(),
             site_title: String::default(),
             tree: true,
-            tree_node_text: false,
+            tree_node_summary: false,
         }
     }
 }
@@ -252,33 +263,35 @@ mod tests {
 
     #[test]
     fn empty_footer_text() {
-        let default_graph = populate_graph();
+        let mut graph = populate_graph();
 
-        let config = Config {
+        graph.meta.config = Config {
             footer_text: String::default(),
-            ..default_graph.meta.config
+            ..graph.meta.config
         };
 
-        let parsed_config = config.parse_text();
+        graph.parse();
 
-        println!("{:?}", parsed_config.footer_text);
-        assert!(parsed_config.footer_text.is_empty());
+        println!("{:?}", graph.meta.config.footer_text);
+        assert!(graph.meta.config.footer_text.is_empty());
     }
 
     #[test]
     fn config_footer_text() {
         let payload = "0kqBrdS8NPrU4xVxh2xW0hUzAw926JCQ";
-        let default_graph = populate_graph();
+        let mut graph = populate_graph();
 
-        let config = Config {
+        graph.meta.config = Config {
             footer_text: format!("`{payload}`"),
-            ..default_graph.meta.config
+            ..graph.meta.config
         };
 
-        let parsed_config = config.parse_text();
+        graph.parse();
 
         assert!(
-            parsed_config
+            graph
+                .meta
+                .config
                 .footer_text
                 .matches(format!("<code>{payload}</code>").as_str())
                 .count()
@@ -289,17 +302,19 @@ mod tests {
     #[test]
     fn config_about_text() {
         let payload = "ZqPFl84JlzSS0QUo61RwTUPONIE78Lmw";
-        let default_graph = populate_graph();
+        let mut graph = populate_graph();
 
-        let config = Config {
+        graph.meta.config = Config {
             about_text: format!("`{payload}`"),
-            ..default_graph.meta.config
+            ..graph.meta.config
         };
 
-        let parsed_config = config.parse_text();
+        graph.parse();
 
         assert!(
-            parsed_config
+            graph
+                .meta
+                .config
                 .about_text
                 .matches(format!("<code>{payload}</code>").as_str())
                 .count()

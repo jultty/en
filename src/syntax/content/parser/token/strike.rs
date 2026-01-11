@@ -26,6 +26,10 @@ impl Parseable for Strike {
         let tag = if self.open { "<s>" } else { "</s>" };
         String::from(tag)
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for Strike {

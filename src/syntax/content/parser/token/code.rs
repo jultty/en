@@ -29,6 +29,10 @@ impl Parseable for Code {
             String::from("</code>")
         }
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for Code {

@@ -14,7 +14,7 @@ use crate::{
             },
         },
     },
-    types::Config,
+    types::Graph,
 };
 
 pub fn parse(
@@ -22,7 +22,7 @@ pub fn parse(
     state: &mut State,
     tokens: &mut Vec<Token>,
     iterator: &mut Peekable<Iter<'_, Lexeme>>,
-    config: &Config,
+    graph: &Graph,
 ) -> bool {
     match state.context.block {
         Block::None => {
@@ -34,7 +34,7 @@ pub fn parse(
             } else if Header::probe(lexeme) {
                 let mut header = Header::lex(lexeme);
                 header.dom_id = Some(Header::make_id(
-                    config,
+                    &graph.meta.config,
                     iterator.peek().map_or(&Lexeme::default(), |l| l),
                     &mut state.dom_ids,
                 ));
@@ -47,7 +47,7 @@ pub fn parse(
                 state.context.block = Block::List;
                 state.buffers.list.candidate.ordered = lexeme.match_char('+');
                 return super::list::parse(
-                    lexeme, state, tokens, iterator, config,
+                    lexeme, state, tokens, iterator, graph,
                 );
             } else if Paragraph::probe(lexeme) {
                 log!("Block Context: None -> Paragraph on {lexeme}");
@@ -80,7 +80,7 @@ pub fn parse(
             }
         },
         Block::List => {
-            return super::list::parse(lexeme, state, tokens, iterator, config);
+            return super::list::parse(lexeme, state, tokens, iterator, graph);
         },
     }
     false
@@ -103,7 +103,7 @@ mod tests {
     };
 
     fn read(input: &str) -> String {
-        parser::read(input, &Graph::new(None).meta.config)
+        parser::read(input, &Graph::default())
     }
 
     #[test]

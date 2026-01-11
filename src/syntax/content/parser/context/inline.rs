@@ -11,6 +11,7 @@ use crate::{
             token::{Token, anchor::Anchor, code::Code, literal::Literal},
         },
     },
+    types::Graph,
 };
 
 pub fn parse(
@@ -18,6 +19,7 @@ pub fn parse(
     state: &mut State,
     tokens: &mut Vec<Token>,
     iterator: &mut Peekable<Iter<'_, Lexeme>>,
+    graph: &Graph,
 ) -> bool {
     match state.context.inline {
         Inline::None => {
@@ -54,7 +56,7 @@ pub fn parse(
             }
         },
         Inline::Anchor => {
-            if context::anchor::parse(lexeme, state, tokens) {
+            if context::anchor::parse(lexeme, state, tokens, graph) {
                 return true;
             }
         },

@@ -156,10 +156,8 @@ mod tests {
         let node = crate::types::Node::new(Some(payload.to_string()));
         let graph = crate::syntax::serial::populate_graph();
         context.insert("node", &node);
-        context.insert(
-            "text",
-            &crate::syntax::content::parse(&node.text, &graph.meta.config),
-        );
+        context
+            .insert("text", &crate::syntax::content::parse(&node.text, &graph));
         context.insert("incoming", &graph.incoming.get(&node.id));
         context.insert("config", &graph.meta.config);
         let (body, status) = render("node.html", &context, None);

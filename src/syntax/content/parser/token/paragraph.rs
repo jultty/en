@@ -38,6 +38,10 @@ impl Parseable for Paragraph {
             )
         }
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for Paragraph {

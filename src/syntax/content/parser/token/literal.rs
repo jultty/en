@@ -19,6 +19,10 @@ impl Parseable for Literal {
     fn render(&self) -> String {
         self.text.clone()
     }
+
+    fn flatten(&self) -> String {
+        self.text.clone()
+    }
 }
 
 impl std::fmt::Display for Literal {

@@ -18,7 +18,7 @@ pub mod underline;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Token {
-    Anchor(anchor::Anchor),
+    Anchor(Box<anchor::Anchor>),
     Bold(bold::Bold),
     CheckBox(checkbox::CheckBox),
     Code(code::Code),
@@ -51,6 +51,25 @@ impl Token {
             Token::Paragraph(ref d) => d.render(),
             Token::PreFormat(ref d) => d.render(),
             Token::Underline(ref d) => d.render(),
+        }
+    }
+
+    pub fn flatten(&self) -> String {
+        match *self {
+            Token::Anchor(ref d) => d.flatten(),
+            Token::Bold(ref d) => d.flatten(),
+            Token::CheckBox(ref d) => d.flatten(),
+            Token::Code(ref d) => d.flatten(),
+            Token::Strike(ref d) => d.flatten(),
+            Token::Header(ref d) => d.flatten(),
+            Token::Item(ref d) => d.flatten(),
+            Token::LineBreak(ref d) => d.flatten(),
+            Token::List(ref d) => d.flatten(),
+            Token::Literal(ref d) => d.flatten(),
+            Token::Oblique(ref d) => d.flatten(),
+            Token::Paragraph(ref d) => d.flatten(),
+            Token::PreFormat(ref d) => d.flatten(),
+            Token::Underline(ref d) => d.flatten(),
         }
     }
 }

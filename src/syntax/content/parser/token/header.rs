@@ -112,6 +112,10 @@ impl Parseable for Header {
             panic!("Attempt to render a header tag while open state is unknown")
         }
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for Header {

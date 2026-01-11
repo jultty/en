@@ -4,7 +4,7 @@ pub fn elog(function: &str, message: &str) {
 }
 
 // Paths in this slice suppress logging if found in the stack trace
-pub const SKIP_PATHS: &[&str] = &["en::types::Config::parse_text"];
+pub const SKIP_PATHS: &[&str] = &["en::types::Graph::parse"];
 
 #[macro_export]
 macro_rules! log {

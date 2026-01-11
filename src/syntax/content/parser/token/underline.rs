@@ -29,6 +29,10 @@ impl Parseable for Underline {
             String::from("</u>")
         }
     }
+
+    fn flatten(&self) -> String {
+        String::default()
+    }
 }
 
 impl std::fmt::Display for Underline {

@@ -1,4 +1,4 @@
-use crate::{prelude::*, types::Config};
+use crate::{prelude::*, types::Graph};
 use super::{Parseable as _, Token, LexMap};
 use token::{linebreak::LineBreak, literal::Literal};
 use lexeme::Lexeme;
@@ -20,7 +20,7 @@ const LEXMAP: LexMap = &[
     }),
 ];
 
-fn lex(text: &str, map: LexMap, config: &Config, blocking: bool) -> Vec<Token> {
+fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::default();
     let mut state = state::State::default();
 
@@ -44,7 +44,7 @@ fn lex(text: &str, map: LexMap, config: &Config, blocking: bool) -> Vec<Token> {
                 &mut state,
                 &mut tokens,
                 &mut iterator,
-                config,
+                graph,
             ) {
                 continue;
             }
@@ -59,6 +59,7 @@ fn lex(text: &str, map: LexMap, config: &Config, blocking: bool) -> Vec<Token> {
             &mut state,
             &mut tokens,
             &mut iterator,
+            graph,
         ) {
             continue;
         }
@@ -77,18 +78,26 @@ fn lex(text: &str, map: LexMap, config: &Config, blocking: bool) -> Vec<Token> {
     tokens
 }
 
+pub(super) fn read(input: &str, graph: &Graph) -> String {
+    parse(&lex(input, LEXMAP, graph, true))
+}
+
+/// Apply end-to-end point and inline parsing for nested formatting, such as
+/// inside the display text of anchors and list items
+pub fn nest(input: &str, graph: &Graph) -> String {
+    parse(&lex(input, LEXMAP, graph, false))
+}
+
+// Strip special syntax for display in noninteractive or plain-text display
+pub fn flatten(input: &str, graph: &Graph) -> String {
+    let tokens = lex(input, LEXMAP, graph, true);
+    let flat = tokens.iter().map(Token::flatten).collect::<String>();
+    log!("Flattened {tokens:?} to {flat}");
+    flat
+}
+
 fn parse(tokens: &[Token]) -> String {
     tokens.iter().map(Token::render).collect::<String>()
-}
-
-/// Apply end-to-end point and inline parsing for nested contexts, such as
-/// inside the displayed text of other tokens like anchors and list items
-pub fn nest(input: &str, config: &Config) -> String {
-    parse(&lex(input, LEXMAP, config, false))
-}
-
-pub(super) fn read(input: &str, config: &Config) -> String {
-    parse(&lex(input, LEXMAP, config, true))
 }
 
 #[cfg(test)]
@@ -101,7 +110,7 @@ mod tests {
     use super::*;
 
     fn read_noconfig(input: &str) -> String {
-        read(input, &Graph::new(None).meta.config)
+        read(input, &Graph::default())
     }
 
     #[test]
@@ -112,7 +121,7 @@ mod tests {
     #[test]
     fn mixed_sample() {
         let en = "`this |test|` tries ## to |brea|k|: things";
-        let html = r#"<p><code>this |test|</code> tries ## to <a href="/node/k">brea</a>: things</p>"#;
+        let html = r#"<p><code>this |test|</code> tries ## to <a class="detached" title="" href="/node/k">brea</a>: things</p>"#;
 
         assert_eq!(read_noconfig(en), html);
     }

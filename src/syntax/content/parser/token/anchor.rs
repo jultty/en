@@ -7,6 +7,7 @@ use crate::{
 pub struct Anchor {
     text: String,
     destination: Option<String>,
+    node_id: Option<String>,
     node: Option<Node>,
     leading: bool,
     balanced: bool,
@@ -18,6 +19,7 @@ impl Anchor {
         text: &str,
         destination: &str,
         node: Option<Node>,
+        node_id: Option<String>,
         leading: bool,
         external: bool,
         balanced: bool,
@@ -26,6 +28,7 @@ impl Anchor {
             text: text.to_owned(),
             destination: Some(String::from(destination)),
             node,
+            node_id,
             leading,
             external,
             balanced,
@@ -76,6 +79,14 @@ impl Anchor {
         self.leading = leading;
     }
 
+    pub fn set_node(&mut self, node: &Node) {
+        self.node = Some(node.to_owned());
+    }
+
+    pub fn node_id(&self) -> Option<String> {
+        self.node_id.clone()
+    }
+
     fn route(&mut self) {
         self.destination = if let Some(destination) = self.destination.clone() {
             if destination.contains(":") || destination.contains("/") {
@@ -83,8 +94,10 @@ impl Anchor {
             } else if destination.is_empty() && self.text.is_empty() {
                 None
             } else if destination.is_empty() {
+                self.node_id = Some(self.text.clone());
                 Some(format!("/node/{}", self.text))
             } else {
+                self.node_id = self.destination.clone();
                 Some(format!("/node/{destination}"))
             }
         } else {
@@ -111,7 +124,30 @@ impl Parseable for Anchor {
             )
         };
 
-        format!(r#"<a href="{}">{}</a>"#, destination, &self.text)
+        let summary = if let Some(node) = self.node.clone() {
+            node.summary
+        } else {
+            String::default()
+        };
+
+        let classes = if self.node.is_some() {
+            String::from(r#"class="attached""#)
+        } else if !self.external {
+            String::from(r#"class="detached""#)
+        } else if self.external {
+            String::from(r#"class="external""#)
+        } else {
+            String::default()
+        };
+
+        format!(
+            r#"<a {classes} title="{summary}" href="{}">{}</a>"#,
+            destination, self.text,
+        )
+    }
+
+    fn flatten(&self) -> String {
+        self.text.clone()
     }
 }
 
@@ -167,7 +203,7 @@ mod tests {
         anchor.set_destination(Some("AnchorDest"));
         assert_eq!(
             anchor.render(),
-            r#"<a href="/node/AnchorDest">AnchorText</a>"#
+            r#"<a class="detached" title="" href="/node/AnchorDest">AnchorText</a>"#
         );
     }
 
@@ -190,20 +226,20 @@ mod tests {
     fn token_display() {
         let mut anchor = Anchor::default();
         assert_eq!(
-            format!("{}", Token::Anchor(anchor.clone())),
+            format!("{}", Token::Anchor(Box::new(anchor.clone()))),
             "Tk:Anchor <empty> -> <unknown>",
         );
 
         anchor.text = String::from("FsJAt RTggA");
         assert_eq!(
-            format!("{}", Token::Anchor(anchor.clone())),
+            format!("{}", Token::Anchor(Box::new(anchor.clone()))),
             "Tk:Anchor 'FsJAt RTggA' -> <unknown>",
         );
 
         anchor.text = String::from("wPVo1 0OmYm");
         anchor.destination = Some(String::from("M1UEp 1gbfr"));
         assert_eq!(
-            format!("{}", Token::Anchor(anchor.clone())),
+            format!("{}", Token::Anchor(Box::new(anchor.clone()))),
             r#"Tk:Anchor 'wPVo1 0OmYm' -> "M1UEp 1gbfr""#,
         );
 
@@ -212,7 +248,7 @@ mod tests {
         anchor.external = true;
 
         assert_eq!(
-            format!("{}", Token::Anchor(anchor.clone())),
+            format!("{}", Token::Anchor(Box::new(anchor.clone()))),
             "Tk:Anchor 'wPVo1 0OmYm' -> \"M1UEp 1gbfr\" \
             +Leading +Balanced +External",
         );
@@ -230,7 +266,10 @@ mod tests {
         let mut anchor = Anchor::default();
         anchor.set_text("BSThI");
         anchor.set_destination(Some(""));
-        assert_eq!(anchor.render(), r#"<a href="/node/BSThI">BSThI</a>"#);
+        assert_eq!(
+            anchor.render(),
+            r#"<a class="detached" title="" href="/node/BSThI">BSThI</a>"#
+        );
     }
 
     #[test]

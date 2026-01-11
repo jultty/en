@@ -37,7 +37,12 @@ a {
 }
 
 a:visited {
-    text-decoration-color: #aaa;
+    text-decoration-color: #999;
+}
+
+a.detached {
+    color: #595959;
+    text-decoration-color: #555555;
 }
 
 div.header-row {
@@ -73,24 +78,6 @@ span.hidden-label  {
 h1.node-title {
     display: inline;
     margin: 10px 0;
-}
-
-ul.tree-node-text {
-    display: inline;
-    padding-left: 0;
-}
-
-li.tree-node-text {
-    display: inline;
-}
-
-details.tree-node-text {
-    display: inline;
-    cursor: pointer;
-}
-
-summary.tree-node-text {
-    display: inline;
 }
 
 footer div {
@@ -178,6 +165,11 @@ em#index-node-count {
     a {
         color: #1bc8c8;
         text-decoration-color: #159b9b;
+    }
+
+    a.detached {
+        color: #acacac;
+        text-decoration-color: #777;
     }
 
     span.id-label {

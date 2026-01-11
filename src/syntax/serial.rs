@@ -73,20 +73,31 @@ fn modulate_nodes(graph: &Graph) -> HashMap<String, Node> {
             node.title.clone()
         };
 
-        let mut summary = if let Some(summary) = node.text.lines().next() {
-            if let Some(sentence) = node.text.split_once('.') {
-                format!("{}.", sentence.0)
+        // Populate empty summaries with the leading part of the node text
+        let summary = if node.summary.is_empty() {
+            let first_line = if let Some(first) =
+                node.text.lines().find(|s| !s.is_empty())
+            {
+                String::from(first)
             } else {
-                String::from(summary)
-            }
-        } else {
-            node.text.clone()
-        };
+                node.text.clone()
+            };
 
-        if summary.len() > 300 {
-            summary.truncate(300);
-            summary.push('…');
-        }
+            let mut candidate =
+                if let Some(dot_split) = first_line.split_once('.') {
+                    format!("{}.", dot_split.0)
+                } else {
+                    first_line
+                };
+
+            if candidate.len() > 300 {
+                candidate.truncate(300);
+                candidate.push('…');
+            }
+            candidate
+        } else {
+            node.summary.clone()
+        };
 
         let new_node = Node {
             id: key.clone(),

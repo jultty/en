@@ -484,10 +484,6 @@ Because en is defined in simple configuration files, you can add new pages easil
 
 links = [ "Graph" ]
 
-[[nodes.en.connections]]
-to = "TOML"
-anchor = "TOML"
-
 [nodes.Graph]
 text = """
 A graph is a data structure composed of connected (and disconnected) nodes.
@@ -519,42 +515,49 @@ en is only possible thanks to a number of projects and people:
 
 [nodes.Roadmap]
 text = """
-- [x] Formatting
-    - [ ] Blockquotes
-    - [x] Nested formatting
-    - [x] Headers
-    - [x] Preformatted blocks
-    - [x] _Oblique_,
-    - [x] __Underline__
-    - [x] ~~Strikethrough~~
-    - [x] *Bold*
-    - [x] `Inline code`
-    - [x] Lists
-        - [x] Nested lists
-    - [x] Checkboxes
-        - [x] Move this roadmap to en
-- [ ] Caching
-- [ ] Invert where redirects are set
+- [ ] Performance
+    - [ ] Caching
+    - [ ] Move more logic from Serial to Graph submodules
+    - [ ] Further centralize state
+    - [ ] Reduce O(n) calls in the formats module
+- [ ] Input syntax
+    - [ ] Invert where redirects are set
+    - [x] Formatting
+        - [ ] Blockquotes
+        - [x] Nested formatting
+        - [x] Headers
+        - [x] Preformatted blocks
+        - [x] _Oblique_,
+        - [x] __Underline__
+        - [x] ~~Strikethrough~~
+        - [x] *Bold*
+        - [x] `Inline code`
+        - [x] Lists
+            - [x] Nested lists
+        - [x] Checkboxes
+            - [x] Move this roadmap to en
+    - [ ] Special sections
+        - [ ] Definition (implies metadata `has_definition`)
+        - [ ] See also (implies a kind of connection, e.g. `related`)
+        - [ ] Not to be confused with (implies a kind of connection)
+        - [ ] Contrast with (implies a kind of connection)
+        - [ ] Example (implies metadata `has_example`)
+        - [ ] References/influences (implies metadata `has_references`)
 - [ ] Meta-awareness
     - [ ] Detached edges
     - [ ] Most linked to nodes
     - [ ] Most linked from nodes
     - [ ] Most linked to nonexistent nodes
     - [ ] Most linked
-- [ ] Special sections
-    - [ ] Definition (implies metadata `has_definition`)
-    - [ ] See also (implies a kind of connection, e.g. `related`)
-    - [ ] Not to be confused with (implies a kind of connection)
-    - [ ] Contrast with (implies a kind of connection)
-    - [ ] Example (implies metadata `has_example`)
-    - [ ] References/influences (implies metadata `has_references`)
-- [ ] Sorting of tree, index list and drop-down navigation
-    - [ ] Alphabetic
-    - [ ] By most linked to
-    - [ ] By most linked
+- [ ] Rendering
+    - [ ] Sorting of tree, index list and drop-down navigation
+        - [ ] Alphabetic
+        - [ ] By most linked to
+        - [ ] By most linked
+    - [ ] Themes
 - [x] Anchors and connections
     - [x] Render detached anchors differently
-    - [ ] Count connection to a redirect as a connection to the target
+    - [x] Count connection to a redirect as a connection to the target
     - [ ] Suffix-aware anchors
         - [x] Plural anchors (`|node|s` -> `node`)
         - [x] Ignore trailing punctuation
@@ -572,17 +575,16 @@ text = """
         - [ ] Specialization <-> Generalization
         - [ ] Custom connection kinds
     - [x] External anchors
+- [ ] I/O formats
+    - [ ] Output
+        - [ ] Add separate TOML endpoints for pre/postprocessed
+        - [ ] Render to filesystem
+        - [ ] Single-page rendering
+    - [ ] Input
+        - [ ] Frontmatter format
+        - [ ] Multi-file graphs
+        - [ ] Multi-graph
 - [ ] Full-text search
-- [ ] Begin centralizing state
-- [ ] Reduce O(n) calls in the formats module
-- [ ] Alternative rendering modes
-    - [ ] Render to filesystem
-    - [ ] Single-page rendering
-- [ ] Input formats
-    - [ ] Frontmatter format
-    - [ ] Multi-file graphs
-    - [ ] Multi-graph
-- [ ] Themes
 
 ## Done
 
@@ -604,3 +606,14 @@ navbar_search = true
 footer_text = """
 made by jutty|https://jutty.dev • acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
 """
+
+[nodes.t0]
+text = """
+*t0* is a node linked to |t1|
+"""
+
+[nodes.t1]
+text = """
+*t1* is a node linked to |T0|
+"""
+

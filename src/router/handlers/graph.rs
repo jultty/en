@@ -1,11 +1,13 @@
 use axum::response::IntoResponse as _;
 use axum::{body::Body, extract::Path, http::Response, response::Redirect};
 
+use crate::graph::Edge;
 use crate::{syntax::serial::populate_graph, router::handlers, graph::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let graph = populate_graph();
     let result = graph.find_node(&id);
+    let found = result.node.is_some();
     let nodes: Vec<Node> = graph.nodes.clone().into_values().collect();
     let not_found = result.node.is_none();
     let node = result
@@ -19,7 +21,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
         .into_response();
     }
 
-    if result.redirect {
+    if found && !result.exact {
         return Redirect::permanent(format!("/node/{}", node.id).as_str())
             .into_response();
     }
@@ -27,6 +29,15 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let mut context = tera::Context::default();
     context.insert("node", &node);
     context.insert("nodes", &nodes);
+    context.insert(
+        "connections",
+        &node
+            .connections
+            .clone()
+            .unwrap_or_default()
+            .values()
+            .collect::<Vec<&Edge>>(),
+    );
     context.insert("incoming", &graph.incoming.get(&id));
     context.insert("config", &graph.meta.config);
 

@@ -18,18 +18,18 @@ pub fn populate_graph() -> Graph {
         Err(e) => format!("Error: {e}"),
     };
 
-    let graph = deserialize_graph(&Format::TOML, &toml_source);
-    modulate_graph(&graph)
+    let mut graph = deserialize_graph(&Format::TOML, &toml_source);
+    modulate_graph(&mut graph)
 }
 
-fn modulate_graph(in_graph: &Graph) -> Graph {
+fn modulate_graph(in_graph: &mut Graph) -> Graph {
+    in_graph.map_lowercase_keys();
     let nodes = modulate_nodes(in_graph);
 
     let mut graph = Graph {
         incoming: make_incoming(&nodes),
-        lowercase_keymap: map_lowercase_keys(&nodes),
         nodes,
-        ..in_graph.to_owned()
+        ..in_graph.clone()
     };
 
     graph.parse();
@@ -37,65 +37,42 @@ fn modulate_graph(in_graph: &Graph) -> Graph {
 }
 
 fn modulate_nodes(graph: &Graph) -> HashMap<String, Node> {
-    let old_nodes = graph.nodes.clone();
-    let mut nodes: HashMap<String, Node> = HashMap::default();
+    let in_nodes = graph.nodes.clone();
 
-    for (key, node) in old_nodes.clone() {
+    let mut first_pass_nodes: HashMap<String, Node> = HashMap::default();
+    for (key, node) in in_nodes.clone() {
         let connections = node.connections.clone().unwrap_or_default();
         let mut new_edges = connections.clone();
 
-        // Parse node text
-        let (text, tokens) = content::rich_parse(&node.text, graph);
-
         // Modulate connections
-        for (i, edge) in connections.iter().enumerate() {
+        for (connection_key, edge) in connections {
             let mut new_edge = edge.clone();
 
             // Populate empty "from" IDs in edges with node's ID
             if edge.from.is_empty() {
-                new_edge.from.clone_from(&key);
+                new_edge.from.clone_from(&connection_key);
             }
 
             // Flag detached edges
-            if !old_nodes.contains_key(&edge.to) {
+            if !in_nodes.contains_key(&edge.to) {
                 new_edge.detached = true;
             }
 
-            if let Some(e) = new_edges.get_mut(i) {
+            if let Some(e) = new_edges.get_mut(&connection_key) {
                 *e = new_edge;
             }
         }
 
         // Create connections for each link
         for link in &node.links {
-            new_edges.push(Edge {
-                from: key.clone(),
-                to: link.clone(),
-                anchor: String::default(),
-                detached: !old_nodes.clone().contains_key(link),
-            });
-        }
-
-        // Create connections for each anchor
-        let parsed_anchors =
-            tokens.iter().filter(|t| matches!(t, Token::Anchor(_)));
-
-        let mut anchors: Vec<Anchor> = vec![];
-        for anchor in parsed_anchors {
-            if let Token::Anchor(a) = anchor {
-                anchors.push(*a.clone());
-            }
-        }
-
-        for anchor in anchors {
-            if let Some(anchor_node) = anchor.node() {
-                new_edges.push(Edge {
+            new_edges.insert(
+                link.clone(),
+                Edge {
                     from: key.clone(),
-                    to: anchor_node.id,
-                    anchor: anchor.text(),
-                    detached: false,
-                });
-            }
+                    to: link.clone(),
+                    detached: !in_nodes.clone().contains_key(link),
+                },
+            );
         }
 
         // Populate empty titles with IDs
@@ -131,19 +108,64 @@ fn modulate_nodes(graph: &Graph) -> HashMap<String, Node> {
             node.summary.clone()
         };
 
+        // Assemble new node
         let new_node = Node {
             id: key.clone(),
             title: new_title,
             summary: flatten(&summary, graph),
             connections: Some(new_edges),
+            ..node.clone()
+        };
+
+        first_pass_nodes.insert(key.clone(), new_node);
+    }
+
+    let mut second_pass_nodes: HashMap<String, Node> = HashMap::default();
+    for (key, node) in first_pass_nodes.clone() {
+        let first_pass_graph = Graph {
+            nodes: first_pass_nodes.clone(),
+            ..graph.clone()
+        };
+
+        // Parse node text
+        let (text, tokens) = content::rich_parse(&node.text, &first_pass_graph);
+
+        // Create connections for each anchor
+        let parsed_anchors =
+            tokens.iter().filter(|t| matches!(t, Token::Anchor(_)));
+
+        let mut anchors: Vec<Anchor> = vec![];
+        for anchor in parsed_anchors {
+            if let Token::Anchor(a) = anchor {
+                anchors.push(*a.clone());
+            }
+        }
+
+        let mut new_edges = node.connections.clone().unwrap_or_default();
+        for anchor in anchors {
+            if let Some(anchor_node) = anchor.node() {
+                new_edges.insert(
+                    anchor_node.id.clone(),
+                    Edge {
+                        from: key.clone(),
+                        to: anchor_node.id,
+                        detached: false,
+                    },
+                );
+            }
+        }
+
+        // Assemble new node
+        let new_node = Node {
+            connections: Some(new_edges),
             text,
             ..node.clone()
         };
 
-        nodes.insert(key.clone(), new_node);
+        second_pass_nodes.insert(key.clone(), new_node);
     }
 
-    nodes
+    second_pass_nodes
 }
 
 pub enum Format {
@@ -183,7 +205,7 @@ fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
 
     for node in nodes.clone().into_values() {
         let empty_vec: Vec<Edge> = vec![];
-        for edge in &node.connections.clone().unwrap_or_default() {
+        for edge in node.connections.clone().unwrap_or_default().values() {
             let mut edges =
                 incoming.get(&edge.to.clone()).unwrap_or(&empty_vec).clone();
             edges.extend_from_slice(std::slice::from_ref(edge));
@@ -192,17 +214,6 @@ fn make_incoming(nodes: &HashMap<String, Node>) -> HashMap<String, Vec<Edge>> {
     }
 
     incoming
-}
-
-fn map_lowercase_keys(
-    source_map: &HashMap<String, Node>,
-) -> HashMap<String, String> {
-    let mut out_map: HashMap<String, String> = HashMap::default();
-    let keys = source_map.keys();
-    for key in keys {
-        out_map.insert(key.clone().to_lowercase(), key.clone());
-    }
-    out_map
 }
 
 #[cfg(test)]
@@ -220,7 +231,7 @@ mod tests {
                     "links": [],
                     "id": "JSON",
                     "hidden": false,
-                    "connections": []
+                    "connections": {}
                 }
             },
             "root_node": "JSON"

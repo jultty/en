@@ -4,8 +4,6 @@ use serde::{Serialize, Deserialize};
 pub struct Edge {
     pub to: String,
     #[serde(default)]
-    pub anchor: String,
-    #[serde(default)]
     pub from: String,
     #[serde(default)]
     pub detached: bool,

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Serialize, Deserialize};
 
 use super::edge::Edge;
@@ -20,7 +22,7 @@ pub struct Node {
     pub hidden: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub connections: Option<Vec<Edge>>,
+    pub connections: Option<HashMap<String, Edge>>,
 }
 
 impl Node {
@@ -38,6 +40,40 @@ impl Node {
             hidden: false,
             summary: String::default(),
         }
+    }
+}
+
+impl std::fmt::Display for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut meta = String::default();
+        if self.title.is_empty() {
+            meta.push_str("title:none");
+        } else {
+            meta.push_str(&format!("title:'{}'", self.title));
+        }
+        if self.text.is_empty() {
+            meta.push_str(" text:none");
+        } else {
+            meta.push_str(&format!(" text:{}l", self.text.len()));
+        }
+        if self.summary.is_empty() {
+            meta.push_str(" summary:none");
+        } else {
+            meta.push_str(&format!(" summary:{}", self.summary.len()));
+        }
+        if self.redirect.is_empty() {
+            meta.push_str(" redirect:none");
+        } else {
+            meta.push_str(&format!(" redirect:{}", self.redirect));
+        }
+        let links = self.links.len();
+        if links > 0 {
+            meta.push_str(&format!(" links:{links}"));
+        }
+        if self.hidden {
+            meta.push_str(" hidden");
+        }
+        write!(f, "Node: ID '{}' {meta}", self.id)
     }
 }
 

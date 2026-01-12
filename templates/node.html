@@ -13,20 +13,20 @@
         </div>
         {{ node.text | safe }}
     </section>
-    {% if node.connections or incoming %}
+    {% if connections or incoming %}
     <aside>
         <hr>
         <h2>Connections</h2>
-        {% if node.connections %}
+        {% if connections %}
         <ul>
-            {% for connection in node.connections | filter(attribute="detached", value=false) %}
+            {% for connection in connections | filter(attribute="detached", value=false) %}
             <li>
             <strong>{{node.id}}</strong>
             &raquo;
             <a href="/node/{{connection.to}}">{{connection.to}}</a>
             </li>
             {% endfor %}
-            {% for connection in node.connections | filter(attribute="detached", value=true) %}
+            {% for connection in connections | filter(attribute="detached", value=true) %}
             <li>
             <strong>{{node.id}}</strong>
             &raquo;

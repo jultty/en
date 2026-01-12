@@ -25,7 +25,7 @@
             {% if root_node.connections %}
             {% if config.tree_node_summary %}<li><strong>Connections</strong>
                 <ul>{% endif %}
-                {% for connection in root_node.connections %}
+                {% for _, connection in root_node.connections %}
                     <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
                 {% endfor %}
                 {% if config.tree_node_summary %}</ul>
@@ -53,7 +53,7 @@
             {% if node.connections %}
             {% if config.tree_node_summary %}<li><strong>Connections</strong>
                 <ul>{% endif %}
-                {% for connection in node.connections %}
+                {% for _, connection in node.connections %}
                 {% if not connection.detached %}
                     <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
                 {% endif %}

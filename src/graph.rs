@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 
 use crate::syntax::content;
+use crate::prelude::*;
 pub use {
     node::Node,
     edge::Edge,
@@ -25,10 +26,23 @@ pub struct Graph {
     pub meta: Meta,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default, Debug)]
 pub struct QueryResult {
     pub node: Option<Node>,
     pub redirect: bool,
+    pub exact: bool,
+}
+
+impl std::fmt::Display for QueryResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let meta = if self.redirect { "[redirect] " } else { "" };
+        let node = if let Some(n) = &self.node {
+            n.id.clone()
+        } else {
+            String::from("No Match")
+        };
+        write!(f, "QueryResult: {meta}{node}")
+    }
 }
 
 impl Graph {
@@ -46,36 +60,62 @@ impl Graph {
         }
     }
 
+    pub fn map_lowercase_keys(&mut self) {
+        for key in self.nodes.keys() {
+            self.lowercase_keymap
+                .insert(key.clone().to_lowercase(), key.clone());
+        }
+    }
+
     pub fn find_node(&self, query: &str) -> QueryResult {
         let collapsed_query = query.trim().replace(" ", "");
 
+        if query == collapsed_query {
+            log!("Chasing candidate for query {query}");
+        } else {
+            log!(
+                "Chasing candidate for query {query}, collapsed {collapsed_query}"
+            );
+        }
+
         let candidate = if let Some(exact_match) = self.nodes.get(query) {
+            log!("Elected exact match {exact_match}");
             QueryResult {
                 node: Some(exact_match.clone()),
+                exact: true,
                 redirect: false,
             }
         } else if let Some(lower_key) =
             self.lowercase_keymap.get(&collapsed_query.to_lowercase())
         {
+            log!("Elected non-exact match through lower key {lower_key}");
             QueryResult {
                 node: self.nodes.get(lower_key).cloned(),
-                redirect: true,
-            }
-        } else {
-            QueryResult {
-                node: None,
+                exact: false,
                 redirect: false,
             }
+        } else {
+            log!("No candidate found");
+            QueryResult::default()
         };
 
         if let Some(candidate_node) = &candidate.node
             && !candidate_node.redirect.is_empty()
         {
-            QueryResult {
-                node: self.find_node(&candidate_node.redirect).node,
-                redirect: true,
+            log!("Recursing: candidate is a redirect");
+            if let Some(recursive_match) =
+                self.find_node(&candidate_node.redirect).node
+            {
+                QueryResult {
+                    node: Some(recursive_match),
+                    exact: false,
+                    redirect: true,
+                }
+            } else {
+                QueryResult::default()
             }
         } else {
+            log!("Returning candidate {candidate}");
             candidate
         }
     }

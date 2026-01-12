@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::syntax::content::parser::{
     context::{Block, Context, Inline},
-    token::{anchor::Anchor, item::Item, list::List},
+    token::{Anchor, Item, List},
 };
 
 #[derive(Clone, Debug)]

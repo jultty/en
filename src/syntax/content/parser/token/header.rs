@@ -4,7 +4,7 @@ use std::{
 
 use crate::{
     prelude::*,
-    types::Config,
+    graph::Config,
     syntax::content::{Parseable, Lexeme},
 };
 
@@ -101,7 +101,7 @@ impl Parseable for Header {
 
     fn render(&self) -> String {
         if let Some(open) = self.open {
-            if open && let Some(ref id) = self.dom_id {
+            if open && let Some(id) = &self.dom_id {
                 format!(r#"<h{} id="{}">"#, self.level, id)
             } else if open {
                 format!("<h{}>", self.level)
@@ -126,8 +126,8 @@ impl std::fmt::Display for Header {
             "unknown"
         };
 
-        let display_dom_id = match self.dom_id {
-            Some(ref dom_id) => format!(" DOM ID {dom_id}"),
+        let display_dom_id = match &self.dom_id {
+            Some(dom_id) => format!(" DOM ID {dom_id}"),
             None => String::default(),
         };
 
@@ -195,7 +195,7 @@ impl Display for Level {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::Token;
+    use crate::syntax::content::parser::Token;
 
     use super::*;
 

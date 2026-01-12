@@ -1,4 +1,4 @@
-use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
+use crate::syntax::content::{Parseable, parser::Lexeme};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Literal {
@@ -33,7 +33,7 @@ impl std::fmt::Display for Literal {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::Token;
+    use crate::syntax::content::parser::Token;
 
     use super::*;
 

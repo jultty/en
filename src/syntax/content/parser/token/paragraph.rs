@@ -1,4 +1,4 @@
-use crate::syntax::content::{Parseable, parser::lexeme::Lexeme};
+use crate::syntax::content::{Parseable, parser::Lexeme};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Paragraph {
@@ -62,7 +62,7 @@ impl std::fmt::Display for Paragraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::Token;
+    use crate::syntax::content::parser::Token;
 
     use super::*;
 

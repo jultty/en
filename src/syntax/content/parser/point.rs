@@ -5,12 +5,8 @@ use crate::{
     syntax::content::{
         Parseable as _,
         parser::{
-            lexeme::Lexeme,
-            state::State,
-            token::{
-                Token, bold::Bold, checkbox::CheckBox, oblique::Oblique,
-                strike::Strike, underline::Underline,
-            },
+            Lexeme, State, Token,
+            token::{Bold, CheckBox, Oblique, Strike, Underline},
         },
     },
 };
@@ -62,7 +58,7 @@ pub fn parse(
 
 #[cfg(test)]
 mod tests {
-    use crate::{syntax::content::parser, types::Graph};
+    use crate::{syntax::content::parser, graph::Graph};
 
     fn read(input: &str) -> String {
         parser::read(input, &Graph::default())

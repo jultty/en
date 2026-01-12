@@ -1,9 +1,7 @@
 use axum::response::IntoResponse as _;
 use axum::{body::Body, extract::Path, http::Response, response::Redirect};
 
-use crate::syntax::content;
-
-use crate::{syntax::serial::populate_graph, router::handlers, types::Node};
+use crate::{syntax::serial::populate_graph, router::handlers, graph::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let graph = populate_graph();
@@ -29,7 +27,6 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let mut context = tera::Context::default();
     context.insert("node", &node);
     context.insert("nodes", &nodes);
-    context.insert("text", &content::parse(&node.text, &graph));
     context.insert("incoming", &graph.incoming.get(&id));
     context.insert("config", &graph.meta.config);
 

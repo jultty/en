@@ -1,6 +1,6 @@
 use crate::{
-    syntax::content::{Parseable, parser::lexeme::Lexeme},
-    types::Node,
+    syntax::content::{Parseable, parser::Lexeme},
+    graph::Node,
 };
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -79,12 +79,20 @@ impl Anchor {
         self.leading = leading;
     }
 
+    pub fn node(&self) -> Option<Node> {
+        self.node.clone()
+    }
+
     pub fn set_node(&mut self, node: &Node) {
         self.node = Some(node.to_owned());
     }
 
     pub fn node_id(&self) -> Option<String> {
         self.node_id.clone()
+    }
+
+    pub fn set_node_id(&mut self, id: &str) {
+        self.node_id = Some(id.to_owned());
     }
 
     fn route(&mut self) {
@@ -118,7 +126,7 @@ impl Parseable for Anchor {
     }
 
     fn render(&self) -> String {
-        let Some(ref destination) = self.destination else {
+        let Some(destination) = &self.destination else {
             panic!(
                 "Attempt to render anchor {self:#?} without knowing its destination."
             )
@@ -162,8 +170,8 @@ impl std::fmt::Display for Anchor {
             wrapped_text.as_str()
         };
 
-        let display_destination = match self.destination {
-            Some(ref destination) => {
+        let display_destination = match &self.destination {
+            Some(destination) => {
                 if destination.is_empty() {
                     String::from("<empty>")
                 } else {
@@ -192,7 +200,7 @@ impl std::fmt::Display for Anchor {
 #[cfg(test)]
 mod tests {
 
-    use crate::syntax::content::parser::token::Token;
+    use crate::syntax::content::parser::Token;
 
     use super::*;
 

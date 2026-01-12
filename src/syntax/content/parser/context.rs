@@ -1,8 +1,6 @@
 use crate::syntax::content::parser::{
-    state::State,
-    token::{
-        Token, header::Header, paragraph::Paragraph, preformat::PreFormat,
-    },
+    State, Token,
+    token::{Header, Paragraph, PreFormat},
 };
 
 pub mod block;
@@ -54,7 +52,7 @@ pub fn close(state: &State, tokens: &mut Vec<Token>) {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::{context::Block, state::State};
+    use crate::syntax::content::parser::{context::Block, State};
 
     #[test]
     #[should_panic(expected = "End of input with open list")]

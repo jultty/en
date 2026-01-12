@@ -1,5 +1,8 @@
 use crate::{
-    syntax::content::{Lexeme, Parseable, parser::token::item::Item},
+    syntax::content::{
+        Parseable,
+        parser::{Lexeme, token::Item},
+    },
 };
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -94,7 +97,7 @@ impl std::fmt::Display for List {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::Token;
+    use crate::syntax::content::parser::Token;
 
     use super::*;
 

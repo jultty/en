@@ -1,8 +1,14 @@
 use std::collections::HashMap;
 
 use crate::{
-    syntax::{command::Arguments, content::parser::flatten},
-    types::{Edge, Graph, Node},
+    syntax::{
+        command::Arguments,
+        content::{
+            self,
+            parser::{flatten, Token, token::Anchor},
+        },
+    },
+    graph::{Edge, Graph, Node},
 };
 
 pub fn populate_graph() -> Graph {
@@ -38,6 +44,10 @@ fn modulate_nodes(graph: &Graph) -> HashMap<String, Node> {
         let connections = node.connections.clone().unwrap_or_default();
         let mut new_edges = connections.clone();
 
+        // Parse node text
+        let (text, tokens) = content::rich_parse(&node.text, graph);
+
+        // Modulate connections
         for (i, edge) in connections.iter().enumerate() {
             let mut new_edge = edge.clone();
 
@@ -64,6 +74,28 @@ fn modulate_nodes(graph: &Graph) -> HashMap<String, Node> {
                 anchor: String::default(),
                 detached: !old_nodes.clone().contains_key(link),
             });
+        }
+
+        // Create connections for each anchor
+        let parsed_anchors =
+            tokens.iter().filter(|t| matches!(t, Token::Anchor(_)));
+
+        let mut anchors: Vec<Anchor> = vec![];
+        for anchor in parsed_anchors {
+            if let Token::Anchor(a) = anchor {
+                anchors.push(*a.clone());
+            }
+        }
+
+        for anchor in anchors {
+            if let Some(anchor_node) = anchor.node() {
+                new_edges.push(Edge {
+                    from: key.clone(),
+                    to: anchor_node.id,
+                    anchor: anchor.text(),
+                    detached: false,
+                });
+            }
         }
 
         // Populate empty titles with IDs
@@ -104,6 +136,7 @@ fn modulate_nodes(graph: &Graph) -> HashMap<String, Node> {
             title: new_title,
             summary: flatten(&summary, graph),
             connections: Some(new_edges),
+            text,
             ..node.clone()
         };
 

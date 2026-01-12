@@ -48,7 +48,7 @@ impl std::fmt::Display for CheckBox {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::Token;
+    use crate::syntax::content::parser::Token;
 
     use super::*;
 

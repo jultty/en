@@ -5,13 +5,13 @@ use crate::{
     syntax::content::{
         Parseable as _,
         parser::{
-            Inline, context,
-            lexeme::Lexeme,
-            state::{AnchorBuffer, State},
-            token::{Token, anchor::Anchor, code::Code, literal::Literal},
+            Lexeme, State,
+            state::AnchorBuffer,
+            Inline, context, Token,
+            token::{Anchor, Code, Literal},
         },
     },
-    types::Graph,
+    graph::Graph,
 };
 
 pub fn parse(

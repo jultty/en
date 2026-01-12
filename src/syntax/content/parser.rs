@@ -1,8 +1,8 @@
-use crate::{prelude::*, types::Graph};
-use super::{Parseable as _, Token, LexMap};
-use token::{linebreak::LineBreak, literal::Literal};
-use lexeme::Lexeme;
+use crate::{prelude::*, graph::Graph};
+use super::{Parseable as _, LexMap};
+use token::{LineBreak, Literal};
 use context::{Block, Inline};
+pub use {lexeme::Lexeme, token::Token, state::State};
 
 pub mod token;
 pub mod lexeme;
@@ -22,7 +22,7 @@ const LEXMAP: LexMap = &[
 
 fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::default();
-    let mut state = state::State::default();
+    let mut state = State::default();
 
     let segments = segment::segment(text);
     let lexemes = Lexeme::collect(&segments);
@@ -64,7 +64,7 @@ fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> Vec<Token> {
             continue;
         }
 
-        for &(ref probe, lex) in map {
+        for (probe, lex) in map {
             if probe(lexeme) {
                 let token = lex(lexeme);
                 log!("Lexmap lexed {lexeme} into {token}");
@@ -82,9 +82,14 @@ pub(super) fn read(input: &str, graph: &Graph) -> String {
     parse(&lex(input, LEXMAP, graph, true))
 }
 
+pub(super) fn rich_read(input: &str, graph: &Graph) -> (String, Vec<Token>) {
+    let tokens = lex(input, LEXMAP, graph, true);
+    let text = parse(&tokens);
+    (text, tokens)
+}
 /// Apply end-to-end point and inline parsing for nested formatting, such as
 /// inside the display text of anchors and list items
-pub fn nest(input: &str, graph: &Graph) -> String {
+pub fn format(input: &str, graph: &Graph) -> String {
     parse(&lex(input, LEXMAP, graph, false))
 }
 
@@ -103,7 +108,7 @@ fn parse(tokens: &[Token]) -> String {
 #[cfg(test)]
 mod tests {
     use crate::{
-        types::Graph,
+        graph::Graph,
         syntax::content::parser::{token::header::Level},
     };
 

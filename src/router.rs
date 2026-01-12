@@ -1,6 +1,6 @@
 use axum::{routing::get, Router};
 
-use crate::{syntax::serial::Format, types::Graph};
+use crate::{syntax::serial::Format, graph::Graph};
 
 mod handlers {
     pub mod graph;
@@ -70,7 +70,7 @@ pub fn new(graph: &Graph) -> Router {
 mod tests {
     use crate::{
         syntax::serial::populate_graph,
-        types::{Config, Meta},
+        graph::{Config, Meta},
     };
 
     use super::*;

@@ -1,5 +1,5 @@
 use crate::{
-    syntax::content::{Parseable, parser::lexeme::Lexeme},
+    syntax::content::{Parseable, parser::Lexeme},
 };
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -31,7 +31,7 @@ impl std::fmt::Display for LineBreak {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::Token;
+    use crate::syntax::content::parser::Token;
 
     use super::*;
 

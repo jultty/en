@@ -5,7 +5,7 @@ use axum::{
     Form,
 };
 
-use crate::{syntax::serial::populate_graph, router::handlers, types::Node};
+use crate::{syntax::serial::populate_graph, router::handlers, graph::Node};
 
 #[expect(clippy::unused_async)]
 pub async fn page(template: &str) -> Response<Body> {

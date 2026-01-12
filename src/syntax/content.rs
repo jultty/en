@@ -1,6 +1,6 @@
-use parser::{token::Token, lexeme::Lexeme};
+use parser::{Token, Lexeme};
 
-use crate::types::Graph;
+use crate::graph::Graph;
 
 pub mod parser;
 
@@ -17,4 +17,8 @@ type LexMap<'lm> = &'lm [(Probe, Lexer)];
 
 pub fn parse(text: &str, graph: &Graph) -> String {
     parser::read(text, graph)
+}
+
+pub fn rich_parse(text: &str, graph: &Graph) -> (String, Vec<Token>) {
+    parser::rich_read(text, graph)
 }

@@ -3,13 +3,9 @@ use std::{iter::Peekable, slice::Iter};
 use crate::{
     prelude::*,
     syntax::content::parser::{
-        context::Block,
-        lexeme::Lexeme,
-        nest,
-        state::{ListBuffer, State},
-        token::{Token, item::Item},
+        context::Block, Token, Lexeme, State, state, token::Item, format,
     },
-    types::Graph,
+    graph::Graph,
 };
 
 /// Handles open list contexts until a list is fully parsed.
@@ -52,7 +48,7 @@ pub fn parse(
                 }
                 if item_candidate.depth.is_some() {
                     // if the current item candidate has a known depth, push it
-                    item_candidate.text = nest(&item_candidate.text, graph);
+                    item_candidate.text = format(&item_candidate.text, graph);
                     candidate.items.push(item_candidate.clone());
                 }
                 // push list candidate, reset state and exit context
@@ -60,11 +56,11 @@ pub fn parse(
                 tokens.push(Token::List(candidate.clone()));
                 state.context.block = Block::None;
                 iterator.next();
-                *buffer = ListBuffer::default();
+                *buffer = state::ListBuffer::default();
             } else if lexeme.match_char('\n') {
                 // found end of item, push it and reset state
                 log!("Accepting item candidate {item_candidate}");
-                item_candidate.text = nest(&item_candidate.text, graph);
+                item_candidate.text = format(&item_candidate.text, graph);
                 candidate.items.push(item_candidate.clone());
                 *item_candidate = Item::default();
                 buffer.depth = 0;
@@ -86,10 +82,8 @@ pub fn parse(
 #[cfg(test)]
 mod tests {
     use crate::{
-        syntax::content::parser::{
-            self, context::list::parse, lexeme::Lexeme, state::State,
-        },
-        types::Graph,
+        syntax::content::parser::{self, context::list::parse, Lexeme, State},
+        graph::Graph,
     };
 
     fn read(input: &str) -> String {

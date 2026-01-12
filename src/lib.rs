@@ -4,7 +4,7 @@ pub mod prelude {
     pub use crate::log;
 }
 
-pub mod types;
+pub mod graph;
 pub mod router;
 pub mod syntax;
 pub mod dev;

@@ -1,9 +1,7 @@
 use crate::{
     prelude::*,
-    syntax::content::parser::{
-        context::Inline, lexeme::Lexeme, state::State, token::Token,
-    },
-    types::Graph,
+    syntax::content::parser::{context::Inline, Lexeme, State, Token},
+    graph::Graph,
 };
 
 /// Handles open anchor contexts until an anchor token is fully parsed.
@@ -154,7 +152,7 @@ fn push(
 
 #[cfg(test)]
 mod tests {
-    use crate::{syntax::content::parser, types::Graph};
+    use crate::{syntax::content::parser, graph::Graph};
 
     fn read(input: &str) -> String {
         parser::read(input, &Graph::default())

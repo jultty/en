@@ -11,7 +11,7 @@
                 {% if node.hidden %}<span class="label hidden-label">Hidden</span>{% endif %}
             </div>
         </div>
-        {{ text | safe }}
+        {{ node.text | safe }}
     </section>
     {% if node.connections or incoming %}
     <aside>

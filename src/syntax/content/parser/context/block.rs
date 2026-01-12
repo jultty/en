@@ -5,16 +5,11 @@ use crate::{
     syntax::content::{
         Parseable as _,
         parser::{
-            Block,
-            lexeme::Lexeme,
-            state::State,
-            token::{
-                Token, header::Header, list::List, literal::Literal,
-                paragraph::Paragraph, preformat::PreFormat,
-            },
+            Block, Token, Lexeme, State,
+            token::{Header, List, Literal, Paragraph, PreFormat},
         },
     },
-    types::Graph,
+    graph::Graph,
 };
 
 pub fn parse(
@@ -91,14 +86,10 @@ mod tests {
 
     use crate::{
         syntax::content::parser::{
-            self, Block, Token, context,
-            state::State,
-            token::{
-                header::{Header, Level},
-                preformat::PreFormat,
-            },
+            self, Block, Token, context, State,
+            token::{Header, header::Level, PreFormat},
         },
-        types::Graph,
+        graph::Graph,
     };
 
     fn read(input: &str) -> String {

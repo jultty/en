@@ -37,11 +37,6 @@ a {
     text-underline-offset: 3px;
 }
 
-a:visited {
-    text-decoration-color: #999;
-    text-decoration-style: dashed;
-}
-
 a.detached {
     color: #595959;
     text-decoration-color: none;
@@ -51,6 +46,10 @@ a.external {
     color: #1958a7;
     text-decoration-color: #2A7CDF;
     text-decoration-style: solid;
+}
+
+a:visited, a.detached:visited, a.external:visited {
+    text-decoration-color: #999;
 }
 
 footer div a {

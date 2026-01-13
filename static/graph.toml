@@ -178,7 +178,6 @@ en --g ./graph.toml -p 1312
 `
 
 If an option is specified more than once, the last use will override any previous ones.
-
 """
 
 [nodes.Syntax]
@@ -463,12 +462,11 @@ en must differentiate node anchors from outgoing URLs:
 `
 
 It does this by looking at the destination and checking if it contains a `:`. That's one more reason to avoid this character in your node IDs.
-
 """
 
 [nodes.en]
 text = """
-en is a tool to write non-linear, connected pieces of text and have their references mapped out as a graph of connected information.
+en is a tool to write non-linear, connected pieces of text and have their references mapped out as a |graph| of connected information.
 
 It works by ingesting a |TOML| file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
 
@@ -479,10 +477,7 @@ en was created out of the desire to write complex, long-form descriptions of a p
 It's described as a "writing instrument" because it's not so much about the presentation or even the web format. While that's the medium for this particular implementation, you can notice en serves its raw data in both TOML and JSON. It's first and foremost about mapping out and structuring written thoughts.
 
 Because en is defined in simple configuration files, you can add new pages easily from a few lines and start connecting them. Instead of having to create a dedicated file or resource for each new entry you find deserving of observation, with its own beginning and end, its own "I'm empty, fill me to completion" demeanor, you can stay in the flow of your sprawling thoughts. This is meant to fit the specific wiring of minds whose thoughts spread and fork quickly and often, whether to great depth or across wide expanses.
-
 """
-
-links = [ "Graph" ]
 
 [nodes.Graph]
 text = """
@@ -606,14 +601,3 @@ navbar_search = true
 footer_text = """
 made by jutty|https://jutty.dev • acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
 """
-
-[nodes.t0]
-text = """
-*t0* is a node linked to |t1|
-"""
-
-[nodes.t1]
-text = """
-*t1* is a node linked to |T0|
-"""
-

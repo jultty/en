@@ -41,6 +41,7 @@ keyword-idents = "warn"
 manual_non_exhaustive = "allow"
 collapsible_if = "allow"
 collapsible_else_if = "allow"
+field_reassign_with_default = "allow"
 
 # pedantic
 assigning_clones = "warn"

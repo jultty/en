@@ -163,6 +163,17 @@ em#index-node-count {
     font-size: 0.8em;
 }
 
+table {
+  margin: auto;
+  border-collapse: collapse;
+  border: 0.5px dotted #666;
+}
+
+td, th {
+    padding: 10px;
+    border: 0.5px dotted #666;
+}
+
 @media (prefers-color-scheme: dark) {
     * {
         background-color: #222222;

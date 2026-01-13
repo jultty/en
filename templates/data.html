@@ -6,14 +6,36 @@
 {%- block body %}
 <h1>Data</h1>
 
+<h2>Metadata</h2>
+
+<table>
+    <tr>
+        <td>Detached edges</td> <td>{{ detached_count }}</td>
+    </tr>
+</table>
+
+<h3>Detached edges</h3>
+
+<details>
+<summary>Expand to list all detached edges.</summary>
+    <ul>
+    {% for pair in detached_pairs %}
+    <li>{{ pair.0 }}: {{ pair.1 }}</li>
+    {% endfor %}
+    </ul>
+</details>
+
+{% if graph.meta.config.raw_toml or graph.meta.config.raw_json %}
+<h2>Raw formats</h2>
 <p>The raw data used to render this graph is available in the following formats:</p>
 
 <ul>
-    {% if config.raw_toml %}
+    {% if graph.meta.config.raw_toml %}
     <li><a href="/graph/toml">TOML</a></li>
     {% endif %}
-    {% if config.raw_json %}
+    {% if graph.meta.config.raw_json %}
     <li><a href="/graph/json">JSON</a></li>
     {% endif %}
 </ul>
+{% endif %}
 {%- endblock body %}

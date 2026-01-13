@@ -30,6 +30,13 @@ pub struct Graph {
     pub lowercase_keymap: HashMap<String, String>,
     #[serde(default)]
     pub meta: Meta,
+    #[serde(default)]
+    pub stats: Stats,
+}
+
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+pub struct Stats {
+    pub detached: HashMap<String, u32>,
 }
 
 #[derive(Clone, Default, Debug)]
@@ -160,8 +167,11 @@ impl Graph {
                 }
 
                 // Flag detached edges
-                if !in_nodes.contains_key(&edge.to) {
+                if in_nodes.contains_key(&edge.to) {
                     new_edge.detached = false;
+                } else {
+                    new_edge.detached = true;
+                    self.increment_detached(&key);
                 }
 
                 if let Some(e) = new_edges.get_mut(&connection_key) {
@@ -171,14 +181,19 @@ impl Graph {
 
             // Create connections for each link
             for link in &node.links {
+                let detached = !in_nodes.contains_key(link);
                 new_edges.insert(
                     link.clone(),
                     Edge {
                         from: key.clone(),
                         to: link.clone(),
-                        detached: !in_nodes.clone().contains_key(link),
+                        detached,
                     },
                 );
+
+                if detached {
+                    self.increment_detached(&key);
+                }
             }
 
             // Populate empty titles with IDs
@@ -269,9 +284,33 @@ impl Graph {
                             },
                         );
                     }
+                } else {
+                    if let Some(destination) = anchor.destination()
+                        && !anchor.external()
+                    {
+                        self.stats
+                            .detached
+                            .entry(
+                                destination
+                                    .trim_start_matches("/node/")
+                                    .to_string(),
+                            )
+                            .and_modify(|count| {
+                                *count = count.saturating_add(1)
+                            })
+                            .or_insert(1);
+                    }
                 }
             }
         }
+    }
+
+    fn increment_detached(&mut self, node_id: &str) {
+        self.stats
+            .detached
+            .entry(node_id.to_string())
+            .and_modify(|count| *count = count.saturating_add(1))
+            .or_insert(1);
     }
 
     pub fn map_lowercase_keys(&mut self) {

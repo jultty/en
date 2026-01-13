@@ -14,14 +14,25 @@ use crate::{
 pub async fn page(template: &str) -> Response<Body> {
     let mut context = tera::Context::default();
     let graph = Graph::load();
-    let root_node = graph.get_root().unwrap_or_default();
-    let nodes: Vec<Node> = graph.nodes.into_values().collect();
 
-    context.insert("nodes", &nodes);
-    context.insert("root_node", &root_node);
-    context.insert("config", &graph.meta.config);
+    context.insert("graph", &graph);
 
     handlers::template::by_filename(template, &context, 500, None, false)
+}
+
+pub async fn data() -> Response<Body> {
+    let mut context = tera::Context::default();
+    let graph = Graph::load();
+
+    let mut detached_pairs: Vec<(String, u32)> =
+        graph.stats.detached.clone().into_iter().collect();
+    detached_pairs.sort_by(|a, b| b.1.cmp(&a.1));
+
+    context.insert("graph", &graph);
+    context.insert("detached_count", &graph.stats.detached.len());
+    context.insert("detached_pairs", &detached_pairs);
+
+    handlers::template::by_filename("data.html", &context, 500, None, false)
 }
 
 pub async fn search(Form(query): Form<Query>) -> Redirect {

@@ -18,8 +18,13 @@ pub fn new(graph: &Graph) -> Router {
             get(|| handlers::navigation::page("index.html"))
                 .post(handlers::navigation::search),
         )
-        .route("/redirect", get(handlers::navigation::redirect))
+        .route(
+            "/node/{node_id}",
+            get(handlers::graph::node).post(handlers::graph::node),
+        )
+        .route("/data", get(handlers::navigation::data))
         .route("/search", get(handlers::navigation::search))
+        .route("/redirect", get(handlers::navigation::redirect))
         .route(
             "/static/style.css",
             get(|| handlers::fixed::file("./static/style.css", "text/css")),
@@ -29,10 +34,6 @@ pub fn new(graph: &Graph) -> Router {
             get(|| {
                 handlers::fixed::file("./static/favicon.svg", "image/svg+xml")
             }),
-        )
-        .route(
-            "/node/{node_id}",
-            get(handlers::graph::node).post(handlers::graph::node),
         )
         .fallback(handlers::error::not_found);
 
@@ -47,8 +48,6 @@ pub fn new(graph: &Graph) -> Router {
     }
 
     if graph.meta.config.raw {
-        router = router
-            .route("/data", get(|| handlers::navigation::page("data.html")));
         if graph.meta.config.raw_json {
             router = router.route(
                 "/graph/json",

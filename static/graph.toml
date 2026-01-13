@@ -539,10 +539,9 @@ text = """
         - [ ] Example (implies metadata `has_example`)
         - [ ] References/influences (implies metadata `has_references`)
 - [ ] Meta-awareness
-    - [ ] Detached edges
+    - [x] Detached edges
     - [ ] Most linked to nodes
     - [ ] Most linked from nodes
-    - [ ] Most linked to nonexistent nodes
     - [ ] Most linked
 - [ ] Rendering
     - [ ] Sorting of tree, index list and drop-down navigation

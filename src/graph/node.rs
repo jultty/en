@@ -23,6 +23,15 @@ pub struct Node {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connections: Option<HashMap<String, Edge>>,
+
+    #[serde(default)]
+    pub stats: Stats,
+}
+
+#[derive(Serialize, Deserialize, Clone, Default, Eq, PartialEq, Debug)]
+pub struct Stats {
+    pub outgoing: u32,
+    pub incoming: u32,
 }
 
 impl Node {
@@ -39,6 +48,7 @@ impl Node {
             redirect: String::default(),
             hidden: false,
             summary: String::default(),
+            stats: Stats::default(),
         }
     }
 }

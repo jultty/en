@@ -1,5 +1,5 @@
 use crate::{prelude::*, graph::Graph};
-use super::{Parseable as _, LexMap};
+use super::{TokenOutput, Parseable as _, LexMap};
 use token::{LineBreak, Literal};
 use context::{Block, Inline};
 pub use {lexeme::Lexeme, token::Token, state::State};
@@ -20,7 +20,7 @@ const LEXMAP: LexMap = &[
     }),
 ];
 
-fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> Vec<Token> {
+fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> TokenOutput {
     let mut tokens: Vec<Token> = Vec::default();
     let mut state = State::default();
 
@@ -75,27 +75,37 @@ fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> Vec<Token> {
     }
 
     context::close(&state, &mut tokens);
-    tokens
+    TokenOutput {
+        tokens,
+        format_tokens: state.format_tokens,
+        text: None,
+    }
 }
 
 pub(super) fn read(input: &str, graph: &Graph) -> String {
-    parse(&lex(input, LEXMAP, graph, true))
+    parse(&lex(input, LEXMAP, graph, true).tokens)
 }
 
-pub(super) fn rich_read(input: &str, graph: &Graph) -> (String, Vec<Token>) {
-    let tokens = lex(input, LEXMAP, graph, true);
-    let text = parse(&tokens);
-    (text, tokens)
+pub(super) fn rich_read(input: &str, graph: &Graph) -> TokenOutput {
+    let lex_output = lex(input, LEXMAP, graph, true);
+    let text = parse(&lex_output.tokens);
+    TokenOutput {
+        text: Some(text),
+        tokens: lex_output.tokens,
+        format_tokens: lex_output.format_tokens,
+    }
 }
+
 /// Apply end-to-end point and inline parsing for nested formatting, such as
 /// inside the display text of anchors and list items
-pub fn format(input: &str, graph: &Graph) -> String {
-    parse(&lex(input, LEXMAP, graph, false))
+pub fn format(input: &str, graph: &Graph) -> (String, Vec<Token>) {
+    let tokens = lex(input, LEXMAP, graph, false).tokens;
+    (parse(&tokens), tokens)
 }
 
 // Strip special syntax for display in noninteractive or plain-text display
 pub fn flatten(input: &str, graph: &Graph) -> String {
-    let tokens = lex(input, LEXMAP, graph, true);
+    let tokens = lex(input, LEXMAP, graph, true).tokens;
     let flat = tokens.iter().map(Token::flatten).collect::<String>();
     log!("Flattened {tokens:?} to {flat}");
     flat

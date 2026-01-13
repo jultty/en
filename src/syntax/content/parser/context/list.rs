@@ -48,7 +48,10 @@ pub fn parse(
                 }
                 if item_candidate.depth.is_some() {
                     // if the current item candidate has a known depth, push it
-                    item_candidate.text = format(&item_candidate.text, graph);
+                    let (text, format_tokens) =
+                        format(&item_candidate.text, graph);
+                    item_candidate.text = text;
+                    state.format_tokens.extend_from_slice(&format_tokens);
                     candidate.items.push(item_candidate.clone());
                 }
                 // push list candidate, reset state and exit context
@@ -60,7 +63,9 @@ pub fn parse(
             } else if lexeme.match_char('\n') {
                 // found end of item, push it and reset state
                 log!("Accepting item candidate {item_candidate}");
-                item_candidate.text = format(&item_candidate.text, graph);
+                let (text, format_tokens) = format(&item_candidate.text, graph);
+                item_candidate.text = text;
+                state.format_tokens.extend_from_slice(&format_tokens);
                 candidate.items.push(item_candidate.clone());
                 *item_candidate = Item::default();
                 buffer.depth = 0;

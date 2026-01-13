@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::syntax::content::parser::{
+    Token,
     context::{Block, Context, Inline},
     token::{Anchor, Item, List},
 };
@@ -11,6 +12,7 @@ pub struct State {
     pub dom_ids: HashMap<String, Vec<String>>,
     pub switches: Switches,
     pub buffers: Buffers,
+    pub format_tokens: Vec<Token>,
 }
 
 #[derive(Clone, Debug)]
@@ -91,6 +93,7 @@ impl Default for State {
                     depth: 0,
                 },
             },
+            format_tokens: vec![],
         }
     }
 }

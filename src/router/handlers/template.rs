@@ -103,6 +103,7 @@ fn emergency_wrap(error: &tera::Error) -> String {
 
 #[cfg(test)]
 mod tests {
+    use crate::graph::Graph;
 
     use super::*;
 
@@ -154,7 +155,7 @@ mod tests {
         let payload = "dBgIw8DnNHxJojiXzu445qUC4UpxwZCy";
         let mut context = tera::Context::default();
         let node = crate::graph::Node::new(Some(payload.to_string()));
-        let graph = crate::syntax::serial::populate_graph();
+        let graph = Graph::load();
         context.insert("node", &node);
         context
             .insert("text", &crate::syntax::content::parse(&node.text, &graph));

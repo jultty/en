@@ -517,7 +517,7 @@ en is only possible thanks to a number of projects and people:
 text = """
 - [ ] Performance
     - [ ] Caching
-    - [ ] Move more logic from Serial to Graph submodules
+    - [x] Move more logic from Serial to Graph submodules
     - [ ] Further centralize state
     - [ ] Reduce O(n) calls in the formats module
 - [ ] Input syntax

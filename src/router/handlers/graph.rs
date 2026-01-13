@@ -2,10 +2,10 @@ use axum::response::IntoResponse as _;
 use axum::{body::Body, extract::Path, http::Response, response::Redirect};
 
 use crate::graph::Edge;
-use crate::{syntax::serial::populate_graph, router::handlers, graph::Node};
+use crate::{graph::Graph, router::handlers, graph::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
-    let graph = populate_graph();
+    let graph = Graph::load();
     let result = graph.find_node(&id);
     let found = result.node.is_some();
     let nodes: Vec<Node> = graph.nodes.clone().into_values().collect();

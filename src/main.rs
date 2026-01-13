@@ -1,6 +1,6 @@
 use std::{backtrace, io, panic};
 
-use en::{prelude::*, ONSET, syntax::serial::populate_graph, syntax};
+use en::{prelude::*, ONSET, graph::Graph, syntax};
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -34,7 +34,7 @@ async fn main() -> io::Result<()> {
         }
     }));
 
-    let graph = populate_graph();
+    let graph = Graph::load();
     let router = en::router::new(&graph);
 
     let listener =

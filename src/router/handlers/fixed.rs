@@ -6,7 +6,7 @@ use axum::{
 use crate::prelude::*;
 use crate::{
     router::handlers,
-    syntax::serial::{Format, populate_graph, serialize_graph},
+    graph::{Graph, Format},
 };
 
 /// # Panics
@@ -35,8 +35,8 @@ pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
 
 #[expect(clippy::unused_async)]
 pub async fn serial(format: &Format) -> Response<Body> {
-    let graph = populate_graph();
-    let body = serialize_graph(format, &graph);
+    let graph = Graph::load();
+    let body = Graph::to_serial(&graph, format);
 
     match *format {
         Format::TOML => handlers::raw::make_response(

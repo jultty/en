@@ -67,6 +67,9 @@ pub fn parse(
         } else if lexeme.match_char('|') && lexeme.is_next_delimiter() {
             log!("End: Pipe followed by delimiter");
             if buffer.destination.is_empty() {
+                if candidate.text().contains(':') {
+                    candidate.set_external(true);
+                }
                 push(Some(&candidate.text().clone()), tokens, state, graph);
             } else {
                 push(Some(&buffer.destination.clone()), tokens, state, graph);

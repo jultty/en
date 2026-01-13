@@ -5,12 +5,15 @@ use axum::{
     Form,
 };
 
-use crate::{syntax::serial::populate_graph, router::handlers, graph::Node};
+use crate::{
+    graph::{Graph, Node},
+    router::handlers,
+};
 
 #[expect(clippy::unused_async)]
 pub async fn page(template: &str) -> Response<Body> {
     let mut context = tera::Context::default();
-    let graph = populate_graph();
+    let graph = Graph::load();
     let root_node = graph.get_root().unwrap_or_default();
     let nodes: Vec<Node> = graph.nodes.into_values().collect();
 

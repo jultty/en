@@ -3,7 +3,7 @@ use axum::{
     http::{Response, StatusCode, header},
 };
 
-use crate::{syntax::serial::populate_graph, router::handlers};
+use crate::{graph::Graph, router::handlers};
 
 pub(in crate::router::handlers) fn by_code(
     code: Option<u16>,
@@ -26,7 +26,7 @@ fn make_body(code: Option<u16>, message: Option<&str>) -> String {
 
     let out_code = code.unwrap_or(500);
     let out_message = &message.unwrap_or("Unknown error");
-    let config = populate_graph().meta.config;
+    let config = Graph::load().meta.config;
 
     context.insert(
         "title",

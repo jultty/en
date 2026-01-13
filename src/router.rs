@@ -1,6 +1,6 @@
 use axum::{routing::get, Router};
 
-use crate::{syntax::serial::Format, graph::Graph};
+use crate::{graph::Format, graph::Graph};
 
 mod handlers {
     pub mod graph;
@@ -69,8 +69,7 @@ pub fn new(graph: &Graph) -> Router {
 #[cfg(test)]
 mod tests {
     use crate::{
-        syntax::serial::populate_graph,
-        graph::{Config, Meta},
+        graph::{Graph, Config, Meta},
     };
 
     use super::*;
@@ -82,7 +81,7 @@ mod tests {
     use tower::ServiceExt as _;
 
     async fn request(uri: &str, config: Option<&Config>) -> Response<Body> {
-        let default_graph = populate_graph();
+        let default_graph = Graph::load();
         let graph = Graph {
             meta: Meta {
                 config: config

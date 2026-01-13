@@ -1,8 +1,14 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Serialize, Deserialize};
 
-use crate::syntax::content;
+use crate::syntax::{
+    command::Arguments,
+    content::{
+        self,
+        parser::{flatten, Token, token::Anchor},
+    },
+};
 use crate::prelude::*;
 pub use {
     node::Node,
@@ -46,17 +52,225 @@ impl std::fmt::Display for QueryResult {
 }
 
 impl Graph {
-    pub fn new(message: Option<&str>) -> Graph {
+    pub fn error(message: Option<&str>) -> Graph {
+        let graph = Graph::default();
         Graph {
-            nodes: HashMap::default(),
-            root_node: "VoidNode".to_string(),
-            incoming: HashMap::default(),
-            lowercase_keymap: HashMap::default(),
             meta: Meta {
-                config: Config::default(),
-                version: (0, 1, 0),
                 messages: message.map_or(vec![], |m| vec![m.to_string()]),
+                ..graph.meta
             },
+            ..graph
+        }
+    }
+
+    /// Loads a TOML file from the default location and returns a modulated Graph
+    pub fn load() -> Graph {
+        Self::load_file("")
+    }
+
+    /// Takes a file path to a TOML file and returns a modulated Graph
+    ///
+    /// If `path` is an empty string, it will fallback to CLI arguments
+    pub fn load_file(path: &str) -> Graph {
+        let mut graph = if path.is_empty() {
+            Self::read_file(None)
+        } else {
+            Self::read_file(Some(path))
+        };
+        graph.modulate();
+        graph
+    }
+
+    ///  Reads a TOML fie into a Graph without modulating it
+    pub fn read_file(in_path: Option<&str>) -> Graph {
+        let cli_path = Arguments::default().parse().graph_path;
+        let path = in_path.map_or(cli_path, PathBuf::from);
+
+        let toml_source = match std::fs::read_to_string(path) {
+            Ok(s) => s,
+            Err(e) => format!("Error: {e}"),
+        };
+
+        Self::from_serial(&toml_source, &Format::TOML)
+    }
+
+    pub fn from_serial(serial: &str, format: &Format) -> Graph {
+        match *format {
+            Format::TOML => match toml::from_str(serial) {
+                Ok(g) => g,
+                Err(error) => Graph::error(Some(&error.to_string())),
+            },
+            Format::JSON => match serde_json::from_str(serial) {
+                Ok(g) => g,
+                Err(error) => Graph::error(Some(&error.to_string())),
+            },
+        }
+    }
+
+    pub fn to_serial(graph: &Graph, format: &Format) -> String {
+        match *format {
+            Format::TOML => match toml::to_string(graph) {
+                Ok(s) => s,
+                Err(e) => e.to_string(),
+            },
+            Format::JSON => match serde_json::to_string(graph) {
+                Ok(s) => s,
+                Err(e) => e.to_string(),
+            },
+        }
+    }
+
+    pub fn modulate(&mut self) {
+        self.map_lowercase_keys();
+        self.modulate_nodes();
+        self.modulate_edges();
+        self.map_incoming();
+        self.parse_config();
+    }
+
+    // Construct a HashMap with incoming connections (reversed edges)
+    fn map_incoming(&mut self) {
+        for node in self.nodes.clone().into_values() {
+            for edge in node.connections.clone().unwrap_or_default().values() {
+                let mut edges = self
+                    .incoming
+                    .get(&edge.to.clone())
+                    .unwrap_or(&vec![])
+                    .clone();
+                edges.extend_from_slice(std::slice::from_ref(edge));
+                self.incoming.insert(edge.to.clone(), edges.clone());
+            }
+        }
+    }
+
+    fn modulate_nodes(&mut self) {
+        let in_nodes = self.nodes.clone();
+
+        for (key, node) in in_nodes.clone() {
+            let connections = node.connections.clone().unwrap_or_default();
+            let mut new_edges = connections.clone();
+
+            // Modulate connections
+            for (connection_key, edge) in connections {
+                let mut new_edge = edge.clone();
+
+                // Populate empty "from" IDs in edges with node's ID
+                if edge.from.is_empty() {
+                    new_edge.from.clone_from(&connection_key);
+                }
+
+                // Flag detached edges
+                if !in_nodes.contains_key(&edge.to) {
+                    new_edge.detached = false;
+                }
+
+                if let Some(e) = new_edges.get_mut(&connection_key) {
+                    *e = new_edge;
+                }
+            }
+
+            // Create connections for each link
+            for link in &node.links {
+                new_edges.insert(
+                    link.clone(),
+                    Edge {
+                        from: key.clone(),
+                        to: link.clone(),
+                        detached: !in_nodes.clone().contains_key(link),
+                    },
+                );
+            }
+
+            // Populate empty titles with IDs
+            let new_title = if node.title.is_empty() {
+                key.clone()
+            } else {
+                node.title.clone()
+            };
+
+            // Populate empty summaries with the leading part of the node text
+            let summary = if node.summary.is_empty() {
+                let first_line = if let Some(first) =
+                    node.text.lines().find(|s| !s.is_empty())
+                {
+                    String::from(first)
+                } else {
+                    node.text.clone()
+                };
+
+                let mut candidate =
+                    if let Some(dot_split) = first_line.split_once('.') {
+                        format!("{}.", dot_split.0)
+                    } else {
+                        first_line
+                    };
+
+                if candidate.len() > 300 {
+                    candidate.truncate(300);
+                    candidate.push('…');
+                }
+                candidate
+            } else {
+                node.summary.clone()
+            };
+
+            // Assemble new node
+            let new_node = Node {
+                id: key.clone(),
+                title: new_title,
+                summary: flatten(&summary, self),
+                connections: Some(new_edges),
+                ..node.clone()
+            };
+
+            self.nodes.insert(key.clone(), new_node);
+        }
+    }
+
+    fn modulate_edges(&mut self) {
+        let graph = self.clone();
+        let iterator = self.nodes.iter_mut();
+        for (key, node) in iterator {
+            // Parse node text
+            let parse_output = content::rich_parse(&node.text, &graph);
+            node.text = parse_output.text.unwrap_or_default();
+
+            // Create connections for each anchor
+            let mut parsed_anchor_tokens = parse_output
+                .tokens
+                .iter()
+                .filter(|t| matches!(t, Token::Anchor(_)))
+                .cloned()
+                .collect::<Vec<Token>>();
+            parsed_anchor_tokens.extend_from_slice(
+                &parse_output
+                    .format_tokens
+                    .iter()
+                    .filter(|t| matches!(t, Token::Anchor(_)))
+                    .cloned()
+                    .collect::<Vec<Token>>(),
+            );
+            let mut anchors: Vec<Anchor> = vec![];
+            for token in parsed_anchor_tokens {
+                if let Token::Anchor(token_data) = token {
+                    anchors.push(*token_data.clone());
+                }
+            }
+
+            for anchor in anchors {
+                if let Some(anchor_node) = anchor.node() {
+                    if let Some(ref mut connections) = node.connections {
+                        connections.insert(
+                            anchor_node.id.clone(),
+                            Edge {
+                                from: key.clone(),
+                                to: anchor_node.id,
+                                detached: false,
+                            },
+                        );
+                    }
+                }
+            }
         }
     }
 
@@ -124,12 +338,17 @@ impl Graph {
         self.nodes.get(&self.root_node).cloned()
     }
 
-    pub fn parse(&mut self) {
+    pub fn parse_config(&mut self) {
         self.meta.config.footer_text =
             content::parse(&self.meta.config.footer_text, self);
         self.meta.config.about_text =
             content::parse(&self.meta.config.about_text, self);
     }
+}
+
+pub enum Format {
+    TOML,
+    JSON,
 }
 
 #[cfg(test)]
@@ -138,12 +357,65 @@ mod tests {
 
     #[test]
     fn empty_graph() {
-        let graph = Graph::new(Some("ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"));
+        let graph = Graph::error(Some("ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"));
         assert!(graph.nodes.is_empty());
         assert!(graph.incoming.is_empty());
         assert_eq!(
             graph.meta.messages.first().unwrap(),
             "ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"
         );
+    }
+
+    #[test]
+    fn good_json() {
+        let json = r#"
+        {
+            "nodes": {
+                "JSON": {
+                    "text": "",
+                    "title": "JSON",
+                    "links": [],
+                    "id": "JSON",
+                    "hidden": false,
+                    "connections": {}
+                }
+            },
+            "root_node": "JSON"
+        }
+        "#;
+
+        let graph = Graph::from_serial(json, &Format::JSON);
+        assert!(graph.meta.messages.is_empty());
+    }
+
+    #[test]
+    fn bad_json() {
+        let graph = Graph::from_serial(":::", &Format::JSON);
+        let message = graph.meta.messages.first().unwrap();
+        assert!(message.contains("expected value at line 1 column 1"));
+    }
+}
+
+#[cfg(test)]
+mod serial_tests {
+    use super::*;
+
+    #[test]
+    fn bad_graph_path() {
+        let original_working_directory = std::env::current_dir().unwrap();
+
+        assert!(
+            std::env::set_current_dir(std::path::Path::new(
+                "tests/mocks/no_graph"
+            ))
+            .is_ok()
+        );
+
+        let graph = Graph::load();
+        let message = graph.meta.messages.first().unwrap();
+        assert!(message.contains("TOML parse error"));
+        assert!(message.contains("No such file or directory"));
+
+        assert!(std::env::set_current_dir(original_working_directory).is_ok());
     }
 }

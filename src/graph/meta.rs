@@ -1,12 +1,22 @@
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Meta {
     pub config: Config,
-    #[serde(default = "mkversion")]
-    pub version: (u8, u8, u8),
+    #[serde(default)]
+    pub version: Option<Version>,
     #[serde(default)]
     pub messages: Vec<String>,
+}
+
+impl Default for Meta {
+    fn default() -> Meta {
+        Meta {
+            config: Config::default(),
+            version: Version::from_env(),
+            messages: vec![],
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
@@ -99,25 +109,22 @@ fn mkfalse() -> bool {
 fn mk8() -> u16 {
     8
 }
-fn mkversion() -> (u8, u8, u8) {
-    (0, 0, 0)
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::graph::Graph;
+
     use super::*;
-    use crate::syntax::serial::populate_graph;
 
     #[test]
     fn empty_footer_text() {
-        let mut graph = populate_graph();
+        let mut graph = Graph::load();
 
         graph.meta.config = Config {
             footer_text: String::default(),
             ..graph.meta.config
         };
 
-        graph.parse();
+        graph.parse_config();
 
         println!("{:?}", graph.meta.config.footer_text);
         assert!(graph.meta.config.footer_text.is_empty());
@@ -126,14 +133,14 @@ mod tests {
     #[test]
     fn config_footer_text() {
         let payload = "0kqBrdS8NPrU4xVxh2xW0hUzAw926JCQ";
-        let mut graph = populate_graph();
+        let mut graph = Graph::load();
 
         graph.meta.config = Config {
             footer_text: format!("`{payload}`"),
             ..graph.meta.config
         };
 
-        graph.parse();
+        graph.parse_config();
 
         assert!(
             graph
@@ -149,14 +156,14 @@ mod tests {
     #[test]
     fn config_about_text() {
         let payload = "ZqPFl84JlzSS0QUo61RwTUPONIE78Lmw";
-        let mut graph = populate_graph();
+        let mut graph = Graph::load();
 
         graph.meta.config = Config {
             about_text: format!("`{payload}`"),
             ..graph.meta.config
         };
 
-        graph.parse();
+        graph.parse_config();
 
         assert!(
             graph
@@ -167,5 +174,61 @@ mod tests {
                 .count()
                 == 1
         );
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
+pub struct Version {
+    major: u8,
+    minor: u8,
+    patch: u8,
+}
+
+impl Version {
+    pub fn from_env() -> Option<Version> {
+        Self::from(env!("CARGO_PKG_VERSION"))
+    }
+
+    pub fn from(version: &str) -> Option<Version> {
+        let triple: Vec<String> =
+            version.split('.').map(str::to_string).collect();
+
+        let has_two_dots = version.matches('.').count() == 2;
+        let has_three_elements = triple.len() == 3;
+        let has_whitespace = version.contains(' ') || version.contains('\n');
+        let has_contiguous_dots = version.contains("..");
+        let ends_with_dot = version.ends_with('.');
+        let starts_with_dot = version.starts_with('.');
+
+        let major: u8 = if let Some(s) = triple.first() {
+            s.trim_start_matches('v').trim().parse().ok()?
+        } else {
+            return None;
+        };
+
+        let minor: u8 = if let Some(s) = triple.get(1) {
+            s.trim().parse().ok()?
+        } else {
+            return None;
+        };
+
+        let patch: u8 = if let Some(s) = triple.get(2) {
+            s.trim().parse().ok()?
+        } else {
+            return None;
+        };
+
+        let conditions = has_two_dots
+            && has_three_elements
+            && !has_whitespace
+            && !has_contiguous_dots
+            && !ends_with_dot
+            && !starts_with_dot;
+
+        conditions.then_some(Version {
+            major,
+            minor,
+            patch,
+        })
     }
 }

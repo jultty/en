@@ -308,12 +308,40 @@ Lines starting with a `+` character will create numbered lists instead:
 + san
 `
 
-Inside lists, you can use `[ ]` and `[x]`  to render checkboxes:
+## Checkboxes
+
+You can use `[ ]` and `[x]`  to render checkboxes:
 
 `
 - [ ] not done
 - [x] done
 `
+
+## Raw HTML
+
+If you need some more advanced feature that is not supported directly by en's markup snytax, you can always just write plain HTML and it will be passed along. For example, you could render a table:
+
+`
+&lt;table&gt;
+    &lt;tr&gt;
+        &lt;td&gt; Hi, &lt;/td&gt;
+        &lt;td&gt; *HTML*! &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;
+`
+
+Which will render to:
+
+<table>
+    <tr>
+        <td> Hi, </td>
+        <td> *HTML*! </td>
+    </tr>
+</table>
+
+Notice that, as shown in this example, you can mix en syntax and HTML. You might want to add a space between your HTML tags and en special syntax so the boundary is clearer, but otherwise they don't tend to overlap since the symbols most used in HTML are not special in en.
+
+If you want to avoid either one of these syntaxes from being interpreted specially, you should escape the relevant characters as explained in the next section.
 
 ## Rendering unformatted text
 
@@ -369,6 +397,14 @@ Here too: \\\\*
 `
 
 This has nothing to do with en's markup syntax per se, it's just a consequence of how backslashes are also special in |TOML| syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
+
+## Interactions with HTML
+
+en will happily accept HTML code and pass it along to the browser, so you can use any feature from it as a sort of superset.
+
+If you want to prevent a particular part of your text from being interpreted as HTML, you can escape it |as you normally would|https://developer.mozilla.org/en-US/docs/Glossary/Character_reference|.
+
+The fact you are using HTML does not exclude en syntax from being interpreted, although this may change in the future. Presently, you need to escape en markup syntax if you want it printed literally even inside HTML tags. This matters because en uses its syntax to create connections between your graph's nodes and makes several decisions based on these relations.
 """
 
 [nodes.AnchorSyntax]
@@ -548,7 +584,14 @@ text = """
         - [ ] Alphabetic
         - [ ] By most linked to
         - [ ] By most linked
-    - [ ] Themes
+    - [ ] Tree
+        - [ ] Hide tree leaves from the top level
+        - [ ] Branch deeper
+    - Customization
+        - [ ] Custom assets (favicon, CSS)
+        - [ ] Custom header include
+        - [ ] Custom templates
+        - [ ] Themes
 - [x] Anchors and connections
     - [x] Render detached anchors differently
     - [x] Count connection to a redirect as a connection to the target
@@ -574,12 +617,18 @@ text = """
         - [ ] Add separate TOML endpoints for pre/postprocessed
         - [ ] Render to filesystem
         - [ ] Single-page rendering
+        - [ ] Make error output more lean when DEBUG is unset
     - [ ] Input
         - [ ] Frontmatter format
         - [ ] Multi-file graphs
         - [ ] Multi-graph
+- [ ] Templating
+    - [ ] Simplify template code with includes, macros and custom functions
+    - [ ] Move compiled templates to a static ref
+        - See: <https://keats.github.io/tera/docs/#:~:text=only%20happen%20once>
+    - [ ] Reduce whitespace
+        - See: <https://keats.github.io/tera/docs/#whitespace-control>
 - [ ] Full-text search
-
 ## Done
 
 - [x] Redirects

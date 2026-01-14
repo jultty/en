@@ -1,15 +1,12 @@
 use axum::response::IntoResponse as _;
 use axum::{body::Body, extract::Path, http::Response, response::Redirect};
 
-use crate::graph::Edge;
 use crate::{graph::Graph, router::handlers, graph::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
     let graph = Graph::load();
     let result = graph.find_node(&id);
     let found = result.node.is_some();
-    let nodes: Vec<Node> = graph.nodes.clone().into_values().collect();
-    let not_found = result.node.is_none();
     let node = result
         .node
         .unwrap_or(Node::new(Some(format!("Could not find node ID {id}."))));
@@ -27,24 +24,14 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     }
 
     let mut context = tera::Context::default();
+    context.insert("graph", &graph);
     context.insert("node", &node);
-    context.insert("nodes", &nodes);
-    context.insert(
-        "connections",
-        &node
-            .connections
-            .clone()
-            .unwrap_or_default()
-            .values()
-            .collect::<Vec<&Edge>>(),
-    );
     context.insert("incoming", &graph.incoming.get(&id));
-    context.insert("config", &graph.meta.config);
 
     handlers::template::by_filename(
         "node.html",
         &context,
-        if not_found { 404 } else { 500 },
+        if found { 500 } else { 404 },
         Some(
             format!(
                 "Failed to generate page for node {} (ID {}).\n\
@@ -53,7 +40,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
             )
             .to_owned(),
         ),
-        not_found,
+        !found,
     )
 }
 

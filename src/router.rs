@@ -43,8 +43,7 @@ pub fn new(graph: &Graph) -> Router {
     }
 
     if graph.meta.config.tree {
-        router = router
-            .route("/tree", get(|| handlers::navigation::page("tree.html")));
+        router = router.route("/tree", get(handlers::navigation::tree));
     }
 
     if graph.meta.config.raw {

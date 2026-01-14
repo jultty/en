@@ -20,6 +20,28 @@ pub async fn page(template: &str) -> Response<Body> {
     handlers::template::by_filename(template, &context, 500, None, false)
 }
 
+pub async fn tree() -> Response<Body> {
+    let mut context = tera::Context::default();
+    let mut graph = Graph::load();
+
+    context.insert("graph", &graph);
+    if let Some(root_node) = graph.get_root() {
+        graph.nodes.remove(&root_node.id);
+        context.insert("root_node", &root_node);
+        context.insert(
+            "nodes",
+            &graph.nodes.values().cloned().collect::<Vec<Node>>(),
+        );
+    } else {
+        context.insert(
+            "nodes",
+            &graph.nodes.values().cloned().collect::<Vec<Node>>(),
+        );
+    }
+
+    handlers::template::by_filename("tree.html", &context, 500, None, false)
+}
+
 pub async fn data() -> Response<Body> {
     let mut context = tera::Context::default();
     let graph = Graph::load();

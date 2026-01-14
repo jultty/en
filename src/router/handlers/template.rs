@@ -157,10 +157,8 @@ mod tests {
         let node = crate::graph::Node::new(Some(payload.to_string()));
         let graph = Graph::load();
         context.insert("node", &node);
-        context
-            .insert("text", &crate::syntax::content::parse(&node.text, &graph));
+        context.insert("graph", &graph);
         context.insert("incoming", &graph.incoming.get(&node.id));
-        context.insert("config", &graph.meta.config);
         let (body, status) = render("node.html", &context, None);
         assert_eq!(status, 200);
         assert!(body.matches(payload).count() == 1);

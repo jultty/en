@@ -1,32 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Tree{% endblock title %}
+{% set config = graph.meta.config %}
 
-<!-- TODO Tera has macros, which could considerably simplify this template -->
-<!-- See: https://keats.github.io/tera/docs/#macros -->
+{% block title %}Tree{% endblock title %}
 
 {%- block body %}
     {% if nodes or root_node %}
     <h1>Tree</h1>
-    <p><strong>Total nodes:</strong> {{ nodes | length }}</p>
-    {% if root_node %}
-    <h2>Root node</h2>
-
     <ul>
+    {% if root_node and not root_node.hidden %}
     <li>
         <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
+        <span class="label root-label">Root</span>
         {% if root_node.connections or config.tree_node_summary %}
         <ul>
             {% if config.tree_node_summary %}
             <li class="tree-node-summary">
-                {{ root_node.summary }}
+                    {{root_node.summary}}
             </li>
             {% endif %}
             {% if root_node.connections %}
             {% if config.tree_node_summary %}<li><strong>Connections</strong>
                 <ul>{% endif %}
                 {% for _, connection in root_node.connections %}
+                {% if not connection.detached %}
                     <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
+                {% endif %}
                 {% endfor %}
                 {% if config.tree_node_summary %}</ul>
             </li>{% endif %}
@@ -34,13 +33,9 @@
         </ul>
         {% endif %}
     </li>
-    </ul>
     {% endif %}
-
-    {% if nodes %}
-    <h2>All nodes</h2>
-    <ul>
-    {% for node in nodes | filter(attribute="hidden", value=false)%}
+    {% for node in nodes %}
+    {% if node.hidden %}{% continue %}{% endif %}
     <li>
         <a href="/node/{{node.id}}">{{node.title}}</a>
         {% if node.connections or config.tree_node_summary %}
@@ -65,7 +60,6 @@
         {% endif %}
     </li>
     {% endfor %}
-    {% endif %}
     </ul>
 
     {% else %}

@@ -4,15 +4,15 @@
     <h1>
         {{ title | default(value="Unknown error") }}
     </h1>
-    {{ message | default(value="Unexpected error") | linebreaksbr | safe }}
-    {% if config.error_poem %}
+    {{ message | default(value="No message provided.") | linebreaksbr | safe }}
+    {% if graph.meta.config.error_poem %}
     <hr>
     <div id="error-poem">
     <em>
         fallen<br/>
         out of the circle<br/>
         you are welcome to climb<br/>
-        back onto the {% if config.tree %}<a href="/tree">tree</a>{% else %}tree{% endif %}
+        back onto the {% if graph.meta.config.tree %}<a href="/tree">tree</a>{% else %}tree{% endif %}
     </em>
     </div>
     {% endif %}

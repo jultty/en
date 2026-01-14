@@ -1,5 +1,5 @@
-
 {% extends "base.html" %}
+{% set config = graph.meta.config %}
 
 {% block title %}Data{% endblock title %}
 
@@ -10,30 +10,36 @@
 
 <table>
     <tr>
-        <td>Detached edges</td> <td>{{ detached_count }}</td>
+        <td>
+            <a href="#detached-edges">Detached edges</a>
+        </td>
+        <td>
+            <a href="#detached-edges:~:text=Anchors">{{ detached_count }}</a>
+        </td>
     </tr>
 </table>
 
-<h3>Detached edges</h3>
+<h3 id="detached-edges">Detached edges</h3>
 
 <details>
-<summary>Expand to list all detached edges.</summary>
-    <ul>
+<summary>Expand to see all detached edges.</summary>
+    <table>
+        <th>Destination</th><th>Anchors</th>
     {% for pair in detached_pairs %}
-    <li>{{ pair.0 }}: {{ pair.1 }}</li>
+    <tr><td>{{ pair.0 }}</td><td>{{ pair.1 }}</td></tr>
     {% endfor %}
-    </ul>
+    </table>
 </details>
 
-{% if graph.meta.config.raw_toml or graph.meta.config.raw_json %}
+{% if config.raw_toml or config.raw_json %}
 <h2>Raw formats</h2>
 <p>The raw data used to render this graph is available in the following formats:</p>
 
 <ul>
-    {% if graph.meta.config.raw_toml %}
+    {% if config.raw_toml %}
     <li><a href="/graph/toml">TOML</a></li>
     {% endif %}
-    {% if graph.meta.config.raw_json %}
+    {% if config.raw_json %}
     <li><a href="/graph/json">JSON</a></li>
     {% endif %}
 </ul>

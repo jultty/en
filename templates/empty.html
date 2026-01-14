@@ -1,13 +1,13 @@
 <p>There are no nodes. The graph is either empty or failed to parse.</p>
-{% if config.raw %}
+{% if graph.meta.config.raw %}
 <p>Check the
-    {% if config.raw_toml %}
+    {% if graph.meta.config.raw_toml %}
     <a href="/graph/toml">
-    {% elif config.raw_json %}
+    {% elif graph.meta.config.raw_json %}
     <a href="/graph/json">
     {% endif %}
         raw endpoints
-    {%- if config.raw_toml or config.raw_json -%}
+    {%- if graph.meta.config.raw_toml or graph.meta.config.raw_json -%}
     </a>
     {% endif %}
     for possible parsing errors.</p>

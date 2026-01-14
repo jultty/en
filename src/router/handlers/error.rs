@@ -24,9 +24,9 @@ pub(in crate::router::handlers) fn by_code(
 fn make_body(code: Option<u16>, message: Option<&str>) -> String {
     let mut context = tera::Context::default();
 
+    let graph = Graph::load();
     let out_code = code.unwrap_or(500);
     let out_message = &message.unwrap_or("Unknown error");
-    let config = Graph::load().meta.config;
 
     context.insert(
         "title",
@@ -35,9 +35,9 @@ fn make_body(code: Option<u16>, message: Option<&str>) -> String {
             .to_string(),
     );
 
+    context.insert("graph", &graph);
     context.insert("message", out_message);
     context.insert("status_code", &out_code.to_string());
-    context.insert("config", &config);
 
     handlers::template::render(
         "error.html",

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-{% if config.content_language %}
-<html lang="{{ config.content_language }}">
+{% if graph.meta.config.content_language %}
+<html lang="{{ graph.meta.config.content_language }}">
 {% else %}
 <html>
 {% endif %}
     <head>
-        {% if config.site_title %}
-        <title>{% block title %}{% endblock title %} &bullet; {{config.site_title}}</title>
+        {% if graph.meta.config.site_title %}
+        <title>{% block title %}{% endblock title %} &bullet; {{graph.meta.config.site_title}}</title>
         {% else %}
         <title>{% block title %}{% endblock title %} &bullet; en</title>
         {% endif %}
@@ -19,33 +19,36 @@
     </head>
     <body>
         <nav id="nav-main">
-            <div {% if config.node_selector or config.navbar_search %}id="nav-main-spread"{% endif %}>
+            <div {% if graph.meta.config.node_selector or graph.meta.config.navbar_search %}id="nav-main-spread"{% endif %}>
             <ul id="nav-anchors">
                 <li><a href="/">Index</a></li>
-                {% if config.about %}
+                {% if graph.meta.config.about %}
                 <li><a href="/about">About</a></li>
                 {% endif %}
-                {% if config.tree %}
+                {% if graph.meta.config.tree %}
                 <li><a href="/tree">Tree</a></li>
                 {% endif %}
-                {% if config.raw %}
+                {% if graph.meta.config.raw %}
                 <li><a href="/data">Data</a></li>
                 {% endif %}
             </ul>
-            {% if config.node_selector or config.navbar_search %}
+            {% if graph.meta.config.node_selector or graph.meta.config.navbar_search %}
             <div class="nav-inputs">
-                {% if nodes and config.node_selector %}
+                {% if graph.nodes and graph.meta.config.node_selector %}
                 <form class="node-selector" action="/redirect">
                 <select class="node-selector" name="node">
                   <option value="">Nodes</option>
-                  {% for node in nodes | filter(attribute="hidden", value=false) %}
+                  {% for _, node in graph.nodes %}
+                  {% if node.hidden or node.redirect %}{% continue %}{% endif %}
+                  {% if not node.hidden and not node.redirect %}
                   <option value="{{node.id}}">{{node.title}}</option>
+                  {% endif %}
                   {% endfor %}
                   </select>
                   <button type="submit">Go</button>
                 </form>
                 {% endif %}
-                {% if config.navbar_search %}
+                {% if graph.meta.config.navbar_search %}
                 <form class="navbar-search" action="/search">
                     <input type="text" name="node" required/>
                     <input type="submit" value="Find"/>
@@ -60,20 +63,20 @@
         {% block body %}
         {% endblock body %}
         </main>
-        {% if config.footer %}
+        {% if graph.meta.config.footer %}
         <footer>
         <hr>
             <div>
-            {% if config.footer_text %}{{ config.footer_text | safe }}{% endif %}
-            {% if config.footer_text and (config.footer_credits or config.footer_date) %}
+            {% if graph.meta.config.footer_text %}{{ graph.meta.config.footer_text | safe }}{% endif %}
+            {% if graph.meta.config.footer_text and (graph.meta.config.footer_credits or graph.meta.config.footer_date) %}
             {% endif %}
-            {% if config.footer_credits %}
+            {% if graph.meta.config.footer_credits %}
             <cite>made with <a href="https://en.jutty.dev">en</a>, a non-linear writing instrument</cite>
             {% endif %}
-            {% if config.footer_credits and config.footer_date %}
+            {% if graph.meta.config.footer_credits and graph.meta.config.footer_date %}
             <br/>
             {% endif %}
-            {% if config.footer_date %}
+            {% if graph.meta.config.footer_date %}
             built
             <time>
                 {{ now(utc=true) | date(format="%Y-%m-%d %H:%M") }} UTC

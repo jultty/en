@@ -9,46 +9,52 @@
             <div class="labels">
                 {% if node.title != node.id %}<span class="label id-label">ID: {{ node.id }}</span>{% endif %}
                 {% if node.hidden %}<span class="label hidden-label">Hidden</span>{% endif %}
+                {% if node.id == graph.root_node %}<span class="label root-label">Root</span>{% endif %}
             </div>
         </div>
         {{ node.text | safe }}
     </section>
-    {% if connections or incoming %}
-    <aside>
-        <hr>
+    {% if node.connections or incoming %}
+    <aside class="connections">
+        <hr class="connections">
         <h2>Connections</h2>
-        {% if connections %}
+        <div class="connections-container">
+        {% if node.connections %}
+        <div class="connections-outgoing">
+        <h3>Outgoing</h3>
         <ul>
-            {% for connection in connections | filter(attribute="detached", value=false) %}
+            {% for _, connection in node.connections %}
+            {% if connection.detached %}
+            {% continue %}
+            {% endif %}
             <li>
-            <strong>{{node.id}}</strong>
-            &raquo;
             <a href="/node/{{connection.to}}">{{connection.to}}</a>
             </li>
             {% endfor %}
-            {% for connection in connections | filter(attribute="detached", value=true) %}
+            {% for _, connection in node.connections %}
+            {% if not connection.detached %}
+            {% continue %}
+            {% endif %}
             <li>
-            <strong>{{node.id}}</strong>
-            &raquo;
             <span class="detached-connection">{{connection.to}}</span>
             </li>
             {% endfor %}
         </ul>
-        {% else %}
-        <em>No outgoing connections.</em>
+        </div>
         {% endif %}
         {% if incoming %}
-        <h3>Incoming connections</h3>
+        <div class="connections-incoming">
+        <h3>Incoming</h4>
         <ul>
             {% for connection in incoming %}
             <li>
-            <strong>{{connection.to}}</strong>
-            &laquo;
             <a href="/node/{{connection.from}}">{{connection.from}}</a>
             </li>
             {% endfor %}
         </ul>
+        </div>
         {% endif %}
+        </div>
     </aside>
     {% endif %}
 {%- endblock body %}

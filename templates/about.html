@@ -5,8 +5,8 @@
 {%- block body %}
 <h1>About</h1>
 
-{% if config.about_text %}
-{{ config.about_text | safe }}
+{% if graph.meta.config.about_text %}
+{{ graph.meta.config.about_text | safe }}
 {% else %}
 <p>en is a program to create a connected collection of texts.</p>
 

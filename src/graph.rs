@@ -171,7 +171,7 @@ impl Graph {
                     new_edge.detached = false;
                 } else {
                     new_edge.detached = true;
-                    self.increment_detached(&key);
+                    self.increment_detached(&edge.to);
                 }
 
                 if let Some(e) = new_edges.get_mut(&connection_key) {
@@ -192,7 +192,7 @@ impl Graph {
                 );
 
                 if detached {
-                    self.increment_detached(&key);
+                    self.increment_detached(link);
                 }
             }
 
@@ -296,7 +296,7 @@ impl Graph {
                                     .to_string(),
                             )
                             .and_modify(|count| {
-                                *count = count.saturating_add(1)
+                                *count = count.saturating_add(1);
                             })
                             .or_insert(1);
                     }

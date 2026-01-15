@@ -17,7 +17,7 @@ pub fn parse(
     tokens: &mut Vec<Token>,
     graph: &Graph,
 ) -> bool {
-    log!("Solving: {}", state.clone().buffers.anchor);
+    log!(VERBOSE, "Solving: {}", state.clone().buffers.anchor);
     let buffer = &mut state.buffers.anchor;
     let candidate = &mut buffer.candidate;
 
@@ -25,16 +25,18 @@ pub fn parse(
     // would already have set its text to the word before the first pipe
     if candidate.text().is_empty() {
         log!(
+            VERBOSE,
             "Seeking end of text at {:#?} -> {:#?}",
             lexeme.text(),
             lexeme.next()
         );
         if lexeme.next() == "|" {
-            log!("End: Next lexeme is a pipe");
+            log!(VERBOSE, "End: Next lexeme is a pipe");
             buffer.text.push_str(&lexeme.text());
             candidate.set_text(&buffer.text.clone());
         } else {
             log!(
+                VERBOSE,
                 "Pushing non-terminal {:#?} into buffer {:#?}",
                 lexeme.text(),
                 buffer.text
@@ -46,6 +48,7 @@ pub fn parse(
 
     if candidate.destination().is_none() {
         log!(
+            VERBOSE,
             "Seeking end of destination at {:#?} -> {:#?}",
             lexeme.text(),
             lexeme.next()
@@ -57,7 +60,7 @@ pub fn parse(
             && lexeme.is_next_boundary()
             && !lexeme.match_next_char('|')
         {
-            log!("End: Plural anchor");
+            log!(VERBOSE, "End: Plural anchor");
             candidate.set_destination(Some(&candidate.text().clone()));
             candidate.text_push("s");
             if lexeme.last() {
@@ -65,7 +68,7 @@ pub fn parse(
             }
             return true;
         } else if lexeme.match_char('|') && lexeme.is_next_delimiter() {
-            log!("End: Pipe followed by delimiter");
+            log!(VERBOSE, "End: Pipe followed by delimiter");
             if buffer.destination.is_empty() {
                 if candidate.text().contains(':') {
                     candidate.set_external(true);
@@ -76,29 +79,32 @@ pub fn parse(
             }
             return true;
         } else if lexeme.match_char('|') && !candidate.balanced() {
-            log!("State: Found a pipe, but no boundary: destination follows");
+            log!(
+                VERBOSE,
+                "State: Found a pipe, but no boundary: destination follows"
+            );
             candidate.set_balanced(true);
             return true;
         } else if lexeme.match_char(':') {
-            log!("State: Found a colon, marking anchor as external");
+            log!(VERBOSE, "State: Found a colon, marking anchor as external");
             candidate.set_external(true);
             buffer.destination.push_str(&lexeme.text());
             return true;
         } else if lexeme.match_char('|') {
-            log!("End: Explicit end-of-destination pipe");
+            log!(VERBOSE, "End: Explicit end-of-destination pipe");
             candidate.set_destination(Some(&buffer.destination.clone()));
             return true;
         } else if !candidate.external() && lexeme.is_delimiter() {
-            log!("End: Internal anchor trailed by delimiter");
+            log!(VERBOSE, "End: Internal anchor trailed by delimiter");
             push(Some(&buffer.destination.clone()), tokens, state, graph);
             return false;
         } else if lexeme.is_next_whitespace() {
-            log!("End: next is whitespace");
+            log!(VERBOSE, "End: next is whitespace");
             buffer.destination.push_str(&lexeme.text());
             push(Some(&buffer.destination.clone()), tokens, state, graph);
             return true;
         } else if lexeme.last() {
-            log!("End: end of input");
+            log!(VERBOSE, "End: end of input");
             buffer.destination.push_str(&lexeme.text());
             push(Some(&buffer.destination.clone()), tokens, state, graph);
             return true;
@@ -107,6 +113,7 @@ pub fn parse(
         // pushing lexemes into the buffer until an end is found above
         } else {
             log!(
+                VERBOSE,
                 "Pushing non-terminal {:#?} into buffer {:#?}",
                 lexeme.text(),
                 buffer.destination,

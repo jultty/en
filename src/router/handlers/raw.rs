@@ -21,13 +21,14 @@ pub(in crate::router::handlers) fn make_response(
                 response.headers_mut().insert(header.0.clone(), wrapped)
             {
                 log!(
+                    WARN,
                     "Overwrote header {overwritten:?} \
                         because another for key {} already existed",
                     header.0
                 );
             }
         } else {
-            log!("Failed to create header value from {}", header.1);
+            log!(ERROR, "Failed to create header value from {}", header.1);
         }
     }
 

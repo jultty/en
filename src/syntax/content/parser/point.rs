@@ -24,30 +24,30 @@ pub fn parse(
     }
 
     if Underline::probe(lexeme) {
-        log!("Underline probed: {lexeme}");
+        log!(VERBOSE, "Underline probed: {lexeme}");
         tokens
             .push(Token::Underline(Underline::new(!state.switches.underline)));
         state.switches.underline = !state.switches.underline;
         iterator.next();
         return true;
     } else if Oblique::probe(lexeme) {
-        log!("Oblique probed: {lexeme}");
+        log!(VERBOSE, "Oblique probed: {lexeme}");
         tokens.push(Token::Oblique(Oblique::new(!state.switches.oblique)));
         state.switches.oblique = !state.switches.oblique;
         return true;
     } else if Strike::probe(lexeme) {
-        log!("Strike probed: {lexeme}");
+        log!(VERBOSE, "Strike probed: {lexeme}");
         tokens.push(Token::Strike(Strike::new(!state.switches.crossout)));
         state.switches.crossout = !state.switches.crossout;
         iterator.next();
         return true;
     } else if Bold::probe(lexeme) {
-        log!("Bold probed: {lexeme}");
+        log!(VERBOSE, "Bold probed: {lexeme}");
         tokens.push(Token::Bold(Bold::new(!state.switches.bold)));
         state.switches.bold = !state.switches.bold;
         return true;
     } else if CheckBox::probe(lexeme) {
-        log!("CheckBox probed: {lexeme}");
+        log!(VERBOSE, "CheckBox probed: {lexeme}");
         tokens.push(Token::CheckBox(CheckBox::lex(lexeme)));
         iterator.next();
         iterator.next();

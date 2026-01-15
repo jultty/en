@@ -1,6 +1,11 @@
-use std::path::PathBuf;
+use std::{
+    path::PathBuf,
+    sync::atomic::{AtomicBool, Ordering},
+};
 
 use crate::prelude::*;
+
+static FIRST_PARSE: AtomicBool = AtomicBool::new(true);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Arguments {
@@ -51,7 +56,10 @@ fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
             } else if argument.eq("-g") || argument.eq("--graph") {
                 out_args.graph_path = PathBuf::from(parameter);
             } else {
-                log!("Dropped unrecognized argument {argument}");
+                if FIRST_PARSE.load(Ordering::SeqCst) {
+                    log!(WARN, "Dropped unrecognized argument {argument}");
+                    FIRST_PARSE.store(false, Ordering::SeqCst);
+                }
             }
         } else {
             panic!("Argument {arg:?} has no corresponding value")

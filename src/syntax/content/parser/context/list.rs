@@ -55,14 +55,14 @@ pub fn parse(
                     candidate.items.push(item_candidate.clone());
                 }
                 // push list candidate, reset state and exit context
-                log!("Accepting list candidate {candidate}");
+                log!(VERBOSE, "Accepting list candidate {candidate}");
                 tokens.push(Token::List(candidate.clone()));
                 state.context.block = Block::None;
                 iterator.next();
                 *buffer = state::ListBuffer::default();
             } else if lexeme.match_char('\n') {
                 // found end of item, push it and reset state
-                log!("Accepting item candidate {item_candidate}");
+                log!(VERBOSE, "Accepting item candidate {item_candidate}");
                 let (text, format_tokens) = format(&item_candidate.text, graph);
                 item_candidate.text = text;
                 state.format_tokens.extend_from_slice(&format_tokens);

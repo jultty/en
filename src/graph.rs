@@ -324,15 +324,16 @@ impl Graph {
         let collapsed_query = query.trim().replace(" ", "");
 
         if query == collapsed_query {
-            log!("Chasing candidate for query {query}");
+            log!(VERBOSE, "Chasing candidate for query {query}");
         } else {
             log!(
+                VERBOSE,
                 "Chasing candidate for query {query}, collapsed {collapsed_query}"
             );
         }
 
         let candidate = if let Some(exact_match) = self.nodes.get(query) {
-            log!("Elected exact match {exact_match}");
+            log!(VERBOSE, "Elected exact match {exact_match}");
             QueryResult {
                 node: Some(exact_match.clone()),
                 exact: true,
@@ -341,21 +342,24 @@ impl Graph {
         } else if let Some(lower_key) =
             self.lowercase_keymap.get(&collapsed_query.to_lowercase())
         {
-            log!("Elected non-exact match through lower key {lower_key}");
+            log!(
+                VERBOSE,
+                "Elected non-exact match through lower key {lower_key}"
+            );
             QueryResult {
                 node: self.nodes.get(lower_key).cloned(),
                 exact: false,
                 redirect: false,
             }
         } else {
-            log!("No candidate found");
+            log!(VERBOSE, "No candidate found");
             QueryResult::default()
         };
 
         if let Some(candidate_node) = &candidate.node
             && !candidate_node.redirect.is_empty()
         {
-            log!("Recursing: candidate is a redirect");
+            log!(VERBOSE, "Recursing: candidate is a redirect");
             if let Some(recursive_match) =
                 self.find_node(&candidate_node.redirect).node
             {
@@ -368,7 +372,7 @@ impl Graph {
                 QueryResult::default()
             }
         } else {
-            log!("Returning candidate {candidate}");
+            log!(VERBOSE, "Returning candidate {candidate}");
             candidate
         }
     }

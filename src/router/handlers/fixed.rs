@@ -13,6 +13,7 @@ use crate::{
 /// Will panic if file read fails.
 #[expect(clippy::unused_async)]
 pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
+    let instant = now();
     let content = match std::fs::read(file_path) {
         Ok(s) => s,
         Err(e) => {
@@ -27,9 +28,16 @@ pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
     if let Ok(header_value) = HeaderValue::from_str(content_type) {
         response.headers_mut().append(header, header_value);
     } else {
-        log!("Failed to create content type header value from {content_type}");
+        log!(
+            WARN,
+            "Failed to create content type header value from {content_type}"
+        );
     }
 
+    tlog!(
+        &instant,
+        "Assembled response for {content_type} {file_path}"
+    );
     response
 }
 

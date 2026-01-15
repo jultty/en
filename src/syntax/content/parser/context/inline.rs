@@ -24,12 +24,12 @@ pub fn parse(
     match state.context.inline {
         Inline::None => {
             if Code::probe(lexeme) {
-                log!("Inline Context: None -> Code on {lexeme}");
+                log!(VERBOSE, "Inline Context: None -> Code on {lexeme}");
                 state.context.inline = Inline::Code;
                 tokens.push(Token::Code(Code::new(true)));
                 return true;
             } else if Anchor::probe(lexeme) {
-                log!("Inline Context: None -> Anchor on {lexeme}");
+                log!(VERBOSE, "Inline Context: None -> Anchor on {lexeme}");
                 state.context.inline = Inline::Anchor;
                 state.buffers.anchor = AnchorBuffer::default();
 
@@ -46,7 +46,7 @@ pub fn parse(
         },
         Inline::Code => {
             if Code::probe(lexeme) {
-                log!("Inline Context: Code -> None on {lexeme}");
+                log!(VERBOSE, "Inline Context: Code -> None on {lexeme}");
                 state.context.inline = Inline::None;
                 tokens.push(Token::Code(Code::new(false)));
                 return true;

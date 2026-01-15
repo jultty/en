@@ -27,7 +27,7 @@ impl Parseable for Literal {
 
 impl std::fmt::Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Literal {}", crate::dev::wrap(&self.text))
+        write!(f, "Literal {}", crate::log::wrap(&self.text))
     }
 }
 

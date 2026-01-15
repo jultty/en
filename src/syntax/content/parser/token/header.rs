@@ -172,7 +172,7 @@ impl From<usize> for Level {
         let u8 = match u8::try_from(z) {
             Ok(u) => u,
             Err(e) => {
-                log!("Truncating header level {z} to 6: {e:?}");
+                log!(INFO, "Truncating header level {z} to 6: {e:?}");
                 6
             },
         };

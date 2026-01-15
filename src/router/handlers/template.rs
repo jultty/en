@@ -26,6 +26,7 @@ pub(in crate::router::handlers) fn render(
     context: &tera::Context,
     error_message: Option<String>,
 ) -> (String, u16) {
+    let instant = now();
     // TODO just return an Option/String> here
     let tera = match tera::Tera::new("./templates/**/*") {
         Ok(t) => t,
@@ -35,7 +36,10 @@ pub(in crate::router::handlers) fn render(
     };
 
     match tera.render(name, context) {
-        Ok(t) => (t, 200),
+        Ok(t) => {
+            tlog!(&instant, "Rendered template {name}");
+            (t, 200)
+        },
         Err(e) => {
             let mut error_context = tera::Context::default();
 
@@ -69,7 +73,7 @@ pub(in crate::router::handlers) fn render(
 }
 
 fn emergency_wrap(error: &tera::Error) -> String {
-    log!("{error:#?}");
+    log!(ERROR, "{error:#?}");
     format!(
         r#"<!DOCTYPE html>
         <html>

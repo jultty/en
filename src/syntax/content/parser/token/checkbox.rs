@@ -21,7 +21,7 @@ impl Parseable for CheckBox {
 
     fn lex(lexeme: &Lexeme) -> CheckBox {
         use crate::prelude::*;
-        log!("Lexing: {lexeme}");
+        log!(VERBOSE, "Lexing: {lexeme}");
         if lexeme.match_next_char('x') {
             CheckBox::new(true)
         } else {

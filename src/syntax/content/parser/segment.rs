@@ -105,6 +105,7 @@ pub mod delimiter {
                 atomized.push(c.to_string());
             }
         }
+
         atomized
     }
 

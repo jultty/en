@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{prelude::*, syntax::content::parser::segment::delimiter::Delimiters};
+use crate::{syntax::content::parser::segment::delimiter::Delimiters};
 
 #[derive(Clone, Debug, Default)]
 pub struct Lexeme {
@@ -27,9 +27,6 @@ impl Lexeme {
     }
 
     pub fn next(&self) -> String {
-        if self.next.is_empty() && !self.last {
-            log!("Returning an empty string for next of non-last {self:?}");
-        }
         self.next.clone()
     }
 
@@ -239,7 +236,7 @@ impl Lexeme {
 
 impl fmt::Display for Lexeme {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use crate::dev::wrap;
+        use crate::log::wrap;
 
         let properties = if self.last && self.first {
             "[S] "

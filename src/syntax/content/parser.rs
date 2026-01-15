@@ -21,13 +21,17 @@ const LEXMAP: LexMap = &[
 ];
 
 fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> TokenOutput {
+    let mut instant = now();
     let mut tokens: Vec<Token> = Vec::default();
     let mut state = State::default();
 
     let segments = segment::segment(text);
+    let segments_count = segments.len();
+    instant = tlog!(&instant, "Segmented {segments_count} segments");
     let lexemes = Lexeme::collect(&segments);
+    instant = tlog!(&instant, "{segments_count} segments: Collected lexemes");
 
-    log!("Segments: {segments:?}");
+    log!(VERBOSE, "Segments: {segments:?}");
 
     let mut iterator = lexemes.iter().peekable();
     while let Some(lexeme) = iterator.next() {
@@ -67,14 +71,17 @@ fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> TokenOutput {
         for (probe, lex) in map {
             if probe(lexeme) {
                 let token = lex(lexeme);
-                log!("Lexmap lexed {lexeme} into {token}");
+                log!(VERBOSE, "Lexmap lexed {lexeme} into {token}");
                 tokens.push(token);
                 break;
             }
         }
     }
+    instant = tlog!(&instant, "{segments_count} segments: Parsed");
 
     context::close(&state, &mut tokens);
+    tlog!(&instant, "{segments_count} segments: Closed");
+
     TokenOutput {
         tokens,
         format_tokens: state.format_tokens,
@@ -107,7 +114,7 @@ pub fn format(input: &str, graph: &Graph) -> (String, Vec<Token>) {
 pub fn flatten(input: &str, graph: &Graph) -> String {
     let tokens = lex(input, LEXMAP, graph, true).tokens;
     let flat = tokens.iter().map(Token::flatten).collect::<String>();
-    log!("Flattened {tokens:?} to {flat}");
+    log!(VERBOSE, "Flattened {tokens:?} to {flat}");
     flat
 }
 

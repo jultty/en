@@ -6,21 +6,25 @@ use axum::{
 };
 
 use crate::{
+    prelude::*,
     graph::{Graph, Node},
     router::handlers,
 };
 
 #[expect(clippy::unused_async)]
 pub async fn page(template: &str) -> Response<Body> {
+    let instant = now();
     let mut context = tera::Context::default();
     let graph = Graph::load();
 
     context.insert("graph", &graph);
 
+    tlog!(&instant, "Assembled response for template {template}");
     handlers::template::by_filename(template, &context, 500, None, false)
 }
 
 pub async fn tree() -> Response<Body> {
+    let instant = now();
     let mut context = tera::Context::default();
     let mut graph = Graph::load();
 
@@ -39,10 +43,12 @@ pub async fn tree() -> Response<Body> {
         );
     }
 
+    tlog!(&instant, "Assembled response for tree endpoint");
     handlers::template::by_filename("tree.html", &context, 500, None, false)
 }
 
 pub async fn data() -> Response<Body> {
+    let instant = now();
     let mut context = tera::Context::default();
     let graph = Graph::load();
 
@@ -54,6 +60,7 @@ pub async fn data() -> Response<Body> {
     context.insert("detached_count", &graph.stats.detached.len());
     context.insert("detached_pairs", &detached_pairs);
 
+    tlog!(&instant, "Assembled response for data endpoint");
     handlers::template::by_filename("data.html", &context, 500, None, false)
 }
 

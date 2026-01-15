@@ -1,15 +1,17 @@
 use std::{backtrace, io, panic};
 
-use en::{prelude::*, ONSET, graph::Graph, syntax};
+use en::{prelude::*, log, ONSET, graph::Graph, syntax};
 
 #[tokio::main]
+#[allow(clippy::print_stderr, clippy::print_stdout)]
 async fn main() -> io::Result<()> {
-    print_debugging_state();
+    log::print_state();
+    let mut instant = now();
 
     let args = syntax::command::Arguments::default().parse();
     let address = args.make_address();
+    instant = tlog!(&instant, "Parsed CLI arguments");
 
-    #[allow(clippy::print_stderr)]
     panic::set_hook(Box::new(|info| {
         let payload = info
             .payload_as_str()
@@ -33,17 +35,22 @@ async fn main() -> io::Result<()> {
             eprintln!("\n  Stack trace:\n{trace:#?}");
         }
     }));
+    instant = tlog!(&instant, "Set up panic hook");
 
     let graph = Graph::load();
+    instant = tlog!(&instant, "Loaded graph");
+
     let router = en::router::new(&graph);
+    tlog!(&instant, "Initialized router");
 
     let listener =
         tokio::net::TcpListener::bind(&address).await.map_err(|e| {
-            log!("Failed to create listener at {address}: {e:#?}");
+            log!(ERROR, "Failed to create listener at {address}: {e:#?}");
             e
         })?;
+    tlog!(&instant, "Initialized listener");
 
-    log!(
+    println!(
         "Listening on {}",
         listener
             .local_addr()
@@ -52,23 +59,9 @@ async fn main() -> io::Result<()> {
     );
 
     axum::serve(listener, router).await.map_err(|e| {
-        log!("Failed to serve application: {e:#?}");
+        log!(ERROR, "Failed to serve application: {e:#?}");
         io::Error::other(e)
     })?;
 
     Ok(())
-}
-
-fn print_debugging_state() {
-    let level: u8 = std::env::var("DEBUG")
-        .unwrap_or("0".to_string())
-        .trim()
-        .parse()
-        .unwrap_or(0);
-
-    let filter = std::env::var("DEBUG_FILTER").unwrap_or_default();
-
-    if level > 0 || !filter.is_empty() {
-        log!("DEBUG = {level}, DEBUG_FILTER = {filter:?}");
-    }
 }

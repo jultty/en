@@ -1,9 +1,10 @@
 use axum::response::IntoResponse as _;
 use axum::{body::Body, extract::Path, http::Response, response::Redirect};
 
-use crate::{graph::Graph, router::handlers, graph::Node};
+use crate::{prelude::*, graph::Graph, router::handlers, graph::Node};
 
 pub async fn node(Path(id): Path<String>) -> Response<Body> {
+    let instant = now();
     let graph = Graph::load();
     let result = graph.find_node(&id);
     let found = result.node.is_some();
@@ -28,6 +29,7 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     context.insert("node", &node);
     context.insert("incoming", &graph.incoming.get(&id));
 
+    tlog!(&instant, "Assembled response for node {}", node.id);
     handlers::template::by_filename(
         "node.html",
         &context,

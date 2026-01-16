@@ -52,6 +52,17 @@ a {
     text-underline-offset: 3px;
 }
 
+a.attached {
+    transition: 1500ms;
+}
+
+a.attached:hover,
+#nav-main a:hover
+{
+    color: #00ffff;
+    text-decoration-color: #66ffff;
+}
+
 a.detached {
     color: #595959;
     text-decoration-color: #444444;
@@ -61,6 +72,12 @@ a.external {
     color: #1958a7;
     text-decoration-color: #2A7CDF;
     text-decoration-style: solid;
+    transition: 1500ms;
+}
+
+a.external:hover {
+    color: #74e5ff;
+    text-decoration-color: #aeffff;
 }
 
 a:visited, a.detached:visited, a.external:visited {
@@ -93,19 +110,19 @@ span.label {
 span.root-label {
     color: #fff;
     font-weight: bolder;
-    background-color: #106363;
+    background: #106363;
     border: outset 1px #ffffff;
     box-shadow: 2px 2px #00ffff;
 }
 
 
 span.id-label {
-    background-color: #e0e0e0;
+    background: #e0e0e0;
     border: solid 1px #d0d0d0;
 }
 
 span.hidden-label  {
-    background-color: #888;
+    background: #888;
     color: #eee;
     border: solid 1px #d0d0d0;
 }
@@ -148,6 +165,7 @@ hr.connections {
 
 nav#nav-main a {
     text-decoration: none;
+    transition: 1500ms;
 }
 
 nav#nav-main {
@@ -193,6 +211,27 @@ form.node-selector, form.navbar-search {
 
 .navbar-search input[type="text"] {
     width: 100px;
+    border-radius: 5px;
+}
+
+input[type="text"],
+input[type="submit"],
+select,
+button
+{
+    border-radius: 5px;
+    padding: 5px 8px;
+    background: #002020;
+    border-color: #138e8e;
+    transition: 1500ms;
+}
+
+input[type="text"]:hover,
+input[type="submit"]:hover,
+select:hover,
+button:hover
+{
+    border-color: #00ffff;
 }
 
 div#error-poem {
@@ -234,12 +273,12 @@ hr {
 
 @media (prefers-color-scheme: dark) {
     * {
-        background-color: #222222;
+        background: #222222;
         color: #f1e9e5;
     }
 
     pre, code {
-        background-color: #333333;
+        background: #333333;
         border: solid 1px #434343;
     }
 
@@ -259,12 +298,12 @@ hr {
     }
 
     span.id-label {
-        background-color: #444;
+        background: #444;
         border-color: #666;
     }
 
     span.hidden-label  {
-        background-color: #000;
+        background: #000;
         border-color: #555;
         color: #969696;
     }

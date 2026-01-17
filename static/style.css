@@ -2,6 +2,63 @@
     --base-font-size: 1em;
 }
 
+@font-face {
+    src: url("fonts/sans");
+    font-family: "sans";
+    display: swap;
+    size-adjust: 110%;
+}
+
+@font-face {
+    src: url("fonts/sans");
+    font-family: "sans";
+    display: swap;
+    size-adjust: 110%;
+    font-weight: bold;
+}
+
+@font-face {
+    src: url("fonts/didone");
+    font-family: "didone";
+    display: swap;
+}
+
+@font-face {
+    src: url("fonts/mono");
+    font-family: "mono";
+    display: swap;
+}
+
+@font-face {
+    src: url("fonts/title");
+    font-family: "title";
+    display: swap;
+}
+
+@font-face {
+    src: url("fonts/prose");
+    font-family: "prose";
+    display: swap;
+}
+
+@font-face {
+  src: url("fonts/prose-bold");
+  font-family: "fonts/prose";
+  font-weight: bold;
+}
+
+@font-face {
+  src: url("fonts/prose-italic");
+  font-family: "fonts/prose";
+  font-style: italic;
+}
+
+@font-face {
+  src: url("fonts/prose-bold-italic");
+  font-family: "fonts/prose";
+  font-weight: bold;
+  font-style: italic;
+}
 html {
     height: 100%;
 }
@@ -11,38 +68,46 @@ body {
     margin: 0;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    font-family: sans-serif;
-    font-size: var(--base-font-size);
-    line-height: 1.5;
+    font-family: sans, sans-serif;
+    line-height: 1.75;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 main {
     margin: 0 auto;
     padding: 0 20px;
-    max-width: 1040px;
+    max-width: 100%;
     min-width: 600px;
     box-sizing: border-box;
 }
 
+p {
+    font-family: prose, sans-serif;
+    font-size: calc(var(--base-font-size) * 1.2);
+}
+
 pre {
-    max-width: 95%;
+    max-width: 100%;
     overflow: auto;
     box-sizing: border-box;
-    padding: 10px;
-    margin: 20px;
-
+    padding: 12px;
+    margin: 40px 10px;
+    box-shadow: 1px 1px 3px 1.5px #00000077;
 }
 
 code {
     padding: 3px 6px;
-    border-radius: 6px;
     margin-right: 2px;
     white-space: nowrap;
+    font-size: calc(var(--base-font-size) * 0.8);
 }
 
 pre, code {
-    background-color: #e0e0e0;
-    border: solid 1px #d0d0d0;
+    font-family: mono, monospace;
+    background: #e0e0e0;
+    border: solid 2px #d0d0d0;
+    border-radius: 6px;
 }
 
 a {
@@ -59,8 +124,9 @@ a.attached {
 a.attached:hover,
 #nav-main a:hover
 {
-    color: #00ffff;
-    text-decoration-color: #66ffff;
+    color: #117c7c;
+    text-decoration-color: #10afaf;
+    text-shadow: 0px 0px 22px #10afaf;
 }
 
 a.detached {
@@ -76,11 +142,14 @@ a.external {
 }
 
 a.external:hover {
-    color: #74e5ff;
-    text-decoration-color: #aeffff;
+    color: #0393b2;
+    text-decoration-color: #1ed4f1;
 }
 
-a:visited, a.detached:visited, a.external:visited {
+a:visited,
+a.detached:visited,
+a.external:visited
+{
     text-decoration-color: #999;
 }
 
@@ -110,13 +179,13 @@ span.label {
 span.root-label {
     color: #fff;
     font-weight: bolder;
-    background: #106363;
-    border: outset 1px #ffffff;
-    box-shadow: 2px 2px #00ffff;
+    background: #158181ff;
+    border: outset 2px #ffffff;
+    box-shadow: 2px 2px #20c3c3ff;
 }
 
-
 span.id-label {
+    font-family: mono, monospace;
     background: #e0e0e0;
     border: solid 1px #d0d0d0;
 }
@@ -127,27 +196,54 @@ span.hidden-label  {
     border: solid 1px #d0d0d0;
 }
 
+h1, h2 {
+    font-family: title, serif;
+}
 
-h1, h2, h3 {
+h3, h4, h5, h6 {
+    font-family: didone, serif;
+
+}
+
+main h2 {
     font-weight: lighter;
-    margin: 20px 0 12px;
+    margin-top: 10px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: lighter;
+    margin: 10px 0;
 }
 
 h1.node-title {
     display: inline;
 }
 
-h3 {
-    font-size: calc(var(--base-font-size) * 1.2);
+h2.connections-title {
+    margin-bottom: 0px;
 }
+
+h3.connections-title {
+    margin-top: 0px;
+}
+
+h1 { font-size: calc(var(--base-font-size) * 3.0); }
+h2 { font-size: calc(var(--base-font-size) * 2.8); }
+h3 { font-size: calc(var(--base-font-size) * 2.6); }
+h4 { font-size: calc(var(--base-font-size) * 2.4); }
+h5 { font-size: calc(var(--base-font-size) * 2.2); }
+h6 { font-size: calc(var(--base-font-size) * 2.0); }
 
 footer div {
     margin: 20px 0;
     text-align: center;
+    font-family: sans;
     font-size: calc(var(--base-font-size) * 0.8);
 }
 
 footer p {
+    font-size: calc(var(--base-font-size) * 1.1);
+    font-family: sans;
     margin: 0;
 }
 
@@ -156,7 +252,7 @@ span.detached-connection {
 }
 
 div.connections-container {
-    margin-bottom: 20px;
+    margin-bottom: 60px;
 }
 
 hr.connections {
@@ -221,8 +317,10 @@ button
 {
     border-radius: 5px;
     padding: 5px 8px;
-    background: #002020;
-    border-color: #138e8e;
+    margin-right: 3px;
+    background: #eeeeff00;
+    border-color: #216767;
+    border-width: 0.5px;
     transition: 1500ms;
 }
 
@@ -231,7 +329,8 @@ input[type="submit"]:hover,
 select:hover,
 button:hover
 {
-    border-color: #00ffff;
+    border-color: #36a9a9;
+    box-shadow: 2px 2px #36a9a9ee;
 }
 
 div#error-poem {
@@ -239,7 +338,7 @@ div#error-poem {
     margin-top: 8em;
     margin-right: 2em;
     font-size: 0.8em;
-font-size: calc(var(--base-font-size) * 0.8);
+    font-size: calc(var(--base-font-size) * 0.8);
 }
 
 em, i {
@@ -287,9 +386,21 @@ hr {
         text-decoration-color: #159b9b;
     }
 
+    a.attached:hover,
+    #nav-main a:hover
+    {
+        color: #00ffff;
+        text-decoration-color: #66ffff;
+    }
+
     a.external {
         color: #2fbae4;
         text-decoration-color: #46c1e7;
+    }
+
+    a.external:hover {
+        color: #74e5ff;
+        text-decoration-color: #aeffff;
     }
 
     a.detached {
@@ -307,6 +418,29 @@ hr {
         border-color: #555;
         color: #969696;
     }
+
+
+    input[type="text"],
+    input[type="submit"],
+    select,
+    button
+    {
+        background: #002020;
+        border-color: #138e8e;
+    }
+
+    input[type="text"]:hover,
+    input[type="submit"]:hover,
+    select:hover,
+    button:hover
+    {
+        border-color: #00ffff;
+    }
+
+    span.root-label {
+        border-width: 1px;
+    }
+
 }
 
 @media (max-width: 600px) {
@@ -343,7 +477,7 @@ hr {
 
     pre {
         max-width: 100%;
-        margin: 15px 5px;
+        margin: 15px 0px;
     }
 }
 

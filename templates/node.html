@@ -17,11 +17,11 @@
     {% if node.connections or incoming %}
     <aside class="connections">
         <hr class="connections">
-        <h2>Connections</h2>
+        <h2 class="connections-title">Connections</h2>
         <div class="connections-container">
         {% if node.connections %}
         <div class="connections-outgoing">
-        <h3>Outgoing</h3>
+        <h3 class="connections-title">Outgoing</h3>
         <ul>
             {% for _, connection in node.connections %}
             {% if connection.detached %}

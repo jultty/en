@@ -549,7 +549,7 @@ text = """
 - [ ] Performance
     - [ ] Caching
     - [x] Move more logic from Serial to Graph submodules
-    - [ ] Further centralize state
+    - [x] Further centralize state
     - [ ] Reduce O(n) calls in the formats module
 - [ ] Input syntax
     - [ ] Invert where redirects are set

@@ -326,6 +326,10 @@ hr {
     border: 1px dashed #555;
 }
 
+footer hr {
+    margin-top: 60px;
+}
+
 @media (prefers-color-scheme: dark) {
     * {
         background: #222222;

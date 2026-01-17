@@ -537,11 +537,40 @@ To see the TOML declaration that translates into the rendered graph you are read
 text = """
 en is only possible thanks to a number of projects and people:
 
+## Programming
+
 - |The Rust Programing Language|https://rust-lang.org/
 - Tokio|https://tokio.rs/
 - Axum|https://github.com/tokio-rs/axum
 - Tera|https://keats.github.io/tera/
 - Serde|https://serde.rs/ and the |toml crate|https://github.com/toml-rs/toml
+- TOML|https://toml.io/en/
+
+## Services & Utilities
+
+- Git|https://git-scm.com/
+- Codeberg|https://codeberg.org/
+- Forgejo|https://forgejo.org/
+- Just|https://just.systems/
+- watchexec|https://github.com/watchexec/watchexec
+- cargo-llvm-cov|https://github.com/taiki-e/cargo-llvm-cov
+
+## Typography
+
+- Reforma|https://pampatype.com/reforma|, by PampaType|https://pampatype.com under the Creative Commons ND 4.0 license
+- Cormorant|https://github.com/CatharsisFonts/Cormorant|, by |Christian Thalmann|https://github.com/CatharsisFonts under the SIL Open Font License
+- Rawengulk|https://www.glukfonts.pl/font.php?font=Rawengulk|, by |gluk Fonts|https://www.glukfonts.pl under the SIL Open Font License
+- |Mononoki|https://madmalik.github.io/mononoki/|, by |Matthias Tellen|https://github.com/madmalik| under the SIL Open Font License
+- Maven|https://github.com/m4rc1e/mavenproFont|, by |Joe Prince and Project Authors|https://github.com/m4rc1e/mavenproFont/blob/main/AUTHORS.txt under the SIL Open Font License
+
+## Software
+
+- Neovim|https://neovim.io/
+- foot|https://codeberg.org/dnkl/foot
+- tmux|https://github.com/tmux/tmux/
+- |Void Linux|https://voidlinux.org/ and its kernel|https://www.kernel.org/
+- LibreWolf|https://librewolf.net/
+- InkScape|https://inkscape.org/
 """
 
 [nodes.Roadmap]

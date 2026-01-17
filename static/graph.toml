@@ -589,6 +589,7 @@ text = """
         - [ ] Branch deeper
     - Customization
         - [ ] Custom assets (favicon, CSS)
+            - [ ] Drop all hardcoded assets endpoints
         - [ ] Custom header include
         - [ ] Custom templates
         - [ ] Themes
@@ -617,7 +618,7 @@ text = """
         - [ ] Add separate TOML endpoints for pre/postprocessed
         - [ ] Render to filesystem
         - [ ] Single-page rendering
-        - [ ] Make error output more lean when DEBUG is unset
+        - [x] Make error output more clean when `DEBUG` is unset
     - [ ] Input
         - [ ] Frontmatter format
         - [ ] Multi-file graphs
@@ -625,10 +626,12 @@ text = """
 - [ ] Templating
     - [ ] Simplify template code with includes, macros and custom functions
     - [ ] Move compiled templates to a static ref
-        - See: <https://keats.github.io/tera/docs/#:~:text=only%20happen%20once>
+        - See: |https://keats.github.io/tera/docs/#:~:text=only%20happen%20once|
     - [ ] Reduce whitespace
-        - See: <https://keats.github.io/tera/docs/#whitespace-control>
+        - See: |https://keats.github.io/tera/docs/#whitespace-control|
 - [ ] Full-text search
+- [ ] Assess Option return types that should be Result
+
 ## Done
 
 - [x] Redirects
@@ -647,5 +650,5 @@ error_poem = true
 node_selector = true
 navbar_search = true
 footer_text = """
-made by jutty|https://jutty.dev • acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
+acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
 """

@@ -41,8 +41,8 @@ pub fn new(graph: Graph) -> Router {
             get(|| handlers::fixed::file("./static/fonts/sans", "")),
         )
         .route(
-            "/static/fonts/didone",
-            get(|| handlers::fixed::file("./static/fonts/didone", "")),
+            "/static/fonts/serifed",
+            get(|| handlers::fixed::file("./static/fonts/serifed", "")),
         )
         .route(
             "/static/fonts/mono",

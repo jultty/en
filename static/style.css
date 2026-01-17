@@ -10,17 +10,16 @@
 }
 
 @font-face {
-    src: url("fonts/sans");
-    font-family: "sans";
+    src: url("fonts/serifed");
+    font-family: "serifed";
     display: swap;
-    size-adjust: 110%;
-    font-weight: bold;
 }
 
 @font-face {
-    src: url("fonts/didone");
-    font-family: "didone";
+    src: url("fonts/serifed-italic");
+    font-family: "serifed";
     display: swap;
+    font-style: italic;
 }
 
 @font-face {
@@ -39,26 +38,28 @@
     src: url("fonts/prose");
     font-family: "prose";
     display: swap;
+    size-adjust: 120%;
 }
 
 @font-face {
   src: url("fonts/prose-bold");
-  font-family: "fonts/prose";
+  font-family: "prose";
   font-weight: bold;
 }
 
 @font-face {
   src: url("fonts/prose-italic");
-  font-family: "fonts/prose";
+  font-family: "prose";
   font-style: italic;
 }
 
 @font-face {
   src: url("fonts/prose-bold-italic");
-  font-family: "fonts/prose";
+  font-family: "prose";
   font-weight: bold;
   font-style: italic;
 }
+
 html {
     height: 100%;
 }
@@ -82,9 +83,12 @@ main {
     box-sizing: border-box;
 }
 
-p {
+p, section li {
     font-family: prose, sans-serif;
-    font-size: calc(var(--base-font-size) * 1.2);
+}
+
+section p {
+    line-height: 2;
 }
 
 pre {
@@ -94,13 +98,24 @@ pre {
     padding: 12px;
     margin: 40px 10px;
     box-shadow: 1px 1px 3px 1.5px #00000077;
+    transition: 1000ms;
+}
+
+pre:hover {
+    box-shadow: 1px 1px 3px 2.5px #00777777;
 }
 
 code {
     padding: 3px 6px;
-    margin-right: 2px;
+    margin-right: 3px;
     white-space: nowrap;
     font-size: calc(var(--base-font-size) * 0.8);
+    box-shadow: 1px 1px 1px 1px #00000077;
+    transition: 1000ms;
+}
+
+code:hover {
+    box-shadow: 1px 1px 1px 1px #00777799;
 }
 
 pre, code {
@@ -196,22 +211,20 @@ span.hidden-label  {
     border: solid 1px #d0d0d0;
 }
 
-h1, h2 {
+h1 {
     font-family: title, serif;
 }
 
-h3, h4, h5, h6 {
-    font-family: didone, serif;
-
+h2, h3, h4, h5, h6 {
+    font-family: serifed, serif;
 }
 
 main h2 {
-    font-weight: lighter;
     margin-top: 10px;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-weight: lighter;
+    font-weight: 1;
     margin: 10px 0;
 }
 
@@ -220,6 +233,7 @@ h1.node-title {
 }
 
 h2.connections-title {
+    font-family: title;
     margin-bottom: 0px;
 }
 
@@ -227,12 +241,12 @@ h3.connections-title {
     margin-top: 0px;
 }
 
-h1 { font-size: calc(var(--base-font-size) * 3.0); }
-h2 { font-size: calc(var(--base-font-size) * 2.8); }
-h3 { font-size: calc(var(--base-font-size) * 2.6); }
-h4 { font-size: calc(var(--base-font-size) * 2.4); }
+h1 { font-size: calc(var(--base-font-size) * 3.6); }
+h2 { font-size: calc(var(--base-font-size) * 3.4); }
+h3 { font-size: calc(var(--base-font-size) * 3.0); }
+h4 { font-size: calc(var(--base-font-size) * 2.6); }
 h5 { font-size: calc(var(--base-font-size) * 2.2); }
-h6 { font-size: calc(var(--base-font-size) * 2.0); }
+h6 { font-size: calc(var(--base-font-size) * 1.8); }
 
 footer div {
     margin: 20px 0;

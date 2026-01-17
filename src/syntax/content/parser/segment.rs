@@ -13,7 +13,7 @@ pub mod delimiter {
     }
 
     impl Default for Delimiters {
-        fn default() -> Self {
+        fn default() -> Delimiters {
             Delimiters {
                 atomic: vec!['`', '|', '\\'],
                 double: vec!['_', '~'],

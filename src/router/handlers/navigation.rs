@@ -1,67 +1,45 @@
-use axum::{
-    body::Body,
-    http::{Response},
-    response::Redirect,
-    Form,
-};
+use axum::{Form, body::Body, extract::State, http::Response, response::Redirect};
 
 use crate::{
     prelude::*,
-    graph::{Graph, Node},
-    router::handlers,
+    router::{GlobalState, handlers},
 };
 
-#[expect(clippy::unused_async)]
-pub async fn page(template: &str) -> Response<Body> {
-    let instant = now();
-    let mut context = tera::Context::default();
-    let graph = Graph::load();
-
-    context.insert("graph", &graph);
-
-    tlog!(&instant, "Assembled response for template {template}");
-    handlers::template::by_filename(template, &context, 500, None, false)
+pub async fn index(State(state): State<GlobalState>) -> Response<Body> {
+    handlers::template::with_graph("index", state).await
 }
 
-pub async fn tree() -> Response<Body> {
-    let instant = now();
-    let mut context = tera::Context::default();
-    let mut graph = Graph::load();
+pub async fn about(State(state): State<GlobalState>) -> Response<Body> {
+    handlers::template::with_graph("about", state).await
+}
 
-    context.insert("graph", &graph);
-    if let Some(root_node) = graph.get_root() {
-        graph.nodes.remove(&root_node.id);
+pub async fn tree(State(state): State<GlobalState>) -> Response<Body> {
+    let instant = now();
+
+    let mut context = tera::Context::default();
+    context.insert("graph", &state.graph);
+    if let Some(root_node) = state.graph.get_root() {
         context.insert("root_node", &root_node);
-        context.insert(
-            "nodes",
-            &graph.nodes.values().cloned().collect::<Vec<Node>>(),
-        );
-    } else {
-        context.insert(
-            "nodes",
-            &graph.nodes.values().cloned().collect::<Vec<Node>>(),
-        );
     }
 
     tlog!(&instant, "Assembled response for tree endpoint");
-    handlers::template::by_filename("tree.html", &context, 500, None, false)
+    handlers::template::with_context("tree", &context, 500, None, false)
 }
 
-pub async fn data() -> Response<Body> {
+pub async fn data(State(state): State<GlobalState>) -> Response<Body> {
     let instant = now();
-    let mut context = tera::Context::default();
-    let graph = Graph::load();
 
     let mut detached_pairs: Vec<(String, u32)> =
-        graph.stats.detached.clone().into_iter().collect();
+        state.graph.stats.detached.clone().into_iter().collect();
     detached_pairs.sort_by(|a, b| b.1.cmp(&a.1));
 
-    context.insert("graph", &graph);
-    context.insert("detached_count", &graph.stats.detached.len());
+    let mut context = tera::Context::default();
+    context.insert("graph", &state.graph);
+    context.insert("detached_count", &state.graph.stats.detached.len());
     context.insert("detached_pairs", &detached_pairs);
 
     tlog!(&instant, "Assembled response for data endpoint");
-    handlers::template::by_filename("data.html", &context, 500, None, false)
+    handlers::template::with_context("data", &context, 500, None, false)
 }
 
 pub async fn search(Form(query): Form<Query>) -> Redirect {
@@ -79,10 +57,17 @@ pub struct Query {
 
 #[cfg(test)]
 mod tests {
-    use axum::{
-        http::{StatusCode},
-    };
+    use axum::http::StatusCode;
+    use crate::graph::Graph;
+
     use super::*;
+
+    async fn wrap_page(path: &str) -> Response<Body> {
+        let state = GlobalState {
+            graph: Graph::load(),
+        };
+        handlers::template::with_graph(path, state).await
+    }
 
     #[tokio::test]
     async fn search_redirect() {
@@ -95,19 +80,19 @@ mod tests {
 
     #[tokio::test]
     async fn about_page_ok() {
-        let response = page("about.html").await;
+        let response = wrap_page("about").await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
     #[tokio::test]
     async fn tree_page_ok() {
-        let response = page("tree.html").await;
+        let response = wrap_page("tree").await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
     #[tokio::test]
     async fn inexistent_page_error() {
-        let response = page("HBvcwqT8wLk6hxk1GdvNcEzJ6IiZ2Fod").await;
+        let response = wrap_page("HBvcwqT8wLk6hxk1GdvNcEzJ6IiZ2Fod").await;
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     }
 

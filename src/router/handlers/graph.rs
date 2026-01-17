@@ -1,12 +1,21 @@
-use axum::response::IntoResponse as _;
-use axum::{body::Body, extract::Path, http::Response, response::Redirect};
+use axum::{
+    extract::State,
+    response::IntoResponse as _,
+    {body::Body, extract::Path, http::Response, response::Redirect},
+};
 
-use crate::{prelude::*, graph::Graph, router::handlers, graph::Node};
+use crate::{
+    graph::Node,
+    prelude::*,
+    router::{GlobalState, handlers},
+};
 
-pub async fn node(Path(id): Path<String>) -> Response<Body> {
+pub async fn node(
+    Path(id): Path<String>,
+    State(state): State<GlobalState>,
+) -> Response<Body> {
     let instant = now();
-    let graph = Graph::load();
-    let result = graph.find_node(&id);
+    let result = state.graph.find_node(&id);
     let found = result.node.is_some();
     let node = result
         .node
@@ -25,20 +34,19 @@ pub async fn node(Path(id): Path<String>) -> Response<Body> {
     }
 
     let mut context = tera::Context::default();
-    context.insert("graph", &graph);
+    context.insert("graph", &state.graph);
     context.insert("node", &node);
-    context.insert("incoming", &graph.incoming.get(&id));
+    context.insert("incoming", &state.graph.incoming.get(&id));
 
     tlog!(&instant, "Assembled response for node {}", node.id);
-    handlers::template::by_filename(
-        "node.html",
+    handlers::template::with_context(
+        "node",
         &context,
         if found { 500 } else { 404 },
         Some(
             format!(
-                "Failed to generate page for node {} (ID {}).\n\
-                    Node struct: <pre>{:#?}</pre>",
-                node.title, id, node
+                "Failed to generate page for node {} (ID {}).",
+                node.title, id
             )
             .to_owned(),
         ),
@@ -52,17 +60,26 @@ mod tests {
         http::{HeaderName, StatusCode},
     };
 
+    use crate::graph::Graph;
+
     use super::*;
+
+    async fn wrap_node(query: &str) -> Response<Body> {
+        let state = GlobalState {
+            graph: Graph::load(),
+        };
+        node(Path(query.to_string()), axum::extract::State(state)).await
+    }
 
     #[tokio::test]
     async fn syntax() {
-        let response = node(Path("Syntax".to_string())).await;
+        let response = wrap_node("Syntax").await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
     #[tokio::test]
     async fn syntax_content_type() {
-        let response = node(Path("Syntax".to_string())).await;
+        let response = wrap_node("Syntax").await;
         assert!(
             response
                 .headers()
@@ -76,19 +93,19 @@ mod tests {
 
     #[tokio::test]
     async fn not_found() {
-        let response = node(Path("InexistentNode".to_string())).await;
+        let response = wrap_node("InexistentNode").await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[tokio::test]
     async fn redirect() {
-        let response = node(Path("syntax".to_string())).await;
+        let response = wrap_node("syntax").await;
         assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
     }
 
     #[tokio::test]
     async fn docs_redirect() {
-        let response = node(Path("docs".to_string())).await;
+        let response = wrap_node("docs").await;
         assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
     }
 }

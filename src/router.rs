@@ -1,6 +1,6 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 
-use crate::{graph::Format, graph::Graph};
+use crate::graph::Graph;
 
 mod handlers {
     pub mod graph;
@@ -11,18 +11,25 @@ mod handlers {
     pub mod error;
 }
 
-pub fn new(graph: &Graph) -> Router {
+#[derive(Clone)]
+pub struct GlobalState {
+    pub graph: Graph,
+}
+
+pub fn new(graph: Graph) -> Router {
+    let state = GlobalState { graph };
+
     let mut router = Router::default()
         .route(
             "/",
-            get(|| handlers::navigation::page("index.html"))
-                .post(handlers::navigation::search),
+            get(handlers::navigation::index).post(handlers::navigation::search),
         )
         .route(
             "/node/{node_id}",
             get(handlers::graph::node).post(handlers::graph::node),
         )
         .route("/data", get(handlers::navigation::data))
+        .route("/graph/{format}", get(handlers::fixed::serial))
         .route("/search", get(handlers::navigation::search))
         .route("/redirect", get(handlers::navigation::redirect))
         .route(
@@ -30,38 +37,42 @@ pub fn new(graph: &Graph) -> Router {
             get(|| handlers::fixed::file("./static/style.css", "text/css")),
         )
         .route(
+            "/static/fonts/sans",
+            get(|| handlers::fixed::file("./static/fonts/sans", "")),
+        )
+        .route(
+            "/static/fonts/didone",
+            get(|| handlers::fixed::file("./static/fonts/didone", "")),
+        )
+        .route(
+            "/static/fonts/mono",
+            get(|| handlers::fixed::file("./static/fonts/mono", "")),
+        )
+        .route(
+            "/static/fonts/title",
+            get(|| handlers::fixed::file("./static/fonts/title", "")),
+        )
+        .route(
+            "/static/fonts/prose",
+            get(|| handlers::fixed::file("./static/fonts/prose", "")),
+        )
+        .route(
             "/static/favicon.svg",
             get(|| {
                 handlers::fixed::file("./static/favicon.svg", "image/svg+xml")
             }),
-        )
-        .fallback(handlers::error::not_found);
+        );
 
-    if graph.meta.config.about {
-        router = router
-            .route("/about", get(|| handlers::navigation::page("about.html")));
-    }
-
-    if graph.meta.config.tree {
+    if state.graph.meta.config.tree {
         router = router.route("/tree", get(handlers::navigation::tree));
     }
-
-    if graph.meta.config.raw {
-        if graph.meta.config.raw_json {
-            router = router.route(
-                "/graph/json",
-                get(|| handlers::fixed::serial(&Format::JSON)),
-            );
-        }
-        if graph.meta.config.raw_toml {
-            router = router.route(
-                "/graph/toml",
-                get(|| handlers::fixed::serial(&Format::TOML)),
-            );
-        }
+    if state.graph.meta.config.about {
+        router = router.route("/about", get(handlers::navigation::about));
     }
 
     router
+        .fallback(handlers::error::not_found)
+        .with_state(state)
 }
 
 #[cfg(test)]
@@ -89,7 +100,7 @@ mod tests {
             },
             ..default_graph
         };
-        let router = new(&graph);
+        let router = new(graph);
 
         router
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -152,7 +163,7 @@ mod tests {
         config.raw_toml = false;
 
         let response = request("/graph/toml", Some(&config)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
     }
 
     #[tokio::test]
@@ -161,7 +172,7 @@ mod tests {
         config.raw_json = false;
 
         let response = request("/graph/json", Some(&config)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
     }
 
     #[tokio::test]
@@ -170,8 +181,8 @@ mod tests {
         config.raw = false;
 
         let toml_response = request("/graph/toml", Some(&config)).await;
-        assert_eq!(toml_response.status(), StatusCode::NOT_FOUND);
+        assert_eq!(toml_response.status(), StatusCode::FORBIDDEN);
         let json_response = request("/graph/json", Some(&config)).await;
-        assert_eq!(json_response.status(), StatusCode::NOT_FOUND);
+        assert_eq!(json_response.status(), StatusCode::FORBIDDEN);
     }
 }

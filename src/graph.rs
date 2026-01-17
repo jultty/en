@@ -39,100 +39,149 @@ pub struct Stats {
     pub detached: HashMap<String, u32>,
 }
 
-#[derive(Clone, Default, Debug)]
-pub struct QueryResult {
-    pub node: Option<Node>,
-    pub redirect: bool,
-    pub exact: bool,
-}
-
-impl std::fmt::Display for QueryResult {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let meta = if self.redirect { "[redirect] " } else { "" };
-        let node = if let Some(n) = &self.node {
-            n.id.clone()
-        } else {
-            String::from("No Match")
-        };
-        write!(f, "QueryResult: {meta}{node}")
-    }
-}
-
 impl Graph {
-    pub fn error(message: Option<&str>) -> Graph {
+    pub fn with_message(message: &str) -> Graph {
         let graph = Graph::default();
+        let mut messages = graph.meta.messages;
+        messages.push(message.to_string());
         Graph {
             meta: Meta {
-                messages: message.map_or(vec![], |m| vec![m.to_string()]),
+                messages,
                 ..graph.meta
             },
             ..graph
         }
     }
 
+    pub fn malformed(message: Option<&str>) -> Graph {
+        let mut graph = if let Some(m) = message {
+            Graph::with_message(m)
+        } else {
+            Graph::default()
+        };
+        graph.meta.malformed = true;
+        graph
+    }
+
     /// Loads a TOML file from the default location and returns a modulated Graph
+    ///
+    /// Returns a graph with an error message if any errors are propagated to it.
     pub fn load() -> Graph {
-        Self::load_file("")
+        let result = Graph::load_file(None);
+        match result {
+            Ok(graph) => graph,
+            Err(error) => Graph::malformed(Some(&error)),
+        }
     }
 
     /// Takes a file path to a TOML file and returns a modulated Graph
     ///
     /// If `path` is an empty string, it will fallback to CLI arguments
-    pub fn load_file(path: &str) -> Graph {
-        let mut graph = if path.is_empty() {
-            Self::read_file(None)
-        } else {
-            Self::read_file(Some(path))
-        };
+    ///
+    /// # Errors
+    /// Propagates errors from `Graph::read_file`.
+    pub fn load_file(path: Option<&str>) -> Result<Graph, String> {
+        let mut graph = Graph::read_file(path)?;
         graph.modulate();
-        graph
+        Ok(graph)
     }
 
-    ///  Reads a TOML fie into a Graph without modulating it
-    pub fn read_file(in_path: Option<&str>) -> Graph {
+    ///  Reads a TOML file into a Graph without modulating it.
+    ///
+    /// # Errors
+    /// Returns Err if it can't read the contents of `in_path`.
+    /// Propagates errors from `Graph::from_serial`.
+    pub fn read_file(in_path: Option<&str>) -> Result<Graph, String> {
         let cli_path = Arguments::default().parse().graph_path;
         let path = in_path.map_or(cli_path, PathBuf::from);
 
         let toml_source = match std::fs::read_to_string(path) {
             Ok(s) => s,
-            Err(e) => format!("Error: {e}"),
+            Err(e) => {
+                log!(ERROR, "Failed reading {e}");
+                return Err("Failed reading file at {path}".to_string());
+            },
         };
 
-        Self::from_serial(&toml_source, &Format::TOML)
+        let result = Graph::from_serial(&toml_source, &Format::TOML)?;
+        Ok(result)
     }
 
-    pub fn from_serial(serial: &str, format: &Format) -> Graph {
+    /// Deserializes the given format into a graph.
+    ///
+    /// # Errors
+    /// Errors on unsupported formats.
+    /// Propagates serialization errors.
+    pub fn from_serial(
+        serial: &str,
+        format: &Format,
+    ) -> Result<Graph, SerialError> {
         match *format {
-            Format::TOML => match toml::from_str(serial) {
-                Ok(g) => g,
-                Err(error) => Graph::error(Some(&error.to_string())),
+            Format::TOML => match toml::from_str::<Graph>(serial) {
+                Ok(graph) => Ok(graph),
+                Err(error) => Err(SerialError {
+                    cause: SerialErrorCause::MalformedInput,
+                    message: error.to_string(),
+                }),
             },
-            Format::JSON => match serde_json::from_str(serial) {
-                Ok(g) => g,
-                Err(error) => Graph::error(Some(&error.to_string())),
+            Format::JSON => match serde_json::from_str::<Graph>(serial) {
+                Ok(graph) => Ok(graph),
+                Err(error) => Err(SerialError {
+                    cause: SerialErrorCause::MalformedInput,
+                    message: error.to_string(),
+                }),
             },
+            Format::Unsupported => Err(SerialError {
+                cause: SerialErrorCause::UnsupportedFormat,
+                message: "Unsupported format".to_string(),
+            }),
         }
     }
 
-    pub fn to_serial(graph: &Graph, format: &Format) -> String {
+    /// Serializes a graph to the given format.
+    ///
+    /// # Errors
+    /// Errors on unsupported formats.
+    /// Propagates serialization errors.
+    pub fn to_serial(
+        graph: &Graph,
+        format: &Format,
+    ) -> Result<String, SerialError> {
         match *format {
             Format::TOML => match toml::to_string(graph) {
-                Ok(s) => s,
-                Err(e) => e.to_string(),
+                Ok(s) => Ok(s),
+                Err(e) => Err(SerialError {
+                    cause: SerialErrorCause::MalformedInput,
+                    message: e.to_string(),
+                }),
             },
             Format::JSON => match serde_json::to_string(graph) {
-                Ok(s) => s,
-                Err(e) => e.to_string(),
+                Ok(s) => Ok(s),
+                Err(e) => Err(SerialError {
+                    cause: SerialErrorCause::MalformedInput,
+                    message: e.to_string(),
+                }),
             },
+            Format::Unsupported => Err(SerialError {
+                cause: SerialErrorCause::UnsupportedFormat,
+                message: "Unsupported format".to_string(),
+            }),
         }
     }
 
     pub fn modulate(&mut self) {
+        let mut instant = now();
+        instant = tlog!(&instant, "Started node modulation");
         self.map_lowercase_keys();
+        instant = tlog!(&instant, "Mapped lowercase keys");
         self.modulate_nodes();
+        instant = tlog!(&instant, "Modulated nodes");
         self.modulate_edges();
+        instant = tlog!(&instant, "Modulated edges");
         self.map_incoming();
+        instant = tlog!(&instant, "Mapped incoming edges");
         self.parse_config();
+        tlog!(&instant, "Parsed configuration");
     }
 
     // Construct a HashMap with incoming connections (reversed edges)
@@ -392,6 +441,76 @@ impl Graph {
 pub enum Format {
     TOML,
     JSON,
+    Unsupported,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum SerialErrorCause {
+    UnsupportedFormat,
+    MalformedInput,
+}
+
+impl std::fmt::Display for SerialErrorCause {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let text = match self {
+            SerialErrorCause::MalformedInput => "Malformed Input",
+            SerialErrorCause::UnsupportedFormat => "Unsupported Format",
+        };
+        write!(f, "{text}")
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SerialError {
+    pub cause: SerialErrorCause,
+    pub message: String,
+}
+
+impl From<SerialError> for String {
+    fn from(error: SerialError) -> String {
+        format!("{}: {}", error.cause, error.message)
+    }
+}
+
+impl From<&str> for Format {
+    fn from(s: &str) -> Format {
+        if s.to_lowercase() == "toml" {
+            Format::TOML
+        } else if s.to_lowercase() == "json" {
+            Format::JSON
+        } else {
+            Format::Unsupported
+        }
+    }
+}
+
+impl std::fmt::Display for Format {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Format::TOML => write!(f, "TOML"),
+            Format::JSON => write!(f, "JSON"),
+            Format::Unsupported => write!(f, "Unsupported"),
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct QueryResult {
+    pub node: Option<Node>,
+    pub redirect: bool,
+    pub exact: bool,
+}
+
+impl std::fmt::Display for QueryResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let meta = if self.redirect { "[redirect] " } else { "" };
+        let node = if let Some(n) = &self.node {
+            n.id.clone()
+        } else {
+            String::from("No Match")
+        };
+        write!(f, "QueryResult: {meta}{node}")
+    }
 }
 
 #[cfg(test)]
@@ -400,7 +519,7 @@ mod tests {
 
     #[test]
     fn empty_graph() {
-        let graph = Graph::error(Some("ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj"));
+        let graph = Graph::with_message("ISryQFd9peG6eYz9CFRQFWeD1GnPo0oj");
         assert!(graph.nodes.is_empty());
         assert!(graph.incoming.is_empty());
         assert_eq!(
@@ -427,15 +546,16 @@ mod tests {
         }
         "#;
 
-        let graph = Graph::from_serial(json, &Format::JSON);
-        assert!(graph.meta.messages.is_empty());
+        let deserialize_result = Graph::from_serial(json, &Format::JSON);
+        println!("{deserialize_result:?}");
+        assert!(deserialize_result.is_ok());
     }
 
     #[test]
     fn bad_json() {
-        let graph = Graph::from_serial(":::", &Format::JSON);
-        let message = graph.meta.messages.first().unwrap();
-        assert!(message.contains("expected value at line 1 column 1"));
+        assert!(Graph::from_serial(":::", &Format::JSON).is_err_and(|e| {
+            e.message.contains("expected value at line 1 column 1")
+        },));
     }
 }
 
@@ -456,8 +576,7 @@ mod serial_tests {
 
         let graph = Graph::load();
         let message = graph.meta.messages.first().unwrap();
-        assert!(message.contains("TOML parse error"));
-        assert!(message.contains("No such file or directory"));
+        assert!(message.contains("Failed reading file at"));
 
         assert!(std::env::set_current_dir(original_working_directory).is_ok());
     }

@@ -27,7 +27,7 @@ impl Data {
         let trace_string = format!("{trace:?}");
         let filter = env::var("DEBUG_FILTER").unwrap_or_default();
         let exclude = env::var("DEBUG_EXCLUDE").unwrap_or_default();
-        let env_level = Data::env_level();
+        let env_level = env_level();
         let message_level = message_level_opt.unwrap_or(MESSAGE_DEFAULT);
         let path = make_display_path(captured_path, &env_level);
 
@@ -69,19 +69,19 @@ impl Data {
             trace,
         }
     }
+}
 
-    pub fn env_level() -> Level {
-        if let Ok(level) = env::var("DEBUG") {
-            Level::from(level.as_str())
-        } else {
-            ENV_DEFAULT
-        }
+pub fn env_level() -> Level {
+    if let Ok(level) = env::var("DEBUG") {
+        Level::from(level.as_str())
+    } else {
+        ENV_DEFAULT
     }
 }
 
 #[allow(clippy::print_stderr)]
 pub fn print_state() {
-    let env_level = Data::env_level();
+    let env_level = env_level();
     let version = env!("CARGO_PKG_VERSION");
     if env_level == ENV_DEFAULT {
         eprintln!("en {version}");
@@ -93,16 +93,19 @@ pub fn print_state() {
 #[allow(clippy::print_stderr)]
 pub fn timed(past: &Instant, message: &str) -> Instant {
     let now = Instant::now();
-    let level = Data::env_level();
+    let env_level = env_level();
     let duration = now.duration_since(*past);
     let display_duration = if duration.as_millis() > 1000 {
         format!("{}s {}ms", duration.as_secs(), duration.subsec_millis())
-    } else if duration.as_millis() == 0 {
+    } else if duration.as_millis() <= 1 {
+        if env_level < Level::VERBOSE {
+            return now;
+        }
         format!("{}ns", duration.as_nanos())
     } else {
         format!("{}ms", duration.as_millis())
     };
-    if !message.is_empty() && Level::DEBUG <= level {
+    if !message.is_empty() && Level::DEBUG <= env_level {
         eprintln!("[tlog] +{display_duration} {message}");
     }
     now

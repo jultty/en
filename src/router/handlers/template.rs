@@ -3,9 +3,28 @@ use axum::{
     http::{header, Response, StatusCode},
 };
 
-use crate::{prelude::*, router::handlers::raw::make_response};
+use crate::{
+    prelude::*,
+    router::{GlobalState, handlers::raw::make_response},
+};
 
-pub(in crate::router::handlers) fn by_filename(
+/// Assembles a response containing the graph as its only context
+///
+/// The template name **must not** contain the extension.
+#[expect(clippy::unused_async)]
+pub async fn with_graph(template: &str, state: GlobalState) -> Response<Body> {
+    let instant = now();
+    let mut context = tera::Context::default();
+    context.insert("graph", &state.graph);
+
+    tlog!(&instant, "Assembled response for template {template}");
+    with_context(template, &context, 500, None, false)
+}
+
+/// Assembles a response with a custom context.
+///
+/// The template name **must not** contain the extension.
+pub(in crate::router::handlers) fn with_context(
     name: &str,
     context: &tera::Context,
     error_code: u16,
@@ -19,8 +38,11 @@ pub(in crate::router::handlers) fn by_filename(
     make_response(&body, status_code, &[(header::CONTENT_TYPE, "text/html")])
 }
 
+/// Renderes a template into a String and error code
+///
+/// The template name **must not** contain the extension (e.g. `.html`).
 pub(in crate::router::handlers) fn render(
-    name: &str,
+    template: &str,
     // TODO take Option, skip context if None,
     // then template_handler can replace static_template_handler
     context: &tera::Context,
@@ -35,29 +57,35 @@ pub(in crate::router::handlers) fn render(
         },
     };
 
-    match tera.render(name, context) {
+    match tera.render(format!("{template}.html").as_str(), context) {
         Ok(t) => {
-            tlog!(&instant, "Rendered template {name}");
+            tlog!(&instant, "Rendered template {template}");
             (t, 200)
         },
         Err(e) => {
             let mut error_context = tera::Context::default();
 
-            let out_error_message = match error_message {
-                Some(s) => &format!(
+            let mut out_error_message = match error_message {
+                Some(s) => format!(
                     "Template render failed.\n\
                     User message: {s},
-                    Engine message:\n<pre>{e:#?}</pre>\n\
-                    Context:\n<pre>{context:#?}</pre>"
+                    Engine message:\n<pre>{e:#?}</pre>"
                 ),
-                None => &format!(
+                None => format!(
                     "Template render failed.\n\
-                    Engine message:\n<pre>{e:#?}</pre>\n\
-                    Context:\n<pre>{context:#?}</pre>"
+                        Engine message:\n<pre>{e:#?}</pre>"
                 ),
             };
 
-            error_context.insert("message", out_error_message);
+            if log::env_level() >= VERBOSE {
+                out_error_message = format!(
+                    "{out_error_message}\n\
+                    Context:\n<pre>{context:#?}</pre>"
+                );
+            }
+
+            log!(ERROR, "{out_error_message}");
+            error_context.insert("message", &out_error_message);
             error_context.insert(
                 "title",
                 &StatusCode::INTERNAL_SERVER_ERROR.to_string(),
@@ -113,31 +141,21 @@ mod tests {
 
     #[test]
     fn by_filename_forced_error() {
-        let response = by_filename(
-            "index.html",
-            &tera::Context::default(),
-            418,
-            None,
-            true,
-        );
+        let response =
+            with_context("index", &tera::Context::default(), 418, None, true);
         assert_eq!(response.status(), 418);
     }
 
     #[test]
     fn by_filename_index() {
-        let response = by_filename(
-            "index.html",
-            &tera::Context::default(),
-            418,
-            None,
-            false,
-        );
+        let response =
+            with_context("index", &tera::Context::default(), 418, None, false);
         assert_eq!(response.status(), 200);
     }
 
     #[test]
     fn by_filename_file_not_found() {
-        let response = by_filename(
+        let response = with_context(
             "bwbl3BnWsluIgbO2NV9t3vtihwcjuF6t",
             &tera::Context::default(),
             418,
@@ -150,7 +168,7 @@ mod tests {
     #[test]
     fn by_filename_empty() {
         let response =
-            by_filename("", &tera::Context::default(), 418, None, false);
+            with_context("", &tera::Context::default(), 418, None, false);
         assert_eq!(response.status(), 500);
     }
 
@@ -163,7 +181,7 @@ mod tests {
         context.insert("node", &node);
         context.insert("graph", &graph);
         context.insert("incoming", &graph.incoming.get(&node.id));
-        let (body, status) = render("node.html", &context, None);
+        let (body, status) = render("node", &context, None);
         assert_eq!(status, 200);
         assert!(body.matches(payload).count() == 1);
     }
@@ -203,8 +221,7 @@ mod tests {
 
     #[test]
     fn render_bad_context() {
-        let (body, status) =
-            render("node.html", &tera::Context::default(), None);
+        let (body, status) = render("node", &tera::Context::default(), None);
         assert!(body.matches("Template render failed.").count() > 0);
         assert_eq!(status, 500);
     }

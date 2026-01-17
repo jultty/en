@@ -1,18 +1,23 @@
 use axum::{
     body::Body,
+    extract::State,
     http::{Response, StatusCode, header},
 };
 
-use crate::{graph::Graph, router::handlers};
+use crate::{
+    graph::Graph,
+    router::{GlobalState, handlers},
+};
 
 pub(in crate::router::handlers) fn by_code(
     code: Option<u16>,
     message: Option<&str>,
+    graph: &Graph,
 ) -> Response<Body> {
     let out_code = code.unwrap_or(500);
     let out_message = &message.unwrap_or("Unknown error");
 
-    let body = make_body(Some(out_code), Some(out_message));
+    let body = make_body(Some(out_code), Some(out_message), graph);
 
     handlers::raw::make_response(
         &body,
@@ -21,10 +26,13 @@ pub(in crate::router::handlers) fn by_code(
     )
 }
 
-fn make_body(code: Option<u16>, message: Option<&str>) -> String {
+fn make_body(
+    code: Option<u16>,
+    message: Option<&str>,
+    graph: &Graph,
+) -> String {
     let mut context = tera::Context::default();
 
-    let graph = Graph::load();
     let out_code = code.unwrap_or(500);
     let out_message = &message.unwrap_or("Unknown error");
 
@@ -35,12 +43,12 @@ fn make_body(code: Option<u16>, message: Option<&str>) -> String {
             .to_string(),
     );
 
-    context.insert("graph", &graph);
+    context.insert("graph", graph);
     context.insert("message", out_message);
     context.insert("status_code", &out_code.to_string());
 
     handlers::template::render(
-        "error.html",
+        "error",
         &context,
         Some(&format!(
             "Failed to render template for Error {out_code}: {out_message}"
@@ -50,10 +58,11 @@ fn make_body(code: Option<u16>, message: Option<&str>) -> String {
     .0
 }
 
-pub async fn not_found() -> Response<Body> {
+pub async fn not_found(State(state): State<GlobalState>) -> Response<Body> {
     by_code(
         Some(404),
         Some("The page you tried to access could not be found."),
+        &state.graph,
     )
 }
 
@@ -61,27 +70,32 @@ pub async fn not_found() -> Response<Body> {
 mod tests {
     use axum::{
         http::{StatusCode},
+        extract::State,
     };
     use super::*;
 
     #[tokio::test]
     async fn not_found() {
-        let response = super::not_found().await;
+        let state = State(GlobalState {
+            graph: Graph::load(),
+        });
+        let response = super::not_found(state).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[tokio::test]
     async fn internal_error() {
-        assert!(by_code(Some(201), None).status() == 201);
-        assert!(by_code(Some(304), None).status() == 304);
-        assert!(by_code(Some(418), None).status() == 418);
-        assert!(by_code(Some(505), None).status() == 505);
+        let graph = Graph::load();
+        assert!(by_code(Some(201), None, &graph).status() == 201);
+        assert!(by_code(Some(304), None, &graph).status() == 304);
+        assert!(by_code(Some(418), None, &graph).status() == 418);
+        assert!(by_code(Some(505), None, &graph).status() == 505);
     }
 
     #[test]
     fn custom_message() {
         let pattern = "sibPtt0mvHPWS9HQ0YBQfGu8cUs954LZ";
-        let body = make_body(Some(501), Some(pattern));
+        let body = make_body(Some(501), Some(pattern), &Graph::load());
         assert!(body.contains(pattern));
         assert!(!body.contains(&pattern.chars().rev().collect::<String>()));
     }

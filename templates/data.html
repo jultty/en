@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% set config = graph.meta.config %}
 
 {% block title %}Data{% endblock title %}
 
@@ -31,15 +30,15 @@
     </table>
 </details>
 
-{% if config.raw_toml or config.raw_json %}
+{% if graph.meta.config.raw and (graph.meta.config.raw_toml or graph.meta.config.raw_json) %}
 <h2>Raw formats</h2>
-<p>The raw data used to render this graph is available in the following formats:</p>
+<p>Structured data representing this graph is available in the following formats:</p>
 
 <ul>
-    {% if config.raw_toml %}
+    {% if graph.meta.config.raw_toml %}
     <li><a href="/graph/toml">TOML</a></li>
     {% endif %}
-    {% if config.raw_json %}
+    {% if graph.meta.config.raw_json %}
     <li><a href="/graph/json">JSON</a></li>
     {% endif %}
 </ul>

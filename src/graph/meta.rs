@@ -7,6 +7,8 @@ pub struct Meta {
     pub version: Option<Version>,
     #[serde(default)]
     pub messages: Vec<String>,
+    #[serde(default)]
+    pub malformed: bool,
 }
 
 impl Default for Meta {
@@ -15,6 +17,7 @@ impl Default for Meta {
             config: Config::default(),
             version: Version::from_env(),
             messages: vec![],
+            malformed: false,
         }
     }
 }
@@ -109,6 +112,7 @@ fn mkfalse() -> bool {
 fn mk8() -> u16 {
     8
 }
+
 #[cfg(test)]
 mod tests {
     use crate::graph::Graph;
@@ -186,7 +190,7 @@ pub struct Version {
 
 impl Version {
     pub fn from_env() -> Option<Version> {
-        Self::from(env!("CARGO_PKG_VERSION"))
+        Version::from(env!("CARGO_PKG_VERSION"))
     }
 
     pub fn from(version: &str) -> Option<Version> {

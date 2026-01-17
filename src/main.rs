@@ -1,6 +1,6 @@
 use std::{backtrace, io, panic};
 
-use en::{prelude::*, log, ONSET, graph::Graph, syntax};
+use en::{ONSET, graph::Graph, log, prelude::*, syntax};
 
 #[tokio::main]
 #[allow(clippy::print_stderr, clippy::print_stdout)]
@@ -40,7 +40,7 @@ async fn main() -> io::Result<()> {
     let graph = Graph::load();
     instant = tlog!(&instant, "Loaded graph");
 
-    let router = en::router::new(&graph);
+    let router = en::router::new(graph);
     tlog!(&instant, "Initialized router");
 
     let listener =

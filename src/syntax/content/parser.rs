@@ -21,15 +21,11 @@ const LEXMAP: LexMap = &[
 ];
 
 fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> TokenOutput {
-    let mut instant = now();
     let mut tokens: Vec<Token> = Vec::default();
     let mut state = State::default();
 
     let segments = segment::segment(text);
-    let segments_count = segments.len();
-    instant = tlog!(&instant, "Segmented {segments_count} segments");
     let lexemes = Lexeme::collect(&segments);
-    instant = tlog!(&instant, "{segments_count} segments: Collected lexemes");
 
     log!(VERBOSE, "Segments: {segments:?}");
 
@@ -77,10 +73,8 @@ fn lex(text: &str, map: LexMap, graph: &Graph, blocking: bool) -> TokenOutput {
             }
         }
     }
-    instant = tlog!(&instant, "{segments_count} segments: Parsed");
 
     context::close(&state, &mut tokens);
-    tlog!(&instant, "{segments_count} segments: Closed");
 
     TokenOutput {
         tokens,

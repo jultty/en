@@ -1,24 +1,44 @@
 use axum::{
-    body::Body,
-    extract::{Path, State},
     http::{HeaderValue, Response, StatusCode, header},
+    {
+        body::Body,
+        extract::{Path, State},
+    },
 };
 
 use crate::prelude::*;
 use crate::{
     graph::{Format, Graph, SerialErrorCause},
     router::{GlobalState, handlers},
+    router::handlers::mime::Mime,
 };
 
-/// # Panics
-/// Will panic if file read fails.
-#[expect(clippy::unused_async)]
-pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
+pub async fn file(
+    Path(path): Path<String>,
+    State(state): State<GlobalState>,
+) -> Response<Body> {
     let instant = now();
-    let content = match std::fs::read(file_path) {
+    let target = format!("static/public/{path}");
+    let content = match std::fs::read(&target) {
         Ok(s) => s,
         Err(e) => {
-            panic!("Failed to read {file_path} contents: {e}")
+            let mut error_message = String::from(
+                "The requested file does not exist, the server does not have \
+                permission to access it or a filesystem error ocurred.",
+            );
+            if log::env_level() >= DEBUG {
+                error_message = format!(
+                    "<p>{error_message}</p>\
+                    <p>Targeted path: <code>{target}</code></p>\
+                    <p>Error message:</p> <pre>{e}</pre>"
+                );
+            }
+            log!(ERROR, "{error_message}");
+            return super::error::by_code(
+                Some(404),
+                Some(&error_message),
+                &state.graph,
+            );
         },
     };
 
@@ -26,19 +46,20 @@ pub async fn file(file_path: &str, content_type: &str) -> Response<Body> {
     *response.status_mut() = StatusCode::OK;
     let header = header::CONTENT_TYPE;
 
-    if let Ok(header_value) = HeaderValue::from_str(content_type) {
+    let content_type = Mime::guess(&path);
+
+    if let Ok(header_value) =
+        HeaderValue::from_str(&String::from(content_type.clone()))
+    {
         response.headers_mut().append(header, header_value);
     } else {
         log!(
             WARN,
-            "Failed to create content type header value from {content_type}"
+            "Failed to create content type header value from {content_type:?}"
         );
     }
 
-    tlog!(
-        &instant,
-        "Assembled response for {content_type} {file_path}"
-    );
+    tlog!(&instant, "Assembled response for {content_type:?} {path}");
     response
 }
 
@@ -146,31 +167,5 @@ mod tests {
             response.headers().get(header::CONTENT_TYPE).unwrap()
                 == "application/json"
         );
-    }
-
-    #[tokio::test]
-    async fn file_valid_header() {
-        let payload = "y1mgMhjeIMFsRNZ1tskP52DfWuvhvbRP";
-        let response = file("./static/graph.toml", payload).await;
-        assert_eq!(
-            response.headers().get(header::CONTENT_TYPE).unwrap(),
-            payload
-        );
-    }
-
-    #[tokio::test]
-    async fn file_invalid_header() {
-        let response = file("./static/graph.toml", "\n").await;
-        println!("{response:#?}");
-        assert!(response.headers().get(header::CONTENT_TYPE).is_none());
-    }
-
-    #[tokio::test]
-    #[should_panic(
-        expected = "Failed to read IvnhZhdHb1xDnUw4hYDDNIERoaOojkiu \
-        contents: No such file or directory (os error 2)"
-    )]
-    async fn file_invalid_path() {
-        drop(file("IvnhZhdHb1xDnUw4hYDDNIERoaOojkiu", "text/plain").await);
     }
 }

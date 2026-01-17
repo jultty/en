@@ -2,64 +2,6 @@
     --base-font-size: 1em;
 }
 
-@font-face {
-    src: url("fonts/sans");
-    font-family: "sans";
-    display: swap;
-    size-adjust: 110%;
-}
-
-@font-face {
-    src: url("fonts/serifed");
-    font-family: "serifed";
-    display: swap;
-}
-
-@font-face {
-    src: url("fonts/serifed-italic");
-    font-family: "serifed";
-    display: swap;
-    font-style: italic;
-}
-
-@font-face {
-    src: url("fonts/mono");
-    font-family: "mono";
-    display: swap;
-}
-
-@font-face {
-    src: url("fonts/title");
-    font-family: "title";
-    display: swap;
-}
-
-@font-face {
-    src: url("fonts/prose");
-    font-family: "prose";
-    display: swap;
-    size-adjust: 120%;
-}
-
-@font-face {
-  src: url("fonts/prose-bold");
-  font-family: "prose";
-  font-weight: bold;
-}
-
-@font-face {
-  src: url("fonts/prose-italic");
-  font-family: "prose";
-  font-style: italic;
-}
-
-@font-face {
-  src: url("fonts/prose-bold-italic");
-  font-family: "prose";
-  font-weight: bold;
-  font-style: italic;
-}
-
 html {
     height: 100%;
 }
@@ -366,9 +308,9 @@ em#index-node-count {
 }
 
 table {
-  margin: auto;
-  border-collapse: collapse;
-  border: 0.5px dotted #666;
+    margin: auto;
+    border-collapse: collapse;
+    border: 0.5px dotted #666;
 }
 
 td, th {

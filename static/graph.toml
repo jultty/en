@@ -589,7 +589,7 @@ text = """
         - [ ] Branch deeper
     - Customization
         - [ ] Custom assets (favicon, CSS)
-            - [ ] Drop all hardcoded assets endpoints
+            - [x] Drop all hardcoded assets endpoints
         - [ ] Custom header include
         - [ ] Custom templates
         - [ ] Themes

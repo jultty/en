@@ -9,6 +9,7 @@ mod handlers {
     pub mod navigation;
     pub mod fixed;
     pub mod error;
+    pub mod mime;
 }
 
 #[derive(Clone)]
@@ -32,36 +33,7 @@ pub fn new(graph: Graph) -> Router {
         .route("/graph/{format}", get(handlers::fixed::serial))
         .route("/search", get(handlers::navigation::search))
         .route("/redirect", get(handlers::navigation::redirect))
-        .route(
-            "/static/style.css",
-            get(|| handlers::fixed::file("./static/style.css", "text/css")),
-        )
-        .route(
-            "/static/fonts/sans",
-            get(|| handlers::fixed::file("./static/fonts/sans", "")),
-        )
-        .route(
-            "/static/fonts/serifed",
-            get(|| handlers::fixed::file("./static/fonts/serifed", "")),
-        )
-        .route(
-            "/static/fonts/mono",
-            get(|| handlers::fixed::file("./static/fonts/mono", "")),
-        )
-        .route(
-            "/static/fonts/title",
-            get(|| handlers::fixed::file("./static/fonts/title", "")),
-        )
-        .route(
-            "/static/fonts/prose",
-            get(|| handlers::fixed::file("./static/fonts/prose", "")),
-        )
-        .route(
-            "/static/favicon.svg",
-            get(|| {
-                handlers::fixed::file("./static/favicon.svg", "image/svg+xml")
-            }),
-        );
+        .route("/static/{*path}", get(handlers::fixed::file));
 
     if state.graph.meta.config.tree {
         router = router.route("/tree", get(handlers::navigation::tree));
@@ -127,8 +99,8 @@ mod tests {
             "/tree",
             "/data",
             "/node/Syntax",
-            "/static/style.css",
-            "/static/favicon.svg",
+            "/static/assets/style.css",
+            "/static/assets/favicon.svg",
             "/graph/json",
             "/graph/toml",
         ];

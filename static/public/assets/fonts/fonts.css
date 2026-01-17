@@ -1,0 +1,65 @@
+@font-face {
+    src: url("maven/maven-pro-latin-400-normal.woff2") format("woff2");
+    font-family: "sans";
+    size-adjust: 110%;
+    display: swap;
+}
+
+@font-face {
+    src:
+        url("cormorant/cormorant-infant-latin-300-normal.woff2")
+        format("woff2");
+    font-family: "serifed";
+    display: swap;
+}
+
+@font-face {
+    src:
+        url("cormorant/cormorant-infant-latin-300-italic.woff2")
+        format("woff2");
+    font-family: "serifed";
+    font-style: italic;
+    display: swap;
+}
+
+@font-face {
+    src: url("mononoki/mononoki-latin-400-normal.woff2") format("woff2");
+    font-family: "mono";
+    display: swap;
+}
+
+@font-face {
+    src: url("rawengulk/RawengulkLight.woff2") format("woff2");
+    font-family: "title";
+    display: swap;
+}
+
+@font-face {
+    src: url("reforma/Reforma1969-Blanca.woff2") format("woff2");
+    font-family: "prose";
+    size-adjust: 120%;
+    display: swap;
+}
+
+@font-face {
+    src: url("reforma/Reforma1969-Gris.woff2") format("woff2");
+    font-family: "prose";
+    font-weight: bold;
+    display: swap;
+}
+
+@font-face {
+    src: url("reforma/Reforma1969-BlancaItalica.woff2") format("woff2");
+    src: url("prose-italic");
+    font-family: "prose";
+    font-style: italic;
+    display: swap;
+}
+
+@font-face {
+    src: url("reforma/Reforma1969-GrisItalica.woff2") format("woff2");
+    font-family: "prose";
+    font-weight: bold;
+    font-style: italic;
+    display: swap;
+}

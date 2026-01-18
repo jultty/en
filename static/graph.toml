@@ -376,7 +376,7 @@ If you want to render a literal backslash, you can escape the backslash itself b
 
 ## Interactions with TOML escaping
 
-Notice that TOML itself also handles escape codes, so to pass a backslash you will need to escape it as a double backslash inside strings delimited by double quotes or triple double quotes. You can use a single backslash inside a string delimited by single quotes:
+Notice that |TOML| itself also handles escape codes, so to pass a backslash you will need to escape it as a double backslash inside strings delimited by double quotes or triple double quotes. You can use a single backslash inside a string delimited by single quotes:
 
 `
 [node.Double]
@@ -396,7 +396,7 @@ Here too: \\\\*
 '''
 `
 
-This has nothing to do with en's markup syntax per se, it's just a consequence of how backslashes are also special in |TOML| syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
+This has nothing to do with en's markup syntax per se, it's just a consequence of how backslashes are also special in TOML syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
 
 ## Interactions with HTML
 

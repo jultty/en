@@ -22,7 +22,9 @@ pub mod meta;
 
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Graph {
+    #[serde(default)]
     pub nodes: HashMap<String, Node>,
+    #[serde(default)]
     pub root_node: String,
     #[serde(skip_deserializing)]
     pub incoming: HashMap<String, Vec<Edge>>,
@@ -37,6 +39,7 @@ pub struct Graph {
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Stats {
     pub detached: HashMap<String, u32>,
+    pub detached_total: u32,
 }
 
 impl Graph {
@@ -63,9 +66,10 @@ impl Graph {
         graph
     }
 
-    /// Loads a TOML file from the default location and returns a modulated Graph
+    /// Loads a Graph TOML file from CLI arguments or their defaults and
+    /// returns a modulated Graph.
     ///
-    /// Returns a graph with an error message if any errors are propagated to it.
+    /// Returns a graph with an error message if any errors are propagated.
     pub fn load() -> Graph {
         let result = Graph::load_file(None);
         match result {
@@ -76,12 +80,12 @@ impl Graph {
 
     /// Takes a file path to a TOML file and returns a modulated Graph
     ///
-    /// If `path` is an empty string, it will fallback to CLI arguments
+    /// If `path` is None, it will fallback to CLI arguments or their defaults.
     ///
     /// # Errors
     /// Propagates errors from `Graph::read_file`.
     pub fn load_file(path: Option<&str>) -> Result<Graph, String> {
-        let mut graph = Graph::read_file(path)?;
+        let mut graph = Graph::from_file(path)?;
         graph.modulate();
         Ok(graph)
     }
@@ -91,7 +95,7 @@ impl Graph {
     /// # Errors
     /// Returns Err if it can't read the contents of `in_path`.
     /// Propagates errors from `Graph::from_serial`.
-    pub fn read_file(in_path: Option<&str>) -> Result<Graph, String> {
+    pub fn from_file(in_path: Option<&str>) -> Result<Graph, String> {
         let cli_path = Arguments::default().parse().graph_path;
         let path = in_path.map_or(cli_path, PathBuf::from);
 
@@ -143,19 +147,16 @@ impl Graph {
     /// # Errors
     /// Errors on unsupported formats.
     /// Propagates serialization errors.
-    pub fn to_serial(
-        graph: &Graph,
-        format: &Format,
-    ) -> Result<String, SerialError> {
+    pub fn to_serial(&self, format: &Format) -> Result<String, SerialError> {
         match *format {
-            Format::TOML => match toml::to_string(graph) {
+            Format::TOML => match toml::to_string(self) {
                 Ok(s) => Ok(s),
                 Err(e) => Err(SerialError {
                     cause: SerialErrorCause::MalformedInput,
                     message: e.to_string(),
                 }),
             },
-            Format::JSON => match serde_json::to_string(graph) {
+            Format::JSON => match serde_json::to_string(self) {
                 Ok(s) => Ok(s),
                 Err(e) => Err(SerialError {
                     cause: SerialErrorCause::MalformedInput,
@@ -184,7 +185,7 @@ impl Graph {
         tlog!(&instant, "Parsed configuration");
     }
 
-    // Construct a HashMap with incoming connections (reversed edges)
+    /// Construct a HashMap with incoming connections (reversed edges)
     fn map_incoming(&mut self) {
         for node in self.nodes.clone().into_values() {
             for edge in node.connections.clone().unwrap_or_default().values() {
@@ -210,13 +211,18 @@ impl Graph {
             for (connection_key, edge) in connections {
                 let mut new_edge = edge.clone();
 
-                // Populate empty "from" IDs in edges with node's ID
+                // Populate empty "to" and "from" IDs
                 if edge.from.is_empty() {
-                    new_edge.from.clone_from(&connection_key);
+                    new_edge.from.clone_from(&key);
+                }
+
+                if edge.to.is_empty() {
+                    new_edge.to.clone_from(&connection_key);
                 }
 
                 // Flag detached edges
-                if in_nodes.contains_key(&edge.to) {
+                if (!edge.to.is_empty() && in_nodes.contains_key(&edge.to))  ||
+                    (edge.to.is_empty() && in_nodes.contains_key(&new_edge.to)) {
                     new_edge.detached = false;
                 } else {
                     new_edge.detached = true;
@@ -255,7 +261,7 @@ impl Graph {
             // Populate empty summaries with the leading part of the node text
             let summary = if node.summary.is_empty() {
                 let first_line = if let Some(first) =
-                    node.text.lines().find(|s| !s.is_empty())
+                    node.text.split("\n\n").find(|s| !s.is_empty())
                 {
                     String::from(first)
                 } else {
@@ -295,6 +301,7 @@ impl Graph {
         let graph = self.clone();
         let iterator = self.nodes.iter_mut();
         for (key, node) in iterator {
+
             // Parse node text
             let parse_output = content::rich_parse(&node.text, &graph);
             node.text = parse_output.text.unwrap_or_default();
@@ -352,6 +359,8 @@ impl Graph {
                 }
             }
         }
+
+
     }
 
     fn increment_detached(&mut self, node_id: &str) {
@@ -360,6 +369,7 @@ impl Graph {
             .entry(node_id.to_string())
             .and_modify(|count| *count = count.saturating_add(1))
             .or_insert(1);
+        self.stats.detached_total = self.stats.detached_total.saturating_add(1);
     }
 
     pub fn map_lowercase_keys(&mut self) {
@@ -556,6 +566,334 @@ mod tests {
         assert!(Graph::from_serial(":::", &Format::JSON).is_err_and(|e| {
             e.message.contains("expected value at line 1 column 1")
         },));
+    }
+
+    #[test]
+    fn with_message() {
+        let payload = "QmMxohuLe9DZCOzcaxH2wzZGqOot1In6";
+        let graph = Graph::with_message(payload);
+        assert_eq!(payload, graph.meta.messages.first().unwrap());
+    }
+
+    #[test]
+    fn malformed_without_message() {
+        let graph = Graph::malformed(None);
+        assert!(graph.meta.messages.is_empty());
+    }
+
+    #[test]
+    fn malformed_with_message() {
+        let payload = "s8LuGwRQA4GdNGvAlaIUrryZYBGkY5Ev";
+        let graph = Graph::malformed(Some(payload));
+        assert_eq!(payload, graph.meta.messages.first().unwrap());
+    }
+
+    #[test]
+    fn bad_deserial_input() {
+        let result = Graph::from_serial("not toml", &Format::TOML);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().cause, SerialErrorCause::MalformedInput));
+    }
+
+    #[test]
+    fn bad_deserial_format() {
+        let result = Graph::from_serial("not toml", &Format::Unsupported);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().cause, SerialErrorCause::UnsupportedFormat));
+    }
+
+    #[test]
+    fn bad_serial_format() {
+        let result = Graph::load().to_serial(&Format::Unsupported);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err().cause, SerialErrorCause::UnsupportedFormat));
+    }
+
+    #[test]
+    fn empty_modulated_graph_is_empty() {
+        let mut graph = Graph::from_serial("", &Format::TOML).unwrap();
+        graph.modulate();
+
+        assert!(graph.nodes.is_empty());
+        assert!(graph.incoming.is_empty());
+    }
+
+    #[test]
+    fn title_population_from_id() {
+        let mut graph = Graph::from_serial(concat!(
+            "[nodes.TitlelessNode]\n",
+            r#"text = "Some text""#,
+            ),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        let node = graph.nodes.get("TitlelessNode");
+        assert_eq!(node.unwrap().title, "TitlelessNode");
+    }
+
+    #[test]
+    fn no_title_population_from_id_if_title_set() {
+        let mut graph = Graph::from_serial(concat!(
+            "[nodes.TitlefulNode]\n",
+            r#"title = "A Title""#, "\n",
+            r#"text = "Some text""#,
+            ),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        let node = graph.nodes.get("TitlefulNode");
+        assert_eq!(node.unwrap().title, "A Title");
+    }
+
+    #[test]
+    fn detached_edge_is_flagged() {
+        let mut graph = Graph::from_serial(concat!(
+            "[nodes.Node]\n",
+            r#"text = "Some text here""#, "\n\n",
+            "[nodes.Node.connections.Nowhere]\n",
+            ),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        let node = graph.nodes.get("Node").unwrap();
+        let connections = node.connections.as_ref().unwrap();
+        let connection = connections.get("Nowhere").unwrap();
+        assert!(connection.detached);
+    }
+
+    #[test]
+    fn attached_edge_is_not_flagged() {
+        let mut graph = Graph::from_serial(concat!(
+            "[nodes.NodeOne]\n",
+            r#"text = "Some text here""#, "\n\n",
+            "[nodes.NodeOne.connections.NodeTwo]\n\n",
+            "[nodes.NodeTwo]\n",
+            r#"text = "Some other text here""#, "\n\n",
+            ),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        let node = graph.nodes.get("NodeOne").unwrap();
+        let connections = node.connections.as_ref().unwrap();
+        let connection = connections.get("NodeTwo").unwrap();
+        println!("{connection:#?}");
+        assert!(!connection.detached);
+    }
+
+    #[test]
+    fn to_and_from_population() {
+        let mut graph = Graph::from_serial(concat!(
+            "[nodes.n01]\n",
+            "[nodes.n01.connections.n02]\n\n",
+            "[nodes.n02]\n",
+            "[nodes.n02.connections.n03]\n\n",
+            ),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        let n01 = graph.nodes.get("n01").unwrap();
+        let n02 = graph.nodes.get("n02").unwrap();
+        let n01_connections = n01.connections.as_ref().unwrap();
+        let n02_connections = n02.connections.as_ref().unwrap();
+        let n01_to_n02 = n01_connections.get("n02").unwrap();
+        let n02_to_n03 = n02_connections.get("n03").unwrap();
+
+        assert_eq!(n01_to_n02.from, "n01");
+        assert_eq!(n01_to_n02.to, "n02");
+        assert!(!n01_to_n02.detached);
+        assert_eq!(n02_to_n03.from, "n02");
+        assert_eq!(n02_to_n03.to, "n03");
+        assert!(n02_to_n03.detached);
+    }
+
+    #[test]
+    fn links_become_connections() {
+        let mut graph = Graph::from_serial(concat!(
+            "[nodes.n01]\n",
+            r#"links = [ "n02", "n03", "n04" ]"#, "\n\n",
+            "[nodes.n02]\n",
+            "[nodes.n04]\n",
+            r#"links = [ "n01", "n03" ]"#, "\n\n",
+            ),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        let n01 = graph.nodes.get("n01").unwrap();
+        let n02 = graph.nodes.get("n02").unwrap();
+        let n04 = graph.nodes.get("n04").unwrap();
+
+        let n01_connections = n01.connections.as_ref().unwrap();
+        let n02_connections = n02.connections.as_ref().unwrap();
+        let n04_connections = n04.connections.as_ref().unwrap();
+
+        let n01_to_n02 = n01_connections.get("n02").unwrap();
+        let n01_to_n03 = n01_connections.get("n03").unwrap();
+        let n01_to_n04 = n01_connections.get("n04").unwrap();
+
+        let n04_to_n01 = n04_connections.get("n01").unwrap();
+        let n04_to_n03 = n04_connections.get("n03").unwrap();
+
+        assert_eq!(n01_to_n02.from, "n01");
+        assert_eq!(n01_to_n02.to, "n02");
+        assert!(!n01_to_n02.detached);
+
+        assert_eq!(n01_to_n03.from, "n01");
+        assert_eq!(n01_to_n03.to, "n03");
+        assert!(n01_to_n03.detached);
+
+        assert_eq!(n01_to_n04.from, "n01");
+        assert_eq!(n01_to_n04.to, "n04");
+        assert!(!n01_to_n04.detached);
+
+        assert!(n02_connections.is_empty());
+
+        assert_eq!(n04_to_n01.from, "n04");
+        assert_eq!(n04_to_n01.to, "n01");
+        assert!(!n04_to_n01.detached);
+
+        assert_eq!(n04_to_n03.from, "n04");
+        assert_eq!(n04_to_n03.to, "n03");
+        assert!(n04_to_n03.detached);
+    }
+
+    #[test]
+    fn detached_count_increments() {
+        let mut graph = Graph::from_serial(concat!(
+            "[nodes.n01]\n",
+            r#"links = [ "n02", "n03", "n04", "n05", "n06", "n10" ]"#, "\n\n",
+            "[nodes.n02]\n",
+            "[nodes.n04]\n",
+            r#"links = [ "n01", "n02", "n03", "n06", "n11", "n15" ]"#, "\n\n"),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        assert_eq!(graph.stats.detached_total, 8);
+    }
+
+    #[test]
+    fn populated_summary() {
+        let text = "vh18qEUN22X2SxLj6lpOOzMBB4N6S0UG";
+        let mut graph = Graph::from_serial(&format!(
+            "[nodes.n01]\n\
+            text = \"{text}\"\n\
+            "),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        assert!(graph.nodes.get("n01").unwrap().summary.contains(text));
+        assert!(graph.nodes.get("n01").unwrap().text.contains(text));
+    }
+
+    #[test]
+    fn supplied_summary() {
+        let text = "vh18qEUN22X2SxLj6lpOOzMBB4N6S0UG";
+        let summary = "W5dhPgNs7S1Zsq6uPK47MAw8xXyNxwep";
+        let mut graph = Graph::from_serial(&format!(
+            "[nodes.n01]\n\
+            summary = \"{summary}\"\n\
+            text = \"{text}\"\n\
+            ",
+            ),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        assert_eq!(graph.nodes.get("n01").unwrap().summary, summary);
+        assert!(graph.nodes.get("n01").unwrap().text.contains(text));
+    }
+
+    #[test]
+    fn summary_from_first_sentence() {
+        let first_sentence = "zTWFX0a8 tYTO2g.";
+        let text = format!(
+            "{first_sentence} QoGa PtDsJ vh18qE U N22 X2S. MBB4N6S0UG\n\n\
+            6FokUX o OCEc LzZFfR1nkqa hWIF LdrtD3G. PDQwv Ba2PnZ yEBVpqQdt\n\n\
+            Py6aoPK FV7iU UdrYB vD UeMvvg u 5kbt 9ZW9x7MR"
+        );
+        let mut graph = Graph::from_serial(&format!(
+            "[nodes.n01]\ntext = \"\"\"{text}\"\"\"\n"),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        assert_eq!(graph.nodes.get("n01").unwrap().summary, first_sentence);
+    }
+
+    #[test]
+    fn summary_from_first_paragraph() {
+        let first_paragraph = "EGR6IS fTQsRp rv7 g jvItnYU 2HNciS MID\n\
+            iz3vx vXxa vW4JI6l E5itd6qm2Yx gFw 1D Nq0805 bXHe3h iqABe ilnHKl\n\
+            F4AHvMLto cz3C Z279r9 jtIbBnY JqjwZPQdepf cdv6";
+        let text = format!(
+            "{first_paragraph}\n\nn0D CvHcIU7R oPcZy V1Iy9PgXO gOw lfeDy\n\n\
+            jrOSq 0uVtJLd Idx08Bpy BBj 4PVS R9lt RqjTs s AURUx93 Xu9WiI0rP.\n"
+        );
+        let mut graph = Graph::from_serial(
+            format!("[nodes.n01]\ntext = \"\"\"{text}\"\"\"\n").as_str(),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        assert_eq!(graph.nodes.get("n01").unwrap().summary, first_paragraph);
+    }
+
+    #[test]
+    fn summary_from_first_300_chars() {
+        let first_300 = concat!("Primis, quod, cum in rerum natura duo ",
+            "quaerenda sint, unum, quae materia sit, ex qua quaeque res ",
+            "efficiatur, alterum, quae naturales essent nec tamen id, cuius ",
+            "causa haec finxerat, assecutus est: Nam si omnes veri erunt, ut ",
+            "Epicuri ratio docet, tum denique poterit aliquid cognosci et ",
+            "percipi? Quos q");
+        let tail = concat!("uam autem et praeterita grate meminit et ",
+            "praesentibus ita potitur, ut animadvertat quanta sint ea ",
+            "quamque iucunda, neque pendet ex futuris, sed expectat illa, ",
+            "fruitur praesentibus ab iisque vitii");
+        let text = format!("{first_300}{tail}");
+        let summary = format!("{first_300}…");
+
+        let mut graph = Graph::from_serial(
+            format!("[nodes.n01]\ntext = \"\"\"{text}\"\"\"\n").as_str(),
+            &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        assert_eq!(graph.nodes.get("n01").unwrap().summary, summary);
+    }
+
+    #[test]
+    fn anchors_become_connections() {
+
+        let mut graph = Graph::from_serial("\
+            [nodes.n1]
+            text = 'an anchor to |n2|, the existing node'
+
+            [nodes.n2]
+            text = 'an anchor to |n0|, the nonexistent node'
+
+        ", &Format::TOML,
+        ).unwrap();
+        graph.modulate();
+
+        let n1_to_n2 = graph.nodes.get("n1").unwrap()
+            .connections.as_ref().unwrap().get("n2");
+
+        let n2_to_n0 = graph.nodes.get("n2").unwrap()
+            .connections.as_ref().unwrap().get("n0");
+
+        println!("{n1_to_n2:#?}");
+        println!("{n2_to_n0:#?}");
+
+        assert!(!n1_to_n2.unwrap().detached);
+        assert!(n2_to_n0.unwrap().detached);
     }
 }
 

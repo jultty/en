@@ -1,10 +1,12 @@
+use crate::prelude::*;
+
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Meta {
     pub config: Config,
     #[serde(default)]
-    pub version: Option<Version>,
+    pub version: Version,
     #[serde(default)]
     pub messages: Vec<String>,
     #[serde(default)]
@@ -15,7 +17,7 @@ impl Default for Meta {
     fn default() -> Meta {
         Meta {
             config: Config::default(),
-            version: Version::from_env(),
+            version: Version::from_compilation().unwrap_or_default(),
             messages: vec![],
             malformed: false,
         }
@@ -113,6 +115,191 @@ fn mk8() -> u16 {
     8
 }
 
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
+pub struct Version {
+    major: u8,
+    minor: u8,
+    patch: u8,
+}
+
+impl Default for Version {
+    fn default() -> Version {
+        match Version::from_compilation() {
+            Ok(v) => v,
+            Err(e) => {
+                log!(ERROR, "{e}");
+                Version {
+                    major: 0,
+                    minor: 0,
+                    patch: 0,
+                }
+            },
+        }
+    }
+}
+
+impl std::fmt::Display for Version {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+
+impl Version {
+    pub fn from_compilation() -> Result<Version, VersionError> {
+        Version::from_str(env!("CARGO_PKG_VERSION"))
+    }
+
+    pub fn from_str(version: &str) -> Result<Version, VersionError> {
+        use VersionErrorCause::*;
+
+        let triple: Vec<String> =
+            version.split('.').map(str::to_string).collect();
+
+        let has_two_dots = version.matches('.').count() == 2;
+        let has_three_elements = triple.len() == 3;
+        let has_whitespace = version.contains(' ') || version.contains('\n');
+        let has_contiguous_dots = version.contains("..");
+        let ends_with_dot = version.ends_with('.');
+        let starts_with_dot = version.starts_with('.');
+
+        let major: u8 = if let Some(s) = triple.first()
+            && !s.is_empty()
+        {
+            match s.trim_start_matches('v').trim().parse() {
+                Ok(parsed) => parsed,
+                Err(e) => {
+                    return Err(VersionError {
+                        cause: FailedMajorParse,
+                        message: Some(e.to_string()),
+                    });
+                },
+            }
+        } else {
+            return Err(VersionError {
+                cause: MissingMajor,
+                message: None,
+            });
+        };
+
+        let minor: u8 = if triple.len() >= 2
+            && let Some(s) = triple.get(1)
+        {
+            match s.trim().parse() {
+                Ok(parsed) => parsed,
+                Err(e) => {
+                    return Err(VersionError {
+                        cause: FailedMinorParse,
+                        message: Some(e.to_string()),
+                    });
+                },
+            }
+        } else {
+            return Err(VersionError {
+                cause: MissingMinor,
+                message: None,
+            });
+        };
+
+        let patch: u8 = if triple.len() >= 3
+            && let Some(s) = triple.get(2)
+        {
+            match s.trim().parse() {
+                Ok(parsed) => parsed,
+                Err(e) => {
+                    return Err(VersionError {
+                        cause: FailedPatchParse,
+                        message: Some(e.to_string()),
+                    });
+                },
+            }
+        } else {
+            return Err(VersionError {
+                cause: MissingPatch,
+                message: None,
+            });
+        };
+
+        let conditions = has_two_dots
+            && has_three_elements
+            && !has_whitespace
+            && !has_contiguous_dots
+            && !ends_with_dot
+            && !starts_with_dot;
+
+        if conditions {
+            Ok(Version {
+                major,
+                minor,
+                patch,
+            })
+        } else {
+            Err(VersionError {
+                cause: FailedValidation,
+                message: Some(format!(
+                    "Evaluated rules (all must be true):\n\
+                    Has exactly two dots: {has_two_dots},\n\
+                    Splits to three elements: {has_three_elements}\n\
+                    Has no whitespace: {}\n\
+                    Has no contiguous dots: {}\n\
+                    Does not end with a dot: {}\n\
+                    Does not start with a dot: {}",
+                    !has_whitespace,
+                    !has_contiguous_dots,
+                    !ends_with_dot,
+                    !starts_with_dot,
+                )),
+            })
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct VersionError {
+    cause: VersionErrorCause,
+    message: Option<String>,
+}
+
+#[derive(Debug)]
+enum VersionErrorCause {
+    MissingMajor,
+    FailedMajorParse,
+    MissingMinor,
+    FailedMinorParse,
+    MissingPatch,
+    FailedPatchParse,
+    FailedValidation,
+}
+
+impl std::fmt::Display for VersionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if let Some(message) = &self.message {
+            write!(f, "{}: {}", self.cause, message)
+        } else {
+            write!(f, "{}", self.cause)
+        }
+    }
+}
+
+impl std::fmt::Display for VersionErrorCause {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use VersionErrorCause as V;
+
+        write!(
+            f,
+            "{}",
+            match self {
+                V::MissingMajor => "Major version couldn't be split",
+                V::FailedMajorParse => "Failed parse of major version",
+                V::MissingMinor => "Minor version couldn't be split",
+                V::FailedMinorParse => "Failed parse of minor version",
+                V::MissingPatch => "Patch version couldn't be split",
+                V::FailedPatchParse => "Failed parse of patch version",
+                V::FailedValidation => "Validation failed",
+            }
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::graph::Graph;
@@ -179,60 +366,209 @@ mod tests {
                 == 1
         );
     }
-}
 
-#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
-pub struct Version {
-    major: u8,
-    minor: u8,
-    patch: u8,
-}
+    #[test]
+    fn modulated_graph_version_matches_compilation_version() {
+        let version = Graph::load().meta.version;
 
-impl Version {
-    pub fn from_env() -> Option<Version> {
-        Version::from(env!("CARGO_PKG_VERSION"))
+        assert_eq!(format!("{version}"), env!("CARGO_PKG_VERSION"));
     }
 
-    pub fn from(version: &str) -> Option<Version> {
-        let triple: Vec<String> =
-            version.split('.').map(str::to_string).collect();
+    #[test]
+    fn from_compilation_matches_compilation_version() {
+        let version = Version::from_compilation().unwrap();
 
-        let has_two_dots = version.matches('.').count() == 2;
-        let has_three_elements = triple.len() == 3;
-        let has_whitespace = version.contains(' ') || version.contains('\n');
-        let has_contiguous_dots = version.contains("..");
-        let ends_with_dot = version.ends_with('.');
-        let starts_with_dot = version.starts_with('.');
+        assert_eq!(format!("{version}"), env!("CARGO_PKG_VERSION"));
+    }
 
-        let major: u8 = if let Some(s) = triple.first() {
-            s.trim_start_matches('v').trim().parse().ok()?
-        } else {
-            return None;
-        };
+    #[test]
+    fn version_from_str() {
+        let payload = "3.9.74";
+        let version_result = Version::from_str(payload);
 
-        let minor: u8 = if let Some(s) = triple.get(1) {
-            s.trim().parse().ok()?
-        } else {
-            return None;
-        };
+        println!("{version_result:#?}");
+        assert_eq!(format!("{}", version_result.unwrap()), payload);
+    }
 
-        let patch: u8 = if let Some(s) = triple.get(2) {
-            s.trim().parse().ok()?
-        } else {
-            return None;
-        };
+    #[test]
+    fn missing_major() {
+        let error = Version::from_str("").unwrap_err();
+        println!("{error:#?}");
+        assert!(matches!(error.cause, VersionErrorCause::MissingMajor));
+    }
 
-        let conditions = has_two_dots
-            && has_three_elements
-            && !has_whitespace
-            && !has_contiguous_dots
-            && !ends_with_dot
-            && !starts_with_dot;
+    #[test]
+    fn missing_minor() {
+        let error = Version::from_str("3").unwrap_err();
+        println!("{error:#?}");
+        assert!(matches!(error.cause, VersionErrorCause::MissingMinor));
+    }
 
-        conditions.then_some(Version {
-            major,
-            minor,
-            patch,
-        })
+    #[test]
+    fn missing_patch() {
+        let error = Version::from_str("3.6").unwrap_err();
+        assert!(matches!(error.cause, VersionErrorCause::MissingPatch));
+    }
+
+    #[test]
+    fn malformed_patch() {
+        let error = Version::from_str("3.6.x").unwrap_err();
+        assert!(matches!(error.cause, VersionErrorCause::FailedPatchParse));
+
+        let error_empty = Version::from_str("3.6.").unwrap_err();
+        assert!(matches!(
+            error_empty.cause,
+            VersionErrorCause::FailedPatchParse
+        ));
+    }
+
+    #[test]
+    fn malformed_minor() {
+        let error = Version::from_str("3.x.0").unwrap_err();
+        assert!(matches!(error.cause, VersionErrorCause::FailedMinorParse));
+
+        let error_bad_patch = Version::from_str("3.x.z").unwrap_err();
+        assert!(matches!(
+            error_bad_patch.cause,
+            VersionErrorCause::FailedMinorParse
+        ));
+
+        let error_empty_patch = Version::from_str("3.x.").unwrap_err();
+        assert!(matches!(
+            error_empty_patch.cause,
+            VersionErrorCause::FailedMinorParse
+        ));
+
+        let error_patchless = Version::from_str("3.x").unwrap_err();
+        assert!(matches!(
+            error_patchless.cause,
+            VersionErrorCause::FailedMinorParse
+        ));
+
+        let error_empty = Version::from_str("3.").unwrap_err();
+        assert!(matches!(
+            error_empty.cause,
+            VersionErrorCause::FailedMinorParse
+        ));
+    }
+
+    #[test]
+    fn malformed_major() {
+        let error = Version::from_str("x.6.0").unwrap_err();
+        assert!(matches!(error.cause, VersionErrorCause::FailedMajorParse));
+
+        let error_bad_patch = Version::from_str("x.y.z").unwrap_err();
+        assert!(matches!(
+            error_bad_patch.cause,
+            VersionErrorCause::FailedMajorParse
+        ));
+
+        let error_empty_patch = Version::from_str("x.6.").unwrap_err();
+        assert!(matches!(
+            error_empty_patch.cause,
+            VersionErrorCause::FailedMajorParse
+        ));
+
+        let error_patchless = Version::from_str("x.6").unwrap_err();
+        assert!(matches!(
+            error_patchless.cause,
+            VersionErrorCause::FailedMajorParse
+        ));
+
+        let error_bad_minor = Version::from_str("x.y").unwrap_err();
+        assert!(matches!(
+            error_bad_minor.cause,
+            VersionErrorCause::FailedMajorParse
+        ));
+
+        let error_empty_minor = Version::from_str("x.").unwrap_err();
+        assert!(matches!(
+            error_empty_minor.cause,
+            VersionErrorCause::FailedMajorParse
+        ));
+
+        let error_minorless = Version::from_str("x").unwrap_err();
+        assert!(matches!(
+            error_minorless.cause,
+            VersionErrorCause::FailedMajorParse
+        ));
+
+        let error_empty = Version::from_str("").unwrap_err();
+        assert!(matches!(error_empty.cause, VersionErrorCause::MissingMajor));
+    }
+
+    #[test]
+    fn version_validation() {
+        assert!(["3.1.4.", "3.1.4.1"].iter().all(|s| matches!(
+            Version::from_str(s).unwrap_err().cause,
+            VersionErrorCause::FailedValidation
+        )));
+    }
+
+    #[test]
+    fn leading_v() {
+        let version = Version::from_str("v3.1.4").unwrap();
+        assert_eq!(format!("{version}"), "3.1.4");
+    }
+
+    #[test]
+    fn display_version_error_cause() {
+        fn assert(version: &str, message: &str) {
+            let error = Version::from_str(version).unwrap_err();
+            assert_eq!(format!("{error}"), message);
+        }
+
+        assert("3.6", "Patch version couldn't be split");
+        assert(
+            "3.6.",
+            "Failed parse of patch version: \
+                cannot parse integer from empty string",
+        );
+        assert(
+            "3.6.x",
+            "Failed parse of patch version: \
+                invalid digit found in string",
+        );
+
+        assert("3", "Minor version couldn't be split");
+        assert(
+            "3.",
+            "Failed parse of minor version: \
+                cannot parse integer from empty string",
+        );
+        assert(
+            "3.x",
+            "Failed parse of minor version: \
+                invalid digit found in string",
+        );
+
+        assert("", "Major version couldn't be split");
+        assert(
+            "x",
+            "Failed parse of major version: \
+                invalid digit found in string",
+        );
+
+        let validation_error = Version::from_str("3.1.4.1..").unwrap_err();
+        println!("{validation_error}");
+
+        assert!(matches!(
+            validation_error.cause,
+            VersionErrorCause::FailedValidation
+        ));
+        assert!(
+            validation_error
+                .message
+                .clone()
+                .unwrap()
+                .contains("Has exactly two dots: false")
+        );
+        assert!(
+            validation_error
+                .message
+                .clone()
+                .unwrap()
+                .contains("Splits to three elements: false")
+        );
     }
 }

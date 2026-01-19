@@ -21,8 +21,8 @@ pub struct Node {
     #[serde(default)]
     pub hidden: bool,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub connections: Option<HashMap<String, Edge>>,
+    #[serde(default)]
+    pub connections: HashMap<String, Edge>,
 
     #[serde(default)]
     pub stats: Stats,
@@ -43,7 +43,7 @@ impl Node {
                 Some(s) => s,
                 None => "Node not found.".to_string(),
             },
-            connections: None,
+            connections: HashMap::default(),
             links: vec![],
             redirect: String::default(),
             hidden: false,

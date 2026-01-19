@@ -188,7 +188,7 @@ impl Graph {
     /// Construct a HashMap with incoming connections (reversed edges)
     fn map_incoming(&mut self) {
         for node in self.nodes.clone().into_values() {
-            for edge in node.connections.clone().unwrap_or_default().values() {
+            for edge in node.connections.clone().values() {
                 let mut edges = self
                     .incoming
                     .get(&edge.to.clone())
@@ -204,7 +204,7 @@ impl Graph {
         let in_nodes = self.nodes.clone();
 
         for (key, node) in in_nodes.clone() {
-            let connections = node.connections.clone().unwrap_or_default();
+            let connections = node.connections.clone();
             let mut new_edges = connections.clone();
 
             // Modulate connections
@@ -289,7 +289,7 @@ impl Graph {
                 id: key.clone(),
                 title: new_title,
                 summary: flatten(&summary, self),
-                connections: Some(new_edges),
+                connections: new_edges,
                 ..node.clone()
             };
 
@@ -304,23 +304,12 @@ impl Graph {
 
             // Parse node text
             let parse_output = content::rich_parse(&node.text, &graph);
-            node.text = parse_output.text.unwrap_or_default();
+            node.text
+                .clone_from(&parse_output.text.clone().unwrap_or_default());
 
             // Create connections for each anchor
-            let mut parsed_anchor_tokens = parse_output
-                .tokens
-                .iter()
-                .filter(|t| matches!(t, Token::Anchor(_)))
-                .cloned()
-                .collect::<Vec<Token>>();
-            parsed_anchor_tokens.extend_from_slice(
-                &parse_output
-                    .format_tokens
-                    .iter()
-                    .filter(|t| matches!(t, Token::Anchor(_)))
-                    .cloned()
-                    .collect::<Vec<Token>>(),
-            );
+            let parsed_anchors =
+                parse_output.only(&Token::Anchor(Box::default()));
             let mut anchors: Vec<Anchor> = vec![];
             for token in parsed_anchor_tokens {
                 if let Token::Anchor(token_data) = token {
@@ -678,8 +667,7 @@ mod tests {
         graph.modulate();
 
         let node = graph.nodes.get("NodeOne").unwrap();
-        let connections = node.connections.as_ref().unwrap();
-        let connection = connections.get("NodeTwo").unwrap();
+        let connection = node.connections.get("NodeTwo").unwrap();
         println!("{connection:#?}");
         assert!(!connection.detached);
     }
@@ -698,10 +686,8 @@ mod tests {
 
         let n01 = graph.nodes.get("n01").unwrap();
         let n02 = graph.nodes.get("n02").unwrap();
-        let n01_connections = n01.connections.as_ref().unwrap();
-        let n02_connections = n02.connections.as_ref().unwrap();
-        let n01_to_n02 = n01_connections.get("n02").unwrap();
-        let n02_to_n03 = n02_connections.get("n03").unwrap();
+        let n01_to_n02 = n01.connections.get("n02").unwrap();
+        let n02_to_n03 = n02.connections.get("n03").unwrap();
 
         assert_eq!(n01_to_n02.from, "n01");
         assert_eq!(n01_to_n02.to, "n02");
@@ -728,16 +714,12 @@ mod tests {
         let n02 = graph.nodes.get("n02").unwrap();
         let n04 = graph.nodes.get("n04").unwrap();
 
-        let n01_connections = n01.connections.as_ref().unwrap();
-        let n02_connections = n02.connections.as_ref().unwrap();
-        let n04_connections = n04.connections.as_ref().unwrap();
+        let n01_to_n02 = n01.connections.get("n02").unwrap();
+        let n01_to_n03 = n01.connections.get("n03").unwrap();
+        let n01_to_n04 = n01.connections.get("n04").unwrap();
 
-        let n01_to_n02 = n01_connections.get("n02").unwrap();
-        let n01_to_n03 = n01_connections.get("n03").unwrap();
-        let n01_to_n04 = n01_connections.get("n04").unwrap();
-
-        let n04_to_n01 = n04_connections.get("n01").unwrap();
-        let n04_to_n03 = n04_connections.get("n03").unwrap();
+        let n04_to_n01 = n04.connections.get("n01").unwrap();
+        let n04_to_n03 = n04.connections.get("n03").unwrap();
 
         assert_eq!(n01_to_n02.from, "n01");
         assert_eq!(n01_to_n02.to, "n02");
@@ -751,7 +733,7 @@ mod tests {
         assert_eq!(n01_to_n04.to, "n04");
         assert!(!n01_to_n04.detached);
 
-        assert!(n02_connections.is_empty());
+        assert!(n02.connections.is_empty());
 
         assert_eq!(n04_to_n01.from, "n04");
         assert_eq!(n04_to_n01.to, "n01");
@@ -883,11 +865,9 @@ mod tests {
         ).unwrap();
         graph.modulate();
 
-        let n1_to_n2 = graph.nodes.get("n1").unwrap()
-            .connections.as_ref().unwrap().get("n2");
+        let n1_to_n2 = graph.nodes.get("n1").unwrap().connections.get("n2");
 
-        let n2_to_n0 = graph.nodes.get("n2").unwrap()
-            .connections.as_ref().unwrap().get("n0");
+        let n2_to_n0 = graph.nodes.get("n2").unwrap().connections.get("n0");
 
         println!("{n1_to_n2:#?}");
         println!("{n2_to_n0:#?}");

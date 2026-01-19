@@ -1,4 +1,4 @@
-use crate::syntax::content::Parseable;
+use crate::syntax::content::Parseable as _;
 
 pub mod anchor;
 pub mod bold;

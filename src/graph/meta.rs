@@ -145,11 +145,23 @@ impl std::fmt::Display for Version {
 }
 
 impl Version {
+    /// Parses the compile-time version into a Version struct.
+    ///
+    /// # Errors
+    /// This function is a thin wrapper around `Meta::from_text` and will
+    /// return its errors without change.
     pub fn from_compilation() -> Result<Version, VersionError> {
-        Version::from_str(env!("CARGO_PKG_VERSION"))
+        Version::from_text(env!("CARGO_PKG_VERSION"))
     }
 
-    pub fn from_str(version: &str) -> Result<Version, VersionError> {
+    /// Parses a string into a Version struct
+    ///
+    /// It is expected for the version string to contain exactly three
+    /// dot-separated numeric values with an optional leading `v` character.
+    ///
+    /// # Errors
+    /// Will error if the version string is malformed.
+    pub fn from_text(version: &str) -> Result<Version, VersionError> {
         use VersionErrorCause::*;
 
         let triple: Vec<String> =
@@ -384,7 +396,7 @@ mod tests {
     #[test]
     fn version_from_str() {
         let payload = "3.9.74";
-        let version_result = Version::from_str(payload);
+        let version_result = Version::from_text(payload);
 
         println!("{version_result:#?}");
         assert_eq!(format!("{}", version_result.unwrap()), payload);
@@ -392,30 +404,30 @@ mod tests {
 
     #[test]
     fn missing_major() {
-        let error = Version::from_str("").unwrap_err();
+        let error = Version::from_text("").unwrap_err();
         println!("{error:#?}");
         assert!(matches!(error.cause, VersionErrorCause::MissingMajor));
     }
 
     #[test]
     fn missing_minor() {
-        let error = Version::from_str("3").unwrap_err();
+        let error = Version::from_text("3").unwrap_err();
         println!("{error:#?}");
         assert!(matches!(error.cause, VersionErrorCause::MissingMinor));
     }
 
     #[test]
     fn missing_patch() {
-        let error = Version::from_str("3.6").unwrap_err();
+        let error = Version::from_text("3.6").unwrap_err();
         assert!(matches!(error.cause, VersionErrorCause::MissingPatch));
     }
 
     #[test]
     fn malformed_patch() {
-        let error = Version::from_str("3.6.x").unwrap_err();
+        let error = Version::from_text("3.6.x").unwrap_err();
         assert!(matches!(error.cause, VersionErrorCause::FailedPatchParse));
 
-        let error_empty = Version::from_str("3.6.").unwrap_err();
+        let error_empty = Version::from_text("3.6.").unwrap_err();
         assert!(matches!(
             error_empty.cause,
             VersionErrorCause::FailedPatchParse
@@ -424,28 +436,28 @@ mod tests {
 
     #[test]
     fn malformed_minor() {
-        let error = Version::from_str("3.x.0").unwrap_err();
+        let error = Version::from_text("3.x.0").unwrap_err();
         assert!(matches!(error.cause, VersionErrorCause::FailedMinorParse));
 
-        let error_bad_patch = Version::from_str("3.x.z").unwrap_err();
+        let error_bad_patch = Version::from_text("3.x.z").unwrap_err();
         assert!(matches!(
             error_bad_patch.cause,
             VersionErrorCause::FailedMinorParse
         ));
 
-        let error_empty_patch = Version::from_str("3.x.").unwrap_err();
+        let error_empty_patch = Version::from_text("3.x.").unwrap_err();
         assert!(matches!(
             error_empty_patch.cause,
             VersionErrorCause::FailedMinorParse
         ));
 
-        let error_patchless = Version::from_str("3.x").unwrap_err();
+        let error_patchless = Version::from_text("3.x").unwrap_err();
         assert!(matches!(
             error_patchless.cause,
             VersionErrorCause::FailedMinorParse
         ));
 
-        let error_empty = Version::from_str("3.").unwrap_err();
+        let error_empty = Version::from_text("3.").unwrap_err();
         assert!(matches!(
             error_empty.cause,
             VersionErrorCause::FailedMinorParse
@@ -454,67 +466,67 @@ mod tests {
 
     #[test]
     fn malformed_major() {
-        let error = Version::from_str("x.6.0").unwrap_err();
+        let error = Version::from_text("x.6.0").unwrap_err();
         assert!(matches!(error.cause, VersionErrorCause::FailedMajorParse));
 
-        let error_bad_patch = Version::from_str("x.y.z").unwrap_err();
+        let error_bad_patch = Version::from_text("x.y.z").unwrap_err();
         assert!(matches!(
             error_bad_patch.cause,
             VersionErrorCause::FailedMajorParse
         ));
 
-        let error_empty_patch = Version::from_str("x.6.").unwrap_err();
+        let error_empty_patch = Version::from_text("x.6.").unwrap_err();
         assert!(matches!(
             error_empty_patch.cause,
             VersionErrorCause::FailedMajorParse
         ));
 
-        let error_patchless = Version::from_str("x.6").unwrap_err();
+        let error_patchless = Version::from_text("x.6").unwrap_err();
         assert!(matches!(
             error_patchless.cause,
             VersionErrorCause::FailedMajorParse
         ));
 
-        let error_bad_minor = Version::from_str("x.y").unwrap_err();
+        let error_bad_minor = Version::from_text("x.y").unwrap_err();
         assert!(matches!(
             error_bad_minor.cause,
             VersionErrorCause::FailedMajorParse
         ));
 
-        let error_empty_minor = Version::from_str("x.").unwrap_err();
+        let error_empty_minor = Version::from_text("x.").unwrap_err();
         assert!(matches!(
             error_empty_minor.cause,
             VersionErrorCause::FailedMajorParse
         ));
 
-        let error_minorless = Version::from_str("x").unwrap_err();
+        let error_minorless = Version::from_text("x").unwrap_err();
         assert!(matches!(
             error_minorless.cause,
             VersionErrorCause::FailedMajorParse
         ));
 
-        let error_empty = Version::from_str("").unwrap_err();
+        let error_empty = Version::from_text("").unwrap_err();
         assert!(matches!(error_empty.cause, VersionErrorCause::MissingMajor));
     }
 
     #[test]
     fn version_validation() {
         assert!(["3.1.4.", "3.1.4.1"].iter().all(|s| matches!(
-            Version::from_str(s).unwrap_err().cause,
+            Version::from_text(s).unwrap_err().cause,
             VersionErrorCause::FailedValidation
         )));
     }
 
     #[test]
     fn leading_v() {
-        let version = Version::from_str("v3.1.4").unwrap();
+        let version = Version::from_text("v3.1.4").unwrap();
         assert_eq!(format!("{version}"), "3.1.4");
     }
 
     #[test]
     fn display_version_error_cause() {
         fn assert(version: &str, message: &str) {
-            let error = Version::from_str(version).unwrap_err();
+            let error = Version::from_text(version).unwrap_err();
             assert_eq!(format!("{error}"), message);
         }
 
@@ -549,7 +561,7 @@ mod tests {
                 invalid digit found in string",
         );
 
-        let validation_error = Version::from_str("3.1.4.1..").unwrap_err();
+        let validation_error = Version::from_text("3.1.4.1..").unwrap_err();
         println!("{validation_error}");
 
         assert!(matches!(

@@ -176,7 +176,7 @@ mod tests {
     fn render_with_context() {
         let payload = "dBgIw8DnNHxJojiXzu445qUC4UpxwZCy";
         let mut context = tera::Context::default();
-        let node = crate::graph::Node::new(Some(payload.to_string()));
+        let node = crate::graph::Node::not_found(Some(payload.to_string()));
         let graph = Graph::load();
         context.insert("node", &node);
         context.insert("graph", &graph);

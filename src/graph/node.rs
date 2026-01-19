@@ -35,7 +35,7 @@ pub struct Stats {
 }
 
 impl Node {
-    pub fn new(message: Option<String>) -> Node {
+    pub fn not_found(message: Option<String>) -> Node {
         Node {
             id: "404".to_string(),
             title: "Not Found".to_string(),
@@ -55,35 +55,36 @@ impl Node {
 
 impl std::fmt::Display for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut meta = String::default();
-        if self.title.is_empty() {
-            meta.push_str("title:none");
-        } else {
-            meta.push_str(&format!("title:'{}'", self.title));
+        let mut meta_elements: Vec<String> = vec![];
+
+        if !self.title.is_empty() {
+            meta_elements.push(format!("title:'{}'", self.title));
         }
-        if self.text.is_empty() {
-            meta.push_str(" text:none");
-        } else {
-            meta.push_str(&format!(" text:{}l", self.text.len()));
+
+        if !self.text.is_empty() {
+            meta_elements.push(format!("text:{}l", self.text.len()));
         }
-        if self.summary.is_empty() {
-            meta.push_str(" summary:none");
-        } else {
-            meta.push_str(&format!(" summary:{}", self.summary.len()));
+
+        if !self.summary.is_empty() {
+            meta_elements.push(format!("summary:{}", self.summary.len()));
         }
-        if self.redirect.is_empty() {
-            meta.push_str(" redirect:none");
-        } else {
-            meta.push_str(&format!(" redirect:{}", self.redirect));
+
+        if !self.redirect.is_empty() {
+            meta_elements.push(format!("redirect:{}", self.redirect));
         }
+
         let links = self.links.len();
         if links > 0 {
-            meta.push_str(&format!(" links:{links}"));
+            meta_elements.push(format!("links:{links}"));
         }
+
         if self.hidden {
-            meta.push_str(" hidden");
+            meta_elements.push(String::from("hidden"));
         }
-        write!(f, "Node: ID '{}' {meta}", self.id)
+
+        let meta = meta_elements.join(" ");
+
+        write!(f, "Node {} [{meta}]", self.id)
     }
 }
 
@@ -93,7 +94,68 @@ mod tests {
 
     #[test]
     fn empty_node_message() {
-        let node = Node::new(None);
+        let node = Node::not_found(None);
         assert_eq!(node.text, "Node not found.");
+    }
+
+    #[test]
+    fn display() {
+        let mut node = Node::not_found(None);
+        assert_eq!(format!("{node}"), "Node 404 [title:'Not Found' text:15l]");
+
+        let summary = "X2hSwanDoLdqLZNnYJagcWKFJVAx5TGF";
+        node.summary = String::from(summary);
+        assert_eq!(
+            format!("{node}"),
+            format!(
+                "Node 404 [title:'Not Found' text:15l summary:{}]",
+                summary.len()
+            )
+        );
+
+        let redirect = "ukfF3kz130oUzT2ushBIvEHx8xoY8ke0";
+        node.redirect = String::from(redirect);
+        assert_eq!(
+            format!("{node}"),
+            format!(
+                "Node 404 [title:'Not Found' text:15l summary:{} redirect:{redirect}]",
+                summary.len(),
+            )
+        );
+
+        node.links.push(String::from("1"));
+        node.links.push(String::from("2"));
+        node.links.push(String::from("3"));
+
+        assert_eq!(
+            format!("{node}"),
+            format!(
+                "Node 404 [\
+                    title:'Not Found' \
+                    text:15l summary:{} \
+                    redirect:{redirect} \
+                    links:{}\
+                    ]",
+                summary.len(),
+                node.links.len(),
+            )
+        );
+
+        node.hidden = true;
+
+        assert_eq!(
+            format!("{node}"),
+            format!(
+                "Node 404 [\
+                    title:'Not Found' \
+                    text:15l summary:{} \
+                    redirect:{redirect} \
+                    links:{} \
+                    hidden\
+                    ]",
+                summary.len(),
+                node.links.len(),
+            )
+        );
     }
 }

@@ -170,6 +170,11 @@ impl Graph {
         }
     }
 
+    fn gather_stats(&mut self) {
+        let detached = self.stats.detached.values();
+        self.stats.detached_total = detached.sum();
+    }
+
     pub fn modulate(&mut self) {
         let mut instant = now();
         instant = tlog!(&instant, "Started node modulation");
@@ -181,6 +186,8 @@ impl Graph {
         instant = tlog!(&instant, "Modulated edges");
         self.map_incoming();
         instant = tlog!(&instant, "Mapped incoming edges");
+        self.gather_stats();
+        instant = tlog!(&instant, "Gathered stats");
         self.parse_config();
         tlog!(&instant, "Parsed configuration");
     }
@@ -221,8 +228,10 @@ impl Graph {
                 }
 
                 // Flag detached edges
-                if (!edge.to.is_empty() && in_nodes.contains_key(&edge.to))  ||
-                    (edge.to.is_empty() && in_nodes.contains_key(&new_edge.to)) {
+                if (!edge.to.is_empty() && in_nodes.contains_key(&edge.to))
+                    || (edge.to.is_empty()
+                        && in_nodes.contains_key(&new_edge.to))
+                {
                     new_edge.detached = false;
                 } else {
                     new_edge.detached = true;
@@ -311,7 +320,7 @@ impl Graph {
             let parsed_anchors =
                 parse_output.only(&Token::Anchor(Box::default()));
             let mut anchors: Vec<Anchor> = vec![];
-            for token in parsed_anchor_tokens {
+            for token in parsed_anchors {
                 if let Token::Anchor(token_data) = token {
                     anchors.push(*token_data.clone());
                 }
@@ -319,27 +328,33 @@ impl Graph {
 
             for anchor in anchors {
                 if let Some(anchor_node) = anchor.node() {
-                    if let Some(ref mut connections) = node.connections {
-                        connections.insert(
-                            anchor_node.id.clone(),
-                            Edge {
-                                from: key.clone(),
-                                to: anchor_node.id,
-                                detached: false,
-                            },
-                        );
-                    }
+                    node.connections.insert(
+                        anchor_node.id.clone(),
+                        Edge {
+                            from: key.clone(),
+                            to: anchor_node.id,
+                            detached: false,
+                        },
+                    );
                 } else {
                     if let Some(destination) = anchor.destination()
                         && !anchor.external()
                     {
+                        let trimmed_destination = destination
+                            .trim_start_matches("/node/")
+                            .to_string();
+                        node.connections.insert(
+                            trimmed_destination.clone(),
+                            Edge {
+                                from: key.clone(),
+                                to: trimmed_destination.clone(),
+                                detached: true,
+                            },
+                        );
+
                         self.stats
                             .detached
-                            .entry(
-                                destination
-                                    .trim_start_matches("/node/")
-                                    .to_string(),
-                            )
+                            .entry(trimmed_destination)
                             .and_modify(|count| {
                                 *count = count.saturating_add(1);
                             })
@@ -348,8 +363,6 @@ impl Graph {
                 }
             }
         }
-
-
     }
 
     fn increment_detached(&mut self, node_id: &str) {
@@ -358,7 +371,6 @@ impl Graph {
             .entry(node_id.to_string())
             .and_modify(|count| *count = count.saturating_add(1))
             .or_insert(1);
-        self.stats.detached_total = self.stats.detached_total.saturating_add(1);
     }
 
     pub fn map_lowercase_keys(&mut self) {
@@ -417,7 +429,11 @@ impl Graph {
                     redirect: true,
                 }
             } else {
-                QueryResult::default()
+                QueryResult {
+                    node: None,
+                    exact: false,
+                    redirect: true,
+                }
             }
         } else {
             log!(VERBOSE, "Returning candidate {candidate}");
@@ -443,7 +459,7 @@ pub enum Format {
     Unsupported,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SerialErrorCause {
     UnsupportedFormat,
     MalformedInput,
@@ -459,7 +475,7 @@ impl std::fmt::Display for SerialErrorCause {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SerialError {
     pub cause: SerialErrorCause,
     pub message: String,

@@ -45,6 +45,7 @@
     src: url("reforma/Reforma1969-Gris.woff2") format("woff2");
     font-family: "prose";
     font-weight: bold;
+    size-adjust: 120%;
     display: swap;
 }
 
@@ -53,6 +54,7 @@
     src: url("prose-italic");
     font-family: "prose";
     font-style: italic;
+    size-adjust: 120%;
     display: swap;
 }
 
@@ -61,5 +63,6 @@
     font-family: "prose";
     font-weight: bold;
     font-style: italic;
+    size-adjust: 120%;
     display: swap;
 }

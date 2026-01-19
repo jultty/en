@@ -89,4 +89,10 @@ mod tests {
             "Tk:Item [<unknown>] dRMy4"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let item = Item::new("", None);
+        assert_eq!(item.flatten(), "");
+    }
 }

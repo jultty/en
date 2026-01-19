@@ -15,29 +15,6 @@ pub struct Anchor {
 }
 
 impl Anchor {
-    pub fn new(
-        text: &str,
-        destination: &str,
-        node: Option<Node>,
-        node_id: Option<String>,
-        leading: bool,
-        external: bool,
-        balanced: bool,
-    ) -> Anchor {
-        let mut anchor = Anchor {
-            text: text.to_owned(),
-            destination: Some(String::from(destination)),
-            node,
-            node_id,
-            leading,
-            external,
-            balanced,
-        };
-
-        anchor.route();
-        anchor
-    }
-
     pub fn text(&self) -> String {
         self.text.clone()
     }
@@ -286,5 +263,19 @@ mod tests {
         anchor.set_destination(None);
         anchor.route(); // set_destination also called this
         assert!(anchor.destination().is_none());
+    }
+
+    #[test]
+    fn set_node_id() {
+        let payload = "kxBDJ0EoDVaygxpZ8NgNdQrUIBsGimTs";
+        let mut anchor = Anchor::default();
+        anchor.set_node_id(payload);
+        assert_eq!(anchor.node_id.unwrap(), payload);
+    }
+
+    #[test]
+    fn display_no_destination() {
+        let anchor = Anchor::default();
+        assert_eq!(format!("{anchor}"), "Anchor <empty> -> <unknown>");
     }
 }

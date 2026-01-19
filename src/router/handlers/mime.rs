@@ -92,3 +92,52 @@ impl Mime {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn smoke() {
+        let m = Mime::guess("/home/jane/top/inner/kitty.png");
+        assert_eq!(String::from(m), "image/png");
+    }
+
+    #[test]
+    fn all() {
+        let pairs = [
+            ("file.txt", "text/plain"),
+            ("file.csv", "text/csv"),
+            ("file.css", "text/css"),
+            ("file.ttf", "font/ttf"),
+            ("file.otf", "font/otf"),
+            ("file.woff", "font/woff"),
+            ("file.woff2", "font/woff2"),
+            ("file.svg", "image/svg+xml"),
+            ("file.ico", "image/x-icon"),
+            ("file.jpeg", "image/jpeg"),
+            ("file.png", "image/png"),
+            ("file.apng", "image/apng"),
+            ("caddy.gif", "image/gif"),
+            ("file.webp", "image/webp"),
+            ("file.avif", "image/avif"),
+            ("file.toml", "application/toml"),
+            ("file.xml", "application/xml"),
+            ("file.json", "application/json"),
+            ("file.js", "text/javascript"),
+            ("file.pdf", "application/pdf"),
+            ("book.epub", "application/epub+zip"),
+            ("weird.xzx", "application/octet-stream"),
+        ];
+
+        for (file, mime) in pairs {
+            assert_eq!(String::from(Mime::guess(file)), mime);
+        }
+    }
+
+    #[test]
+    fn unknown() {
+        let u = Mime::guess("x");
+        assert!(matches!(u, Mime::Unknown));
+    }
+}

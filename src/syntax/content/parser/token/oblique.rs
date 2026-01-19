@@ -79,4 +79,10 @@ mod tests {
             "Tk:Oblique [closed]"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let oblique = Oblique::new(false);
+        assert_eq!(oblique.flatten(), "");
+    }
 }

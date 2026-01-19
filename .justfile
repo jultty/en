@@ -263,7 +263,7 @@ export CARGO_TERM_COLOR := 'always'
 
 debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
-cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|dev\.rs"'
+cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'
 just_cmd := 'just --timestamp --explain --command-color green'
 
 set unstable

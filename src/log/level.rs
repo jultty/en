@@ -59,28 +59,26 @@ impl From<u16> for Level {
 
 impl From<&str> for Level {
     fn from(s: &str) -> Level {
-        if s == "0" || s == "SILENT" || s == "silent" {
+        if s == "0" || s.to_uppercase() == "SILENT" {
             Level::SILENT
-        } else if s == "1" || s == "FATAL" || s == "fatal" {
+        } else if s == "1" || s.to_uppercase() == "FATAL" {
             Level::FATAL
-        } else if s == "2" || s == "ERROR" || s == "error" {
+        } else if s == "2" || s.to_uppercase() == "ERROR" {
             Level::ERROR
         } else if s == "3"
-            || s == "WARN"
-            || s == "warn"
-            || s == "WARNING"
-            || s == "warning"
+            || s.to_uppercase() == "WARN"
+            || s.to_uppercase() == "WARNING"
         {
             Level::WARN
-        } else if s == "4" || s == "INFO" || s == "info" {
+        } else if s == "4" || s.to_uppercase() == "INFO" {
             Level::INFO
-        } else if s == "5" || s == "DEBUG" || s == "debug" {
+        } else if s == "5" || s.to_uppercase() == "DEBUG" {
             Level::DEBUG
-        } else if s == "6" || s == "VERBOSE" || s == "verbose" {
+        } else if s == "6" || s.to_uppercase() == "VERBOSE" {
             Level::VERBOSE
-        } else if s == "7" || s == "TRACE" || s == "trace" {
+        } else if s == "7" || s.to_uppercase() == "TRACE" {
             Level::TRACE
-        } else if s == "37" || s == "META" || s == "meta" {
+        } else if s == "37" || s.to_uppercase() == "META" {
             Level::META
         } else {
             super::ENV_DEFAULT
@@ -101,5 +99,96 @@ impl std::fmt::Display for Level {
             Level::META => "META",
         };
         write!(f, "{s}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn u16_from_level() {
+        assert_eq!(u16::from(Level::SILENT), 0);
+        assert_eq!(u16::from(Level::FATAL), 1);
+        assert_eq!(u16::from(Level::ERROR), 2);
+        assert_eq!(u16::from(Level::WARN), 3);
+        assert_eq!(u16::from(Level::INFO), 4);
+        assert_eq!(u16::from(Level::DEBUG), 5);
+        assert_eq!(u16::from(Level::VERBOSE), 6);
+        assert_eq!(u16::from(Level::TRACE), 7);
+        assert_eq!(u16::from(Level::META), 37);
+    }
+
+    #[test]
+    fn level_from_u16() {
+        assert_eq!(Level::from(0), Level::SILENT);
+        assert_eq!(Level::from(1), Level::FATAL);
+        assert_eq!(Level::from(2), Level::ERROR);
+        assert_eq!(Level::from(3), Level::WARN);
+        assert_eq!(Level::from(4), Level::INFO);
+        assert_eq!(Level::from(5), Level::DEBUG);
+        assert_eq!(Level::from(6), Level::VERBOSE);
+        assert_eq!(Level::from(7), Level::TRACE);
+        assert_eq!(Level::from(37), Level::META);
+        assert_eq!(Level::from(99), Level::WARN);
+    }
+
+    #[test]
+    fn level_from_str() {
+        assert_eq!(Level::from("0"), Level::SILENT);
+        assert_eq!(Level::from("SILENT"), Level::SILENT);
+        assert_eq!(Level::from("silent"), Level::SILENT);
+        assert_eq!(Level::from("SiLEnT"), Level::SILENT);
+
+        assert_eq!(Level::from("1"), Level::FATAL);
+        assert_eq!(Level::from("FATAL"), Level::FATAL);
+        assert_eq!(Level::from("fatal"), Level::FATAL);
+        assert_eq!(Level::from("FaTaL"), Level::FATAL);
+
+        assert_eq!(Level::from("3"), Level::WARN);
+        assert_eq!(Level::from("WARN"), Level::WARN);
+        assert_eq!(Level::from("warn"), Level::WARN);
+        assert_eq!(Level::from("WaRn"), Level::WARN);
+        assert_eq!(Level::from("WARNING"), Level::WARN);
+        assert_eq!(Level::from("warning"), Level::WARN);
+        assert_eq!(Level::from("WaRninG"), Level::WARN);
+
+        assert_eq!(Level::from("4"), Level::INFO);
+        assert_eq!(Level::from("INFO"), Level::INFO);
+        assert_eq!(Level::from("info"), Level::INFO);
+        assert_eq!(Level::from("iNFo"), Level::INFO);
+
+        assert_eq!(Level::from("5"), Level::DEBUG);
+        assert_eq!(Level::from("DEBUG"), Level::DEBUG);
+        assert_eq!(Level::from("debug"), Level::DEBUG);
+        assert_eq!(Level::from("deBuG"), Level::DEBUG);
+
+        assert_eq!(Level::from("6"), Level::VERBOSE);
+        assert_eq!(Level::from("VERBOSE"), Level::VERBOSE);
+        assert_eq!(Level::from("verbose"), Level::VERBOSE);
+        assert_eq!(Level::from("VerBosE"), Level::VERBOSE);
+
+        assert_eq!(Level::from("7"), Level::TRACE);
+        assert_eq!(Level::from("TRACE"), Level::TRACE);
+        assert_eq!(Level::from("trace"), Level::TRACE);
+        assert_eq!(Level::from("trAcE"), Level::TRACE);
+
+        assert_eq!(Level::from("37"), Level::META);
+        assert_eq!(Level::from("META"), Level::META);
+        assert_eq!(Level::from("meta"), Level::META);
+        assert_eq!(Level::from("mETa"), Level::META);
+    }
+
+    #[test]
+    fn display_level() {
+        assert_eq!(format!("{}", Level::SILENT), "SILENT");
+        assert_eq!(format!("{}", Level::FATAL), "FATAL");
+        assert_eq!(format!("{}", Level::ERROR), "ERROR");
+        assert_eq!(format!("{}", Level::WARN), "WARNING");
+        assert_eq!(format!("{}", Level::INFO), "INFO");
+        assert_eq!(format!("{}", Level::DEBUG), "DEBUG");
+        assert_eq!(format!("{}", Level::VERBOSE), "VERBOSE");
+        assert_eq!(format!("{}", Level::TRACE), "TRACE");
+        assert_eq!(format!("{}", Level::META), "META");
     }
 }

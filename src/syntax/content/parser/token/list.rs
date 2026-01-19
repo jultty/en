@@ -189,4 +189,23 @@ mod tests {
         let lexeme = Lexeme::new("SL6PX", "6xsNB", "oeAHa");
         List::lex(&lexeme);
     }
+
+    #[test]
+    fn ordered_list() {
+        let mut list = List::new(true);
+        list.items = vec![
+            Item::new("a", Some(0)),
+            Item::new("b", Some(0)),
+            Item::new("c", Some(0)),
+        ];
+
+        assert_eq!(
+            list.render(),
+            "\n<ol>\n\
+            <li>a</li>\n\
+            <li>b</li>\n\
+            <li>c</li>\n\
+            </ol>\n\n"
+        );
+    }
 }

@@ -75,4 +75,10 @@ mod tests {
             "Tk:CheckBox [empty]"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let checkbox = CheckBox::new(false);
+        assert_eq!(checkbox.flatten(), "");
+    }
 }

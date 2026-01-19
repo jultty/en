@@ -320,6 +320,7 @@ td, th {
 
 summary {
     margin-bottom: 15px;
+    cursor: pointer;
 }
 
 hr {

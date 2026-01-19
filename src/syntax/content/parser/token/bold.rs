@@ -76,4 +76,10 @@ mod tests {
             "Tk:Bold [closed]"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let bold = Bold::new(false);
+        assert_eq!(bold.flatten(), "");
+    }
 }

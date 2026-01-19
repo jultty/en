@@ -300,4 +300,30 @@ mod tests {
             "Tk:Header [closed L2]"
         );
     }
+
+    #[test]
+    fn display_unknown_open_state() {
+        let header = Header {
+            open: None,
+            dom_id: None,
+            level: Level::One,
+        };
+
+        assert_eq!(format!("{header}"), "Header [unknown L1]");
+    }
+
+    #[test]
+    fn display_dom_id() {
+        let payload = "WIV0h1wCeY7Pp3FkjgIftJHX1I6YvnSc";
+        let header = Header {
+            open: None,
+            dom_id: Some(payload.to_string()),
+            level: Level::One,
+        };
+
+        assert_eq!(
+            format!("{header}"),
+            format!("Header [unknown L1 DOM ID {payload}]")
+        );
+    }
 }

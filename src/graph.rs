@@ -192,7 +192,7 @@ impl Graph {
         tlog!(&instant, "Parsed configuration");
     }
 
-    /// Construct a HashMap with incoming connections (reversed edges)
+    /// Construct a `HashMap` with incoming connections (reversed edges)
     fn map_incoming(&mut self) {
         for node in self.nodes.clone().into_values() {
             for edge in node.connections.clone().values() {
@@ -310,7 +310,6 @@ impl Graph {
         let graph = self.clone();
         let iterator = self.nodes.iter_mut();
         for (key, node) in iterator {
-
             // Parse node text
             let parse_output = content::rich_parse(&node.text, &graph);
             node.text
@@ -504,7 +503,7 @@ impl std::fmt::Display for Format {
         match self {
             Format::TOML => write!(f, "TOML"),
             Format::JSON => write!(f, "JSON"),
-            Format::Unsupported => write!(f, "Unsupported"),
+            Format::Unsupported => write!(f, "Unsupported format"),
         }
     }
 }
@@ -518,7 +517,15 @@ pub struct QueryResult {
 
 impl std::fmt::Display for QueryResult {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let meta = if self.redirect { "[redirect] " } else { "" };
+        let meta = if self.redirect && self.exact {
+            "[exact redirect] "
+        } else if !self.redirect && self.exact {
+            "[exact] "
+        } else if self.redirect && !self.exact {
+            "[redirect] "
+        } else {
+            ""
+        };
         let node = if let Some(n) = &self.node {
             n.id.clone()
         } else {
@@ -597,21 +604,30 @@ mod tests {
     fn bad_deserial_input() {
         let result = Graph::from_serial("not toml", &Format::TOML);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err().cause, SerialErrorCause::MalformedInput));
+        assert!(matches!(
+            result.unwrap_err().cause,
+            SerialErrorCause::MalformedInput
+        ));
     }
 
     #[test]
     fn bad_deserial_format() {
         let result = Graph::from_serial("not toml", &Format::Unsupported);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err().cause, SerialErrorCause::UnsupportedFormat));
+        assert!(matches!(
+            result.unwrap_err().cause,
+            SerialErrorCause::UnsupportedFormat
+        ));
     }
 
     #[test]
     fn bad_serial_format() {
         let result = Graph::load().to_serial(&Format::Unsupported);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err().cause, SerialErrorCause::UnsupportedFormat));
+        assert!(matches!(
+            result.unwrap_err().cause,
+            SerialErrorCause::UnsupportedFormat
+        ));
     }
 
     #[test]
@@ -625,12 +641,11 @@ mod tests {
 
     #[test]
     fn title_population_from_id() {
-        let mut graph = Graph::from_serial(concat!(
-            "[nodes.TitlelessNode]\n",
-            r#"text = "Some text""#,
-            ),
+        let mut graph = Graph::from_serial(
+            concat!("[nodes.TitlelessNode]\n", r#"text = "Some text""#,),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         let node = graph.nodes.get("TitlelessNode");
@@ -639,13 +654,16 @@ mod tests {
 
     #[test]
     fn no_title_population_from_id_if_title_set() {
-        let mut graph = Graph::from_serial(concat!(
-            "[nodes.TitlefulNode]\n",
-            r#"title = "A Title""#, "\n",
-            r#"text = "Some text""#,
+        let mut graph = Graph::from_serial(
+            concat!(
+                "[nodes.TitlefulNode]\n",
+                r#"title = "A Title""#,
+                "\n",
+                r#"text = "Some text""#,
             ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         let node = graph.nodes.get("TitlefulNode");
@@ -654,32 +672,38 @@ mod tests {
 
     #[test]
     fn detached_edge_is_flagged() {
-        let mut graph = Graph::from_serial(concat!(
-            "[nodes.Node]\n",
-            r#"text = "Some text here""#, "\n\n",
-            "[nodes.Node.connections.Nowhere]\n",
+        let mut graph = Graph::from_serial(
+            concat!(
+                "[nodes.Node]\n",
+                r#"text = "Some text here""#,
+                "\n\n",
+                "[nodes.Node.connections.Nowhere]\n",
             ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         let node = graph.nodes.get("Node").unwrap();
-        let connections = node.connections.as_ref().unwrap();
-        let connection = connections.get("Nowhere").unwrap();
+        let connection = node.connections.get("Nowhere").unwrap();
         assert!(connection.detached);
     }
 
     #[test]
     fn attached_edge_is_not_flagged() {
-        let mut graph = Graph::from_serial(concat!(
-            "[nodes.NodeOne]\n",
-            r#"text = "Some text here""#, "\n\n",
-            "[nodes.NodeOne.connections.NodeTwo]\n\n",
-            "[nodes.NodeTwo]\n",
-            r#"text = "Some other text here""#, "\n\n",
+        let mut graph = Graph::from_serial(
+            concat!(
+                "[nodes.NodeOne]\n",
+                r#"text = "Some text here""#,
+                "\n\n",
+                "[nodes.NodeOne.connections.NodeTwo]\n\n",
+                "[nodes.NodeTwo]\n",
+                r#"text = "Some other text here""#,
+                "\n\n",
             ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         let node = graph.nodes.get("NodeOne").unwrap();
@@ -690,14 +714,16 @@ mod tests {
 
     #[test]
     fn to_and_from_population() {
-        let mut graph = Graph::from_serial(concat!(
-            "[nodes.n01]\n",
-            "[nodes.n01.connections.n02]\n\n",
-            "[nodes.n02]\n",
-            "[nodes.n02.connections.n03]\n\n",
+        let mut graph = Graph::from_serial(
+            concat!(
+                "[nodes.n01]\n",
+                "[nodes.n01.connections.n02]\n\n",
+                "[nodes.n02]\n",
+                "[nodes.n02.connections.n03]\n\n",
             ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         let n01 = graph.nodes.get("n01").unwrap();
@@ -715,15 +741,19 @@ mod tests {
 
     #[test]
     fn links_become_connections() {
-        let mut graph = Graph::from_serial(concat!(
-            "[nodes.n01]\n",
-            r#"links = [ "n02", "n03", "n04" ]"#, "\n\n",
-            "[nodes.n02]\n",
-            "[nodes.n04]\n",
-            r#"links = [ "n01", "n03" ]"#, "\n\n",
+        let mut graph = Graph::from_serial(
+            concat!(
+                "[nodes.n01]\n",
+                r#"links = [ "n02", "n03", "n04" ]"#,
+                "\n\n",
+                "[nodes.n02]\n",
+                "[nodes.n04]\n",
+                r#"links = [ "n01", "n03" ]"#,
+                "\n\n",
             ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         let n01 = graph.nodes.get("n01").unwrap();
@@ -762,14 +792,19 @@ mod tests {
 
     #[test]
     fn detached_count_increments() {
-        let mut graph = Graph::from_serial(concat!(
-            "[nodes.n01]\n",
-            r#"links = [ "n02", "n03", "n04", "n05", "n06", "n10" ]"#, "\n\n",
-            "[nodes.n02]\n",
-            "[nodes.n04]\n",
-            r#"links = [ "n01", "n02", "n03", "n06", "n11", "n15" ]"#, "\n\n"),
+        let mut graph = Graph::from_serial(
+            concat!(
+                "[nodes.n01]\n",
+                r#"links = [ "n02", "n03", "n04", "n05", "n06", "n10" ]"#,
+                "\n\n",
+                "[nodes.n02]\n",
+                "[nodes.n04]\n",
+                r#"links = [ "n01", "n02", "n03", "n06", "n11", "n15" ]"#,
+                "\n\n"
+            ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         assert_eq!(graph.stats.detached_total, 8);
@@ -778,12 +813,15 @@ mod tests {
     #[test]
     fn populated_summary() {
         let text = "vh18qEUN22X2SxLj6lpOOzMBB4N6S0UG";
-        let mut graph = Graph::from_serial(&format!(
-            "[nodes.n01]\n\
+        let mut graph = Graph::from_serial(
+            &format!(
+                "[nodes.n01]\n\
             text = \"{text}\"\n\
-            "),
+            "
+            ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         assert!(graph.nodes.get("n01").unwrap().summary.contains(text));
@@ -794,14 +832,16 @@ mod tests {
     fn supplied_summary() {
         let text = "vh18qEUN22X2SxLj6lpOOzMBB4N6S0UG";
         let summary = "W5dhPgNs7S1Zsq6uPK47MAw8xXyNxwep";
-        let mut graph = Graph::from_serial(&format!(
-            "[nodes.n01]\n\
+        let mut graph = Graph::from_serial(
+            &format!(
+                "[nodes.n01]\n\
             summary = \"{summary}\"\n\
             text = \"{text}\"\n\
             ",
             ),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         assert_eq!(graph.nodes.get("n01").unwrap().summary, summary);
@@ -816,10 +856,11 @@ mod tests {
             6FokUX o OCEc LzZFfR1nkqa hWIF LdrtD3G. PDQwv Ba2PnZ yEBVpqQdt\n\n\
             Py6aoPK FV7iU UdrYB vD UeMvvg u 5kbt 9ZW9x7MR"
         );
-        let mut graph = Graph::from_serial(&format!(
-            "[nodes.n01]\ntext = \"\"\"{text}\"\"\"\n"),
+        let mut graph = Graph::from_serial(
+            &format!("[nodes.n01]\ntext = \"\"\"{text}\"\"\"\n"),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         assert_eq!(graph.nodes.get("n01").unwrap().summary, first_sentence);
@@ -837,7 +878,8 @@ mod tests {
         let mut graph = Graph::from_serial(
             format!("[nodes.n01]\ntext = \"\"\"{text}\"\"\"\n").as_str(),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         assert_eq!(graph.nodes.get("n01").unwrap().summary, first_paragraph);
@@ -845,23 +887,28 @@ mod tests {
 
     #[test]
     fn summary_from_first_300_chars() {
-        let first_300 = concat!("Primis, quod, cum in rerum natura duo ",
+        let first_300 = concat!(
+            "Primis, quod, cum in rerum natura duo ",
             "quaerenda sint, unum, quae materia sit, ex qua quaeque res ",
             "efficiatur, alterum, quae naturales essent nec tamen id, cuius ",
             "causa haec finxerat, assecutus est: Nam si omnes veri erunt, ut ",
             "Epicuri ratio docet, tum denique poterit aliquid cognosci et ",
-            "percipi? Quos q");
-        let tail = concat!("uam autem et praeterita grate meminit et ",
+            "percipi? Quos q"
+        );
+        let tail = concat!(
+            "uam autem et praeterita grate meminit et ",
             "praesentibus ita potitur, ut animadvertat quanta sint ea ",
             "quamque iucunda, neque pendet ex futuris, sed expectat illa, ",
-            "fruitur praesentibus ab iisque vitii");
+            "fruitur praesentibus ab iisque vitii"
+        );
         let text = format!("{first_300}{tail}");
         let summary = format!("{first_300}…");
 
         let mut graph = Graph::from_serial(
             format!("[nodes.n01]\ntext = \"\"\"{text}\"\"\"\n").as_str(),
             &Format::TOML,
-        ).unwrap();
+        )
+        .unwrap();
         graph.modulate();
 
         assert_eq!(graph.nodes.get("n01").unwrap().summary, summary);
@@ -869,16 +916,18 @@ mod tests {
 
     #[test]
     fn anchors_become_connections() {
-
-        let mut graph = Graph::from_serial("\
+        let mut graph = Graph::from_serial(
+            "\
             [nodes.n1]
             text = 'an anchor to |n2|, the existing node'
 
             [nodes.n2]
             text = 'an anchor to |n0|, the nonexistent node'
 
-        ", &Format::TOML,
-        ).unwrap();
+        ",
+            &Format::TOML,
+        )
+        .unwrap();
         graph.modulate();
 
         let n1_to_n2 = graph.nodes.get("n1").unwrap().connections.get("n2");
@@ -890,6 +939,334 @@ mod tests {
 
         assert!(!n1_to_n2.unwrap().detached);
         assert!(n2_to_n0.unwrap().detached);
+    }
+
+    #[test]
+    fn detached_anchors_increase_counts() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            text = 'this |anchor| is detached, as is |this one|.'\n\
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        assert_eq!(graph.stats.detached_total, 2);
+        assert_eq!(*graph.stats.detached.get("anchor").unwrap(), 1);
+        assert_eq!(*graph.stats.detached.get("this one").unwrap(), 1);
+    }
+
+    #[test]
+    fn repeated_detached_anchors_increase_counts() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            text = 'this |anchor| is detached, as appears twice: |anchor|.'\n\
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        assert_eq!(graph.stats.detached_total, 2);
+        assert_eq!(*graph.stats.detached.get("anchor").unwrap(), 2);
+    }
+
+    #[test]
+    fn find_exact() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        let query_result = graph.find_node("n1");
+        assert_eq!(query_result.node.unwrap().id, "n1");
+        assert!(query_result.exact);
+        assert!(!query_result.redirect);
+    }
+
+    #[test]
+    fn find_inexact() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        let query_result = graph.find_node("n 1");
+        println!("{query_result}");
+
+        assert_eq!(query_result.node.unwrap().id, "n1");
+        assert!(!query_result.exact);
+        assert!(!query_result.redirect);
+    }
+
+    #[test]
+    fn find_inexact_to_redirect() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            redirect = 'n3'
+            \n\
+            [nodes.n3]
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        let query_result = graph.find_node("n 1");
+        println!("{query_result}");
+
+        assert_eq!(query_result.node.unwrap().id, "n3");
+        assert!(!query_result.exact);
+        assert!(query_result.redirect);
+    }
+
+    #[test]
+    fn double_recursion_to_redirect() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            redirect = 'n2'
+            \n\
+            [nodes.n2]\n\
+            redirect = 'n 3'
+            \n\
+            [nodes.n3]
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        let query_result = graph.find_node("n 1");
+        println!("{query_result}");
+
+        assert_eq!(query_result.node.unwrap().id, "n3");
+        assert!(!query_result.exact);
+        assert!(query_result.redirect);
+    }
+
+    #[test]
+    fn find_redirect_to_inexisting() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            redirect = 'n0'\n\
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        let query_result = graph.find_node("n1");
+        println!("{query_result}");
+
+        assert!(query_result.node.is_none());
+        assert!(query_result.redirect);
+        assert!(!query_result.exact);
+    }
+
+    #[test]
+    fn find_redirect_to_existing() {
+        let mut graph = Graph::from_serial(
+            "\
+            [nodes.n1]\n\
+            redirect = 'n2'\n\
+            \n\
+            [nodes.n2]
+            ",
+            &Format::TOML,
+        )
+        .unwrap();
+        graph.modulate();
+
+        let query_result = graph.find_node("n1");
+        assert_eq!(query_result.node.unwrap().id, "n2");
+        assert!(query_result.redirect);
+        assert!(!query_result.exact);
+    }
+
+    #[test]
+    fn serial_error_display() {
+        let bad_input = SerialErrorCause::MalformedInput;
+        let bad_format = SerialErrorCause::UnsupportedFormat;
+
+        assert_eq!(format!("{bad_input}"), "Malformed Input");
+        assert_eq!(format!("{bad_format}"), "Unsupported Format");
+    }
+
+    #[test]
+    fn string_from_serial_error() {
+        let bad_input_error_message = "denSehpfhCjr05gUd7TgYLb8veJHAMZW";
+        let bad_input_cause = SerialErrorCause::MalformedInput;
+        let bad_input = SerialError {
+            cause: bad_input_cause.clone(),
+            message: bad_input_error_message.to_string(),
+        };
+
+        let bad_format_error_message = "4brcCkWOgLHBvhLk2OcgTOKQgpKrc1bB";
+        let bad_format_cause = SerialErrorCause::UnsupportedFormat;
+        let bad_format = SerialError {
+            cause: bad_format_cause.clone(),
+            message: bad_format_error_message.to_string(),
+        };
+
+        let s_bad_input = String::from(bad_input.clone());
+        let s_bad_format = String::from(bad_format.clone());
+
+        assert!(s_bad_input.contains(bad_input_error_message));
+        assert!(s_bad_input.contains(bad_input.message.as_str()));
+        assert!(s_bad_input.contains(format!("{bad_input_cause}").as_str()));
+
+        assert!(s_bad_format.contains(bad_format_error_message));
+        assert!(s_bad_format.contains(bad_format.message.as_str()));
+        assert!(s_bad_format.contains(format!("{bad_format_cause}").as_str()));
+    }
+
+    #[test]
+    fn format_from_str() {
+        let uppercase_toml = Format::from("TOML");
+        let lowercase_toml = Format::from("toml");
+        let mixed_case_toml = Format::from("tOmL");
+
+        assert!(matches!(uppercase_toml, Format::TOML));
+        assert!(matches!(lowercase_toml, Format::TOML));
+        assert!(matches!(mixed_case_toml, Format::TOML));
+
+        let uppercase_json = Format::from("JSON");
+        let lowercase_json = Format::from("json");
+        let mixed_case_json = Format::from("JsoN");
+
+        assert!(matches!(uppercase_json, Format::JSON));
+        assert!(matches!(lowercase_json, Format::JSON));
+        assert!(matches!(mixed_case_json, Format::JSON));
+
+        let unsupported = [
+            Format::from("j son"),
+            Format::from(""),
+            Format::from("strawberry"),
+            Format::from(" "),
+            Format::from("\n"),
+        ];
+
+        assert!(unsupported.iter().all(|f| matches!(f, Format::Unsupported)));
+    }
+
+    #[test]
+    fn format_display() {
+        let toml = format!("{}", Format::TOML);
+        let json = format!("{}", Format::JSON);
+        let unsupported = format!("{}", Format::Unsupported);
+
+        assert_eq!(toml, "TOML");
+        assert_eq!(json, "JSON");
+        assert_eq!(unsupported, "Unsupported format");
+    }
+
+    #[test]
+    fn query_result_display() {
+        let mut node = Node::default();
+        let node_id = "nv00qmO6PDrqJheUHOONlCVpuceefS30";
+        node.id = String::from(node_id);
+
+        let none_exact = QueryResult {
+            node: None,
+            exact: true,
+            redirect: false,
+        };
+
+        assert!(!format!("{none_exact}").contains(node_id));
+        assert!(format!("{none_exact}").contains("No Match"));
+        assert!(format!("{none_exact}").contains("exact"));
+        assert!(!format!("{none_exact}").contains("redirect"));
+
+        let some_exact = QueryResult {
+            node: Some(node.clone()),
+            exact: true,
+            redirect: false,
+        };
+
+        assert!(format!("{some_exact}").contains(node_id));
+        assert!(!format!("{some_exact}").contains("No Match"));
+        assert!(format!("{some_exact}").contains("exact"));
+        assert!(!format!("{some_exact}").contains("redirect"));
+
+        let none_redirect = QueryResult {
+            node: None,
+            exact: false,
+            redirect: true,
+        };
+
+        assert!(!format!("{none_redirect}").contains(node_id));
+        assert!(format!("{none_redirect}").contains("No Match"));
+        assert!(format!("{none_redirect}").contains("redirect"));
+        assert!(!format!("{none_redirect}").contains("exact"));
+
+        let some_redirect = QueryResult {
+            node: Some(node.clone()),
+            exact: false,
+            redirect: true,
+        };
+
+        assert!(format!("{some_redirect}").contains(node_id));
+        assert!(!format!("{some_redirect}").contains("No Match"));
+        assert!(format!("{some_redirect}").contains("redirect"));
+        assert!(!format!("{some_redirect}").contains("exact"));
+
+        let some_exact_redirect = QueryResult {
+            node: Some(node.clone()),
+            exact: true,
+            redirect: true,
+        };
+
+        assert!(format!("{some_exact_redirect}").contains(node_id));
+        assert!(!format!("{some_exact_redirect}").contains("No Match"));
+        assert!(format!("{some_exact_redirect}").contains("redirect"));
+        assert!(format!("{some_exact_redirect}").contains("exact"));
+
+        let none_exact_redirect = QueryResult {
+            node: None,
+            exact: true,
+            redirect: true,
+        };
+
+        assert!(!format!("{none_exact_redirect}").contains(node_id));
+        assert!(format!("{none_exact_redirect}").contains("No Match"));
+        assert!(format!("{none_exact_redirect}").contains("redirect"));
+        assert!(format!("{none_exact_redirect}").contains("exact"));
+
+        let none = QueryResult {
+            node: None,
+            exact: false,
+            redirect: false,
+        };
+
+        assert!(!format!("{none}").contains(node_id));
+        assert!(format!("{none}").contains("No Match"));
+        assert!(!format!("{none}").contains("redirect"));
+        assert!(!format!("{none}").contains("exact"));
+
+        let some = QueryResult {
+            node: Some(node.clone()),
+            exact: false,
+            redirect: false,
+        };
+
+        assert!(format!("{some}").contains(node_id));
+        assert!(!format!("{some}").contains("No Match"));
+        assert!(!format!("{some}").contains("redirect"));
+        assert!(!format!("{some}").contains("exact"));
     }
 }
 

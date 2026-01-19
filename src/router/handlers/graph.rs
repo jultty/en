@@ -17,18 +17,11 @@ pub async fn node(
     let instant = now();
     let result = state.graph.find_node(&id);
     let found = result.node.is_some();
-    let node = result
-        .node
-        .unwrap_or(Node::new(Some(format!("Could not find node ID {id}."))));
+    let node = result.node.unwrap_or(Node::not_found(Some(format!(
+        "Could not find node ID {id}."
+    ))));
 
-    if !node.redirect.is_empty() {
-        return Redirect::permanent(
-            format!("/node/{}", node.redirect).as_str(),
-        )
-        .into_response();
-    }
-
-    if found && !result.exact {
+    if found && (!result.exact || result.redirect) {
         return Redirect::permanent(format!("/node/{}", node.id).as_str())
             .into_response();
     }
@@ -60,7 +53,7 @@ mod tests {
         http::{HeaderName, StatusCode},
     };
 
-    use crate::graph::Graph;
+    use crate::graph::{Format, Graph};
 
     use super::*;
 
@@ -106,6 +99,23 @@ mod tests {
     #[tokio::test]
     async fn docs_redirect() {
         let response = wrap_node("docs").await;
+        assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
+    }
+
+    #[tokio::test]
+    async fn standalone_graph_redirect() {
+        let toml = "\
+            [nodes.n1]\n\
+            redirect = 'n2'\n\
+            \n\
+            [nodes.n2]\n\
+            text = 'n2 text'\n\
+            ";
+        let graph = Graph::from_serial(toml, &Format::TOML).unwrap();
+        let state = GlobalState { graph };
+        let response =
+            node(Path("n1".to_string()), axum::extract::State(state)).await;
+
         assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
     }
 }

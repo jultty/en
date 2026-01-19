@@ -99,4 +99,10 @@ mod tests {
             "Tk:PreFormat [unknown]"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let preformat = PreFormat::new(false);
+        assert_eq!(preformat.flatten(), "");
+    }
 }

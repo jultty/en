@@ -168,4 +168,13 @@ mod tests {
                 == "application/json"
         );
     }
+
+    #[tokio::test]
+    async fn not_found() {
+        let state = GlobalState {
+            graph: Graph::default(),
+        };
+        let response = file(Path("/k/j/m".to_string()), State(state)).await;
+        assert!(response.status() == StatusCode::NOT_FOUND);
+    }
 }

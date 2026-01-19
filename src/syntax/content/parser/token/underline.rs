@@ -79,4 +79,10 @@ mod tests {
             "Tk:Underline [closed]"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let underline = Underline::new(false);
+        assert_eq!(underline.flatten(), "");
+    }
 }

@@ -76,4 +76,10 @@ mod tests {
             "Tk:Strike [closed]"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let strike = Strike::new(false);
+        assert_eq!(strike.flatten(), "");
+    }
 }

@@ -584,6 +584,11 @@ text = """
     - [ ] Invert where redirects are set
     - [x] Formatting
         - [ ] Blockquotes
+        - [ ] Tables
+            - `%` block
+            - newline for rows
+            - indented, space-surrounded `!` wrap for headers
+            - indented, space-surrounded `|` wrap for cells
         - [x] Nested formatting
         - [x] Headers
         - [x] Preformatted blocks

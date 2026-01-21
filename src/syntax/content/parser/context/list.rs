@@ -13,6 +13,9 @@ use crate::{
 /// A return of `true` will trigger a continue in the outer parser,
 /// skipping any further parsing of the current lexeme.
 ///
+/// Performs checked arithmetic to the following effect:
+/// - The indent of list items will saturate at `u8::MAX` (255) spaces.
+///
 /// # Panics
 /// This parser can handle only the List context, and will panic if passed an
 /// unrelated context since it has no knowledge on how to handle them.

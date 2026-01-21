@@ -1,4 +1,5 @@
 use crate::{
+    prelude::*,
     syntax::content::{
         Parseable,
         parser::{Lexeme, token::Item},
@@ -20,6 +21,14 @@ impl Parseable for List {
         panic!("Attempt to lex a List directly from a lexeme")
     }
 
+    /// Renders the list to the equivalent HTML representation.
+    ///
+    /// Performs checked arithmetic to the following effects:
+    /// - Strict division is performed but related panics are unreachable given
+    ///   the guarantees described in `List::scale_indent`
+    /// - Saturates subtractions from indent levels at zero. This is not
+    ///   unreachable, but a difference of zero is a no-op considering it
+    ///   would cause an iteration of zero times (over an empty range).
     fn render(&self) -> String {
         let tag = if self.ordered { "ol" } else { "ul" };
         let mut output = String::new();
@@ -68,6 +77,18 @@ impl List {
         }
     }
 
+    /// Calculates the scale to normalize indents.
+    ///
+    /// For example, if two contiguous items have differing indents of 2 and 4,
+    /// the indent scale is 2 and they can be normalized as having indents of
+    /// 1 and 2 respectively.
+    ///
+    /// Performs checked arithmetic to the following effects:
+    /// - The subtraction of outer from inner saturates at 0 due to u8 being
+    ///   unsigned, but such a case is unreachable given the outer condition
+    ///   that guards this subtraction
+    /// - Will not return zero even if it is the calculated width, instead
+    ///   logging the event and returning 1 instead
     fn scale_indent(&self) -> u8 {
         let width = self
             .items
@@ -79,8 +100,12 @@ impl List {
             })
             .unwrap_or(1);
 
-        assert!(width != 0, "Width of zero can't be a divisor");
-        width
+        if width == 0 {
+            log!("Scale indent of 0 can't be a divisor: returning 1 instead");
+            1
+        } else {
+            width
+        }
     }
 }
 

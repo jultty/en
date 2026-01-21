@@ -207,6 +207,10 @@ impl Graph {
         }
     }
 
+    // Modulates nodes that have been deserialized and are still unprocessed.
+    //
+    // Performs checked arithmetic to the following effect:
+    // - Stats will saturate at u32::MAX (increment_detached calls)
     fn modulate_nodes(&mut self) {
         let in_nodes = self.nodes.clone();
 
@@ -306,6 +310,10 @@ impl Graph {
         }
     }
 
+    // Modulates edges that have been deserialized and are still unprocessed.
+    //
+    // This function performs checked arithmetic to the following effect:
+    // - Stats will saturate at u32::MAX
     fn modulate_edges(&mut self) {
         let graph = self.clone();
         let iterator = self.nodes.iter_mut();
@@ -364,6 +372,10 @@ impl Graph {
         }
     }
 
+    // Increments detached node statistics for the given node ID
+    //
+    // This function performs checked arithmetic to the following effect:
+    // - Stats will saturate at u32::MAX
     fn increment_detached(&mut self, node_id: &str) {
         self.stats
             .detached

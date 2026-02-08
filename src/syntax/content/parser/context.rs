@@ -1,20 +1,21 @@
 use crate::syntax::content::parser::{
     State, Token,
-    token::{Header, Paragraph, PreFormat, Quote, Verse},
+    token::{Header, Paragraph, PreFormat, Verse},
 };
 
 pub mod block;
 pub mod inline;
 pub mod anchor;
 pub mod list;
+pub mod quote;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct Context {
     pub block: Block,
     pub inline: Inline,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub enum Block {
     Paragraph,
     Header(u8), // level
@@ -22,13 +23,15 @@ pub enum Block {
     PreFormat,
     Quote,
     Verse,
+    #[default]
     None,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub enum Inline {
     Anchor,
     Code,
+    #[default]
     None,
 }
 
@@ -49,7 +52,7 @@ pub fn close(state: &State, tokens: &mut Vec<Token>) {
             tokens.push(Token::Header(Header::from_u8(level, false, None)));
         },
         Block::Quote => {
-            tokens.push(Token::Quote(Quote::new(false)));
+            panic!("End of input with open quote")
         },
         Block::Verse => {
             tokens.push(Token::Verse(Verse::new(false)));

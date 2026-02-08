@@ -18,7 +18,7 @@ alias r := run
 # Build and serve on changes
 [group: 'develop']
 run-watch:
-    {{ watch_cmd }} {{ just_cmd }} run
+    @{{ watch_cmd }} {{ just_cmd }} run
 
 alias w := run-watch
 

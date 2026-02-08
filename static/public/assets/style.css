@@ -25,7 +25,7 @@ main {
     box-sizing: border-box;
 }
 
-p, section li {
+p:not(.quote-citation), section li {
     font-family: prose, sans-serif;
 }
 
@@ -337,10 +337,21 @@ blockquote {
     font-size: calc(var(--base-font-size) * 1.6);
 }
 
-.verse {
+p.verse {
     font-family: serifed;
     font-size: calc(var(--base-font-size) * 1.6);
     margin-left: 2em;
+}
+
+.quote-citation {
+    margin: 0.5em 0 0 0;
+    text-indent: -1.2em;
+    padding-left: 1em;
+    font-size: calc(var(--base-font-size) * 0.8);
+}
+
+.quote-citation::before {
+    content: "— ";
 }
 
 @media (prefers-color-scheme: dark) {

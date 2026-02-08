@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use crate::syntax::content::parser::{
     Token,
-    context::{Block, Context, Inline},
-    token::{Anchor, Item, List},
+    context::Context,
+    token::{Anchor, Item, List, Quote},
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct State {
     pub context: Context,
     pub dom_ids: HashMap<String, Vec<String>>,
@@ -15,7 +15,7 @@ pub struct State {
     pub format_tokens: Vec<Token>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct Switches {
     pub bold: bool,
     pub oblique: bool,
@@ -23,10 +23,11 @@ pub struct Switches {
     pub underline: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct Buffers {
     pub anchor: AnchorBuffer,
     pub list: ListBuffer,
+    pub quote: QuoteBuffer,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -41,6 +42,12 @@ pub struct AnchorBuffer {
     pub candidate: Anchor,
     pub text: String,
     pub destination: String,
+}
+
+#[derive(Default, Clone, Debug)]
+pub struct QuoteBuffer {
+    pub candidate: Quote,
+    pub in_citation: bool,
 }
 
 impl std::fmt::Display for AnchorBuffer {
@@ -64,37 +71,6 @@ impl std::fmt::Display for AnchorBuffer {
             "AnchorBuffer [{display_text_and_destination}] >> {}",
             self.candidate,
         )
-    }
-}
-
-impl Default for State {
-    fn default() -> State {
-        State {
-            context: Context {
-                inline: Inline::None,
-                block: Block::None,
-            },
-            dom_ids: HashMap::default(),
-            switches: Switches {
-                bold: false,
-                crossout: false,
-                oblique: false,
-                underline: false,
-            },
-            buffers: Buffers {
-                anchor: AnchorBuffer {
-                    candidate: Anchor::default(),
-                    text: String::default(),
-                    destination: String::default(),
-                },
-                list: ListBuffer {
-                    candidate: List::default(),
-                    item_candidate: Item::default(),
-                    depth: 0,
-                },
-            },
-            format_tokens: vec![],
-        }
     }
 }
 

@@ -188,7 +188,7 @@ If you are familiar with Markdown|https://en.wikipedia.org/wiki/Markdown|, you'l
 
 ## Anchors
 
-Anchors have the following basic syntax:
+Anchors are the most important and powerful syntactic element you will work with because they can create connections between nodes when you use them. They have the following basic syntax:
 
 `
 anchor|destination
@@ -197,11 +197,18 @@ anchor|destination
 For example:
 
 `
-DRC|DemocraticRepublicOfTheCongo
+particles|ParticlePhysics
+`
+
+This example will render as the word "particles" pointing to a node with ID `ParticlePhysics` because the destination is not an external URL.
+
+An external anchor looks like this:
+
+`
 docs|https://en.jutty.dev/node/Documentation
 `
 
-As shown above, anchors can point to external addresses. These are identified by the presence of either a `:` or a `/` character in the destination. Otherwise, the anchor will point to a node with an ID matching the destination. This means your anchors to external URLs, special handlers such as `mailto:user@domain.com` and destinations relative to the website root like `/about` will all work as intended without being interpreted as node IDs.
+External anchors are identified by the presence of either a `:` or a `/` character in the destination. This works for special handlers, such as `mailto:user@domain.com`, and destinations relative to the website root like `/about`.
 
 If the left side contains spaces, you need a leading `|` character:
 
@@ -223,6 +230,8 @@ For internal anchors, most punctuation is automatically separated from the ancho
 This gem|PreciousStone, though green, was not an emerald.
 `
 
+> This gem|PreciousStone, though green, was not an emerald.
+
 However, for external anchors, you want to add a third `|` to explicitly set the end because external URLs can have all sorts of arbitrary characters.
 
 ### Node anchors
@@ -234,14 +243,6 @@ A node ID wrapped in two `|` characters will become an anchor to that node:
 `
 |ParticlePhysics|
 `
-
-And two words separated by a single anchor allow you to set a display text and destination:
-
-`
-particles|ParticlePhysics
-`
-
-This example will render as "particles|ParticlePhysics": the word particles pointing to a node with id `ParticlePhysics`.
 
 en can resolve IDs case insensitively (with priority to case-sensitive matches) and will also collapse spaces when trying to resolve an ID, so you can also write:
 
@@ -285,6 +286,9 @@ You can use `[ ]` and `[x]`  to render checkboxes:
 - [x] done
 `
 
+- [ ] not done
+- [x] done
+
 ## Blocks
 
 A block is any group of lines separated by empty lines:
@@ -292,12 +296,12 @@ A block is any group of lines separated by empty lines:
 `
 block A
 still block A
-still block A
+block A's last line
 
 block B starts here
+block B ends here
 
-block C starts here
-still block C
+this is block C
 `
 
 By default, a block not starting with any special syntax is a paragraph, such as this very line you are reading.
@@ -310,7 +314,7 @@ b
 c
 `
 
-You still get "a b c" as a result. This is the case for paragraphs and blockquotes, but not for lists, verse blocks and preformatted text.
+You still get "a b c" as a result. This is the case for paragraphs, but not for lists, verse blocks and preformatted text. Blockquotes support both modes.
 
 This is useful when editing your text, allowing you to break some thoughts and special syntax without losing control over where your paragraph ends, particularly when handling huge paragraphs.
 
@@ -332,7 +336,7 @@ While useful to break a few lines on demand, if you have a large block of lines 
 
 ### Verse
 
-Verse blocks are delimited by a `&` character at their first and last line and are useful to avoid precisely this line-joining behavior of most blocks. They will break all lines without need for a trailing `<` character:
+Verse blocks are delimited by a `&` character at their first and last line and are useful to avoid precisely this line-joining behavior of paragraphs. They will break all lines without need for a trailing `<` character:
 
 `
 &
@@ -341,8 +345,6 @@ Verse blocks are delimited by a `&` character at their first and last line and a
     once they are over
 &
 `
-
-This will be rendered as:
 
 &
     these lines
@@ -352,37 +354,79 @@ This will be rendered as:
 
 ### Quotes
 
-A block of lines starting with a `>` character create a quote:
+A block of lines starting with a `>` character will render as a quote:
 
 `
-> this is a quote
+> Who'll change old lamps for new ones?
 `
+
+> Who'll change old lamps for new ones?
 
 Quote blocks have two forms. If you prepend all blocks with a `>`, line breaks will be preserved, not collapsing the whole quote into a single line:
 
-> a quote where all lines start with > BR
-> still inside BR
-> still inside BR
->
-> above was a line with just a > plus a break BR
-> still inside BR
-> next is an empty line BR
+`
+> When I was alive
+> I was dust which was,
+> But now I am dust in dust
+> I am dust which never was.
+`
+
+> When I was alive
+> I was dust which was,
+> But now I am dust in dust
+> I am dust which never was.
 
 If you would like the quote to be collapsed into a single line instead, you can leave just the first `>` and continue until the next empty line:
 
-> this quote starts here
-and continues here
-until an empty line is found
+`
+> Dois grandes mitos dominam a história oficial do Brasil:
+o mito da índole pacífica do brasileiro e o da "democracia racial".
+-- Benedita da Silva, Speech on the Federal Senate, March 3rd, 1995
+`
+
+> Dois grandes mitos dominam a história oficial do Brasil:
+o mito da índole pacífica do brasileiro e o da "democracia racial".
+-- Benedita da Silva, Speech on the Federal Senate, March 3rd, 1995
 
 You can still use `<` characters to force line breaks in this case.
 
 #### Citation
 
-To add a citation to your qutoe block, you can add lines starting with two `-` characters:
+To add a citation to your quote block, start a line with two `-` characters:
 
-> a quote with _nested_ formatting *syntax and in* particular an anchor|Roadmap BR
-> the quote continuation as it goes on and on
--- quote by |Person Johnson|https://personjohnson.com
+`
+> with no more communion
+> to down as morning pick-me-ups
+> to sweeten afternoon naps
+> to soothe nightmares
+-- Assotto Saint, The Language of Dust
+`
+
+> with no more communion
+> to down as morning pick-me-ups
+> to sweeten afternoon naps
+> to soothe nightmares
+-- Assotto Saint, The Language of Dust
+
+If you have a more complex citation, you can use multiple lines starting with `--`. All such lines will be joined together in the citation. If you need to break lines, use the `<` character at the end of a line:
+
+`
+> Dois grandes mitos dominam a história oficial do Brasil:
+o mito da índole pacífica do brasileiro e o da "democracia racial".
+-- Benedita da Silva,
+-- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
+-- March 3rd, 1995, <
+-- _Dia Internacional para a Eliminação da Discriminação Racial._
+`
+
+> Dois grandes mitos dominam a história oficial do Brasil:
+o mito da índole pacífica do brasileiro e o da "democracia racial".
+-- Benedita da Silva,
+-- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
+-- March 3rd, 1995, <
+-- Dia Internacional para a Eliminação da Discriminação Racial.
+
+The first URL found in your citation will be used as the blockquote element's `cite` field.
 
 ### Lists
 
@@ -394,6 +438,10 @@ A block of lines starting with a `-` character will be rendered as an unordered 
 - crimson
 `
 
+- cyan
+- amber
+- crimson
+
 Lines starting with a `+` character will create numbered lists instead:
 
 `
@@ -402,6 +450,10 @@ Lines starting with a `+` character will create numbered lists instead:
 + san
 `
 
++ ichi
++ ni
++ san
+
 ## Rendering unformatted text
 
 The backtick character `\\`` can be used to render unformatted blocks and inline text:
@@ -409,6 +461,8 @@ The backtick character `\\`` can be used to render unformatted blocks and inline
 `
 The asterisk `*` is special in en markup syntax.
 `
+
+> The asterisk `*` is special in en markup syntax.
 
 Using the syntax above, the asterisk won't be interpreted as the start of bold formatting and instead will be shown like this: `*`.
 
@@ -436,8 +490,6 @@ If you need some more advanced feature that is not supported directly by en's ma
     &lt;/tr&gt;
 &lt;/table&gt;
 `
-
-Which will render to:
 
 <table>
     <tr>
@@ -653,8 +705,8 @@ en is only possible thanks to a number of projects and people:
 - Neovim|https://neovim.io/
 - foot|https://codeberg.org/dnkl/foot
 - tmux|https://github.com/tmux/tmux/
-- |Void Linux|https://voidlinux.org/ and its kernel|https://www.kernel.org/
-- LibreWolf|https://librewolf.net/
+- |Debian|https://debian.org/ and its kernel|https://www.kernel.org/
+- LibreWolf|https://librewolf.net/ and its upstream |Mozilla Firefox|https://www.firefox.com/
 - InkScape|https://inkscape.org/
 """
 

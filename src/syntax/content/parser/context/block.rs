@@ -50,7 +50,7 @@ pub fn parse(
             } else if Quote::probe(lexeme) {
                 log!(VERBOSE, "Block Context: None -> Quote on {lexeme}");
                 state.context.block = Block::Quote;
-                tokens.push(Token::Quote(Quote::new(true)));
+                iterator.next();
                 return true;
             } else if Verse::probe(lexeme) {
                 log!(VERBOSE, "Block Context: None -> Verse on {lexeme}");
@@ -93,15 +93,7 @@ pub fn parse(
             return super::list::parse(lexeme, state, tokens, iterator, graph);
         },
         Block::Quote => {
-            if lexeme.match_char_sequence('\n', '>') {
-                tokens.push(Token::LineBreak(LineBreak::default()));
-                iterator.next();
-                return true;
-            } else if Quote::probe_end(lexeme) {
-                tokens.push(Token::Quote(Quote::new(false)));
-                log!(VERBOSE, "Block Context: Quote -> None on {lexeme}");
-                state.context.block = Block::None;
-            }
+            return super::quote::parse(lexeme, state, tokens, iterator, graph);
         },
         Block::Verse => {
             if Verse::probe_end(lexeme) {

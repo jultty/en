@@ -1,17 +1,23 @@
 use crate::syntax::content::{Parseable, parser::Lexeme};
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Quote {
-    open: Option<bool>,
+    pub text: String,
+    pub citation: Option<String>,
+    pub url: Option<String>,
 }
 
 impl Quote {
-    pub fn new(open: bool) -> Quote {
-        Quote { open: Some(open) }
-    }
-
     pub fn probe_end(lexeme: &Lexeme) -> bool {
         lexeme.match_char_sequence('\n', '\n')
+    }
+
+    pub fn extend_citation(&mut self, s: &str) {
+        if let Some(current) = &self.citation {
+            self.citation = Some(format!("{current}{s}"));
+        } else {
+            self.citation = Some(String::from(s));
+        }
     }
 }
 
@@ -21,19 +27,26 @@ impl Parseable for Quote {
     }
 
     fn lex(_lexeme: &Lexeme) -> Quote {
-        Quote { open: None }
+        Quote::default()
     }
 
     fn render(&self) -> String {
-        if let Some(open) = self.open {
-            if open {
-                "<blockquote>".to_owned()
-            } else {
-                "</blockquote>".to_owned()
-            }
+        let opening = if let Some(url) = &self.url {
+            format!(r#"<blockquote cite="{url}">"#)
         } else {
-            panic!("Attempt to render a quote tag while open state is unknown")
-        }
+            String::from("<blockquote>")
+        };
+
+        let content = if let Some(citation) = &self.citation {
+            format!(
+                r#"{}<br/><p class="quote-citation">{citation}</p>"#,
+                &self.text
+            )
+        } else {
+            String::from(&self.text)
+        };
+
+        format!("\n{opening}\n{content}\n</blockquote>\n")
     }
 
     fn flatten(&self) -> String {
@@ -43,16 +56,14 @@ impl Parseable for Quote {
 
 impl std::fmt::Display for Quote {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let display_open_state = match self.open {
-            Some(open_state) => {
-                if open_state {
-                    "open"
-                } else {
-                    "closed"
-                }
-            },
-            None => "unknown",
-        };
-        write!(f, "Quote [{display_open_state}]")
+        let mut meta = String::default();
+        if self.url.is_some() {
+            meta.push_str("+url ");
+        }
+        if self.citation.is_some() {
+            meta.push_str("+citation ");
+        }
+
+        write!(f, "Quote [{}]", meta.trim())
     }
 }

@@ -72,9 +72,6 @@ a {
     text-decoration: underline dotted #138e8e;
     text-decoration-thickness: 1.5px;
     text-underline-offset: 3px;
-}
-
-a.attached {
     transition: 1500ms;
 }
 
@@ -82,8 +79,8 @@ a.attached:hover,
 #nav-main a:hover
 {
     color: #117c7c;
-    text-decoration-color: #10afaf;
     text-shadow: 0px 0px 22px #10afaf;
+    transition: 1500ms;
 }
 
 a.detached {
@@ -101,6 +98,7 @@ a.external {
 a.external:hover {
     color: #0393b2;
     text-decoration-color: #1ed4f1;
+    transition: 1500ms;
 }
 
 a:visited,
@@ -108,6 +106,8 @@ a.detached:visited,
 a.external:visited
 {
     text-decoration-color: #999;
+    color: #7e20cf;
+    transition: 1500ms;
 }
 
 footer div a {
@@ -155,6 +155,7 @@ span.hidden-label  {
 
 h1 {
     font-family: title, serif;
+    line-height: 1;
 }
 
 h2, h3, h4, h5, h6 {
@@ -168,6 +169,7 @@ main h2 {
 h1, h2, h3, h4, h5, h6 {
     font-weight: 1;
     margin: 10px 0;
+    overflow-wrap: break-word;
 }
 
 h1.node-title {
@@ -184,11 +186,11 @@ h3.connections-title {
 }
 
 h1 { font-size: calc(var(--base-font-size) * 3.6); }
-h2 { font-size: calc(var(--base-font-size) * 3.4); }
-h3 { font-size: calc(var(--base-font-size) * 3.0); }
-h4 { font-size: calc(var(--base-font-size) * 2.6); }
-h5 { font-size: calc(var(--base-font-size) * 2.2); }
-h6 { font-size: calc(var(--base-font-size) * 1.8); }
+h2 { font-size: calc(var(--base-font-size) * 2.8); }
+h3 { font-size: calc(var(--base-font-size) * 2.4); }
+h4 { font-size: calc(var(--base-font-size) * 2.0); }
+h5 { font-size: calc(var(--base-font-size) * 1.6); }
+h6 { font-size: calc(var(--base-font-size) * 1.2); }
 
 footer div {
     margin: 20px 0;
@@ -298,7 +300,6 @@ div#error-poem {
 }
 
 em, i {
-    font-style: oblique 20deg;
     font-weight: 300;
     padding-right: 2px;
 }
@@ -345,28 +346,32 @@ footer hr {
     a {
         color: #1dd7d7;
         text-decoration-color: #159b9b;
+        transition: 1500ms;
     }
 
     a.attached:hover,
     #nav-main a:hover
     {
         color: #00ffff;
-        text-decoration-color: #66ffff;
+        transition: 1500ms;
     }
 
     a.external {
         color: #2fbae4;
         text-decoration-color: #46c1e7;
+        transition: 1500ms;
     }
 
     a.external:hover {
         color: #74e5ff;
         text-decoration-color: #aeffff;
+        transition: 1500ms;
     }
 
     a.detached {
         color: #acacac;
         text-decoration-color: #777;
+        transition: 1500ms;
     }
 
     span.id-label {
@@ -380,6 +385,15 @@ footer hr {
         color: #969696;
     }
 
+
+    a:visited,
+    a.detached:visited,
+    a.external:visited
+    {
+        text-decoration-color: #999;
+        color: #a3a5ff;
+        transition: 1500ms;
+    }
 
     input[type="text"],
     input[type="submit"],

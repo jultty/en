@@ -51,7 +51,6 @@
 
 @font-face {
     src: url("reforma/Reforma1969-BlancaItalica.woff2") format("woff2");
-    src: url("prose-italic");
     font-family: "prose";
     font-style: italic;
     size-adjust: 120%;

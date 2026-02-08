@@ -380,12 +380,12 @@ If you would like the quote to be collapsed into a single line instead, you can 
 
 `
 > Dois grandes mitos dominam a história oficial do Brasil:
-o mito da índole pacífica do brasileiro e o da "democracia racial".
+  o mito da índole pacífica do brasileiro e o da "democracia racial".
 -- Benedita da Silva, Speech on the Federal Senate, March 3rd, 1995
 `
 
 > Dois grandes mitos dominam a história oficial do Brasil:
-o mito da índole pacífica do brasileiro e o da "democracia racial".
+  o mito da índole pacífica do brasileiro e o da "democracia racial".
 -- Benedita da Silva, Speech on the Federal Senate, March 3rd, 1995
 
 You can still use `<` characters to force line breaks in this case.
@@ -412,7 +412,7 @@ If you have a more complex citation, you can use multiple lines starting with `-
 
 `
 > Dois grandes mitos dominam a história oficial do Brasil:
-o mito da índole pacífica do brasileiro e o da "democracia racial".
+  o mito da índole pacífica do brasileiro e o da "democracia racial".
 -- Benedita da Silva,
 -- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
 -- March 3rd, 1995, <
@@ -420,7 +420,7 @@ o mito da índole pacífica do brasileiro e o da "democracia racial".
 `
 
 > Dois grandes mitos dominam a história oficial do Brasil:
-o mito da índole pacífica do brasileiro e o da "democracia racial".
+  o mito da índole pacífica do brasileiro e o da "democracia racial".
 -- Benedita da Silva,
 -- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
 -- March 3rd, 1995, <

@@ -4,10 +4,7 @@ use crate::{
     graph::Graph,
     prelude::*,
     syntax::content::parser::{
-        Lexeme, State, Token,
-        context::Block,
-        format, state,
-        token::{Anchor, Quote},
+        Lexeme, State, Token, context::Block, format, state, token::Quote,
     },
 };
 
@@ -44,15 +41,13 @@ pub fn parse(
                     candidate.citation = Some(formatted_citation);
                     state.format_tokens.extend_from_slice(&citation_tokens);
 
-                    let mut first_anchor = Anchor::default();
-                    for token in citation_tokens {
-                        if let Token::Anchor(token_data) = token {
-                            first_anchor = *token_data.clone();
-                            break;
-                        }
-                    }
-                    if first_anchor.external() {
-                        candidate.url = first_anchor.destination();
+                    if let Some(url) = citation_tokens.into_iter().find_map(
+                        |token| match token {
+                            Token::Anchor(a) if a.external() => a.destination(),
+                            _ => None,
+                        },
+                    ) {
+                        candidate.url = Some(url);
                     }
                 }
 

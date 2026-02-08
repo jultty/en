@@ -332,6 +332,17 @@ footer hr {
     margin-top: 60px;
 }
 
+blockquote {
+    font-family: serifed;
+    font-size: calc(var(--base-font-size) * 1.6);
+}
+
+.verse {
+    font-family: serifed;
+    font-size: calc(var(--base-font-size) * 1.6);
+    margin-left: 2em;
+}
+
 @media (prefers-color-scheme: dark) {
     * {
         background: #222222;

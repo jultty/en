@@ -1,6 +1,6 @@
 use crate::syntax::content::parser::{
     State, Token,
-    token::{Header, Paragraph, PreFormat},
+    token::{Header, Paragraph, PreFormat, Quote, Verse},
 };
 
 pub mod block;
@@ -20,6 +20,8 @@ pub enum Block {
     Header(u8), // level
     List,
     PreFormat,
+    Quote,
+    Verse,
     None,
 }
 
@@ -45,6 +47,12 @@ pub fn close(state: &State, tokens: &mut Vec<Token>) {
         },
         Block::Header(level) => {
             tokens.push(Token::Header(Header::from_u8(level, false, None)));
+        },
+        Block::Quote => {
+            tokens.push(Token::Quote(Quote::new(false)));
+        },
+        Block::Verse => {
+            tokens.push(Token::Verse(Verse::new(false)));
         },
         Block::None => (),
     }

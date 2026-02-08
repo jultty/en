@@ -7,7 +7,7 @@ pub struct LineBreak {}
 
 impl Parseable for LineBreak {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.text() == "\n" && !lexeme.last()
+        lexeme.match_char('<') && lexeme.match_next_char('\n')
     }
 
     fn lex(_lexeme: &Lexeme) -> LineBreak {
@@ -15,7 +15,7 @@ impl Parseable for LineBreak {
     }
 
     fn render(&self) -> String {
-        "\n".to_owned()
+        String::from("<br>")
     }
 
     fn flatten(&self) -> String {

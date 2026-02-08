@@ -77,10 +77,7 @@ pub fn parse(
                 item_candidate.text.push_str(&lexeme.text());
             }
         },
-        Block::None
-        | Block::Paragraph
-        | Block::Header(_)
-        | Block::PreFormat => {
+        _ => {
             panic!("List context parser called to handle non-list context")
         },
     }

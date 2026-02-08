@@ -1,4 +1,4 @@
-use crate::syntax::content::Parseable as _;
+use crate::syntax::content::{Parseable as _};
 
 pub mod anchor;
 pub mod bold;
@@ -12,14 +12,16 @@ pub mod literal;
 pub mod oblique;
 pub mod paragraph;
 pub mod preformat;
+pub mod quote;
 pub mod strike;
 pub mod underline;
+pub mod verse;
 
 pub use {
     anchor::Anchor, bold::Bold, checkbox::CheckBox, code::Code, header::Header,
     item::Item, linebreak::LineBreak, list::List, literal::Literal,
     oblique::Oblique, paragraph::Paragraph, preformat::PreFormat,
-    strike::Strike, underline::Underline,
+    strike::Strike, underline::Underline, quote::Quote, verse::Verse,
 };
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -37,7 +39,9 @@ pub enum Token {
     Oblique(Oblique),
     Paragraph(Paragraph),
     PreFormat(PreFormat),
+    Quote(Quote),
     Underline(Underline),
+    Verse(Verse),
 }
 
 impl Token {
@@ -56,7 +60,9 @@ impl Token {
             Token::Oblique(d) => d.render(),
             Token::Paragraph(d) => d.render(),
             Token::PreFormat(d) => d.render(),
+            Token::Quote(d) => d.render(),
             Token::Underline(d) => d.render(),
+            Token::Verse(d) => d.render(),
         }
     }
 
@@ -75,7 +81,9 @@ impl Token {
             Token::Oblique(d) => d.flatten(),
             Token::Paragraph(d) => d.flatten(),
             Token::PreFormat(d) => d.flatten(),
+            Token::Quote(d) => d.flatten(),
             Token::Underline(d) => d.flatten(),
+            Token::Verse(d) => d.flatten(),
         }
     }
 }
@@ -96,7 +104,9 @@ impl std::fmt::Display for Token {
             Token::Oblique(d) => format!("{d}"),
             Token::Paragraph(d) => format!("{d}"),
             Token::PreFormat(d) => format!("{d}"),
+            Token::Quote(d) => format!("{d}"),
             Token::Underline(d) => format!("{d}"),
+            Token::Verse(d) => format!("{d}"),
         };
 
         write!(f, "Tk:{data}")

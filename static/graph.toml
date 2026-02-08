@@ -276,9 +276,33 @@ Supported formatting syntax includes:
 
 To apply these, you can wrap a word in the formatting operators, so for instance `*this*` will be rendered as *this* and `~~this~~` as ~~this~~.
 
-## Paragraphs
+## Checkboxes
 
-A block of lines not separated by an empty line is always joined together. This means if you write:
+You can use `[ ]` and `[x]`  to render checkboxes:
+
+`
+- [ ] not done
+- [x] done
+`
+
+## Blocks
+
+A block is any group of lines separated by empty lines:
+
+`
+block A
+still block A
+still block A
+
+block B starts here
+
+block C starts here
+still block C
+`
+
+By default, a block not starting with any special syntax is a paragraph, such as this very line you are reading.
+
+Some blocks will join the lines together, meaning even if you write:
 
 `
 a
@@ -286,11 +310,81 @@ b
 c
 `
 
-You still get "a b c" as a result.
+You still get "a b c" as a result. This is the case for paragraphs and blockquotes, but not for lists, verse blocks and preformatted text.
 
-The exception to this are lists, which are explained below and must have their lines grouped together.
+This is useful when editing your text, allowing you to break some thoughts and special syntax without losing control over where your paragraph ends, particularly when handling huge paragraphs.
 
-## Lists
+If you want to force lines to break, you can use a `<` character at the end of a line:
+
+`
+a <
+b <
+c <
+`
+
+Which renders as:
+
+a <
+b <
+c <
+
+While useful to break a few lines on demand, if you have a large block of lines you want to break this can become cumbersome. That's where verse blocks are useful.
+
+### Verse
+
+Verse blocks are delimited by a `&` character at their first and last line and are useful to avoid precisely this line-joining behavior of most blocks. They will break all lines without need for a trailing `<` character:
+
+`
+&
+    these lines
+    break just fine
+    once they are over
+&
+`
+
+This will be rendered as:
+
+&
+    these lines
+    break just fine
+    once they are over
+&
+
+### Quotes
+
+A block of lines starting with a `>` character create a quote:
+
+`
+> this is a quote
+`
+
+Quote blocks have two forms. If you prepend all blocks with a `>`, line breaks will be preserved, not collapsing the whole quote into a single line:
+
+> a quote where all lines start with > BR
+> still inside BR
+> still inside BR
+>
+> above was a line with just a > plus a break BR
+> still inside BR
+> next is an empty line BR
+
+If you would like the quote to be collapsed into a single line instead, you can leave just the first `>` and continue until the next empty line:
+
+> this quote starts here
+and continues here
+until an empty line is found
+
+You can still use `<` characters to force line breaks in this case.
+
+#### Citation
+
+To add a citation to your qutoe block, you can add lines starting with two `-` characters:
+
+> a quote with _nested_ formatting *syntax and in* particular an anchor|Roadmap BR
+> the quote continuation as it goes on and on
+-- quote by |Person Johnson|https://personjohnson.com
+
+### Lists
 
 A block of lines starting with a `-` character will be rendered as an unordered list:
 
@@ -308,14 +402,27 @@ Lines starting with a `+` character will create numbered lists instead:
 + san
 `
 
-## Checkboxes
+## Rendering unformatted text
 
-You can use `[ ]` and `[x]`  to render checkboxes:
+The backtick character `\\`` can be used to render unformatted blocks and inline text:
 
 `
-- [ ] not done
-- [x] done
+The asterisk `*` is special in en markup syntax.
 `
+
+Using the syntax above, the asterisk won't be interpreted as the start of bold formatting and instead will be shown like this: `*`.
+
+This is useful for code but also for rendering characters with special meaning you wish to mention literally.
+
+Backticks on their own line will start and close a block of unformatted text such as the ones being used throughout this documentation to show code:
+
+`
+\\`
+everything in here will be rendered without formatting
+\\`
+`
+
+Finally, you can precede any character with a `\\\\` to fully _escape_ that character from being interpreted. Because |TOML| also treats backslashes specially, you'll likely need to use double slashes, as in `\\\\\\\\`, unless you wrap your TOML strings in single quotes. See |Escaping| for more details and examples.
 
 ## Raw HTML
 
@@ -341,29 +448,7 @@ Which will render to:
 
 Notice that, as shown in this example, you can mix en syntax and HTML. You might want to add a space between your HTML tags and en special syntax so the boundary is clearer, but otherwise they don't tend to overlap since the symbols most used in HTML are not special in en.
 
-If you want to avoid either one of these syntaxes from being interpreted specially, you should escape the relevant characters as explained in the next section.
-
-## Rendering unformatted text
-
-The backtick character `\\`` can be used to render unformatted blocks and inline text:
-
-`
-The asterisk `*` is special in en markup syntax.
-`
-
-Using the syntax above, the asterisk won't be interpreted as the start of bold formatting and instead will be shown like this: `*`.
-
-This is useful for code but also for rendering characters with special meaning you wish to mention literally.
-
-Backticks on their own line will start and close a block of unformatted text such as the ones being used throughout this documentation to show code:
-
-`
-\\`
-everything in here will be rendered without formatting
-\\`
-`
-
-Finally, you can precede any character with a `\\\\` to fully _escape_ that character from being interpreted. Because |TOML| also treats backslashes specially, you'll likely need to use double slashes, as in `\\\\\\\\`, unless you wrap your TOML strings in single quotes. See |Escaping| for more details and examples.
+If you want to avoid either one of these syntaxes from being interpreted specially, you should escape the relevant characters as explained in the previous section.
 """
 
 [nodes.Escaping]
@@ -583,7 +668,7 @@ text = """
 - [ ] Input syntax
     - [ ] Invert where redirects are set
     - [x] Formatting
-        - [ ] Blockquotes
+        - [x] Blockquotes
         - [ ] Tables
             - `%` block
             - newline for rows

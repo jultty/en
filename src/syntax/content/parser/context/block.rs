@@ -1,15 +1,18 @@
 use std::{iter::Peekable, slice::Iter};
 
 use crate::{
+    graph::Graph,
     prelude::*,
     syntax::content::{
         Parseable as _,
         parser::{
-            Block, Token, Lexeme, State,
-            token::{Header, List, Literal, Paragraph, PreFormat},
+            Block, Lexeme, State, Token,
+            token::{
+                Header, List, LineBreak, Literal, Paragraph, PreFormat, Quote,
+                Verse,
+            },
         },
     },
-    graph::Graph,
 };
 
 pub fn parse(
@@ -44,6 +47,18 @@ pub fn parse(
                 return super::list::parse(
                     lexeme, state, tokens, iterator, graph,
                 );
+            } else if Quote::probe(lexeme) {
+                log!(VERBOSE, "Block Context: None -> Quote on {lexeme}");
+                state.context.block = Block::Quote;
+                tokens.push(Token::Quote(Quote::new(true)));
+                return true;
+            } else if Verse::probe(lexeme) {
+                log!(VERBOSE, "Block Context: None -> Verse on {lexeme}");
+                state.context.block = Block::Verse;
+                tokens.push(Token::Verse(Verse::new(true)));
+                iterator.next();
+                iterator.next();
+                return true;
             } else if Paragraph::probe(lexeme) {
                 log!(VERBOSE, "Block Context: None -> Paragraph on {lexeme}");
                 state.context.block = Block::Paragraph;
@@ -76,6 +91,30 @@ pub fn parse(
         },
         Block::List => {
             return super::list::parse(lexeme, state, tokens, iterator, graph);
+        },
+        Block::Quote => {
+            if lexeme.match_char_sequence('\n', '>') {
+                tokens.push(Token::LineBreak(LineBreak::default()));
+                iterator.next();
+                return true;
+            } else if Quote::probe_end(lexeme) {
+                tokens.push(Token::Quote(Quote::new(false)));
+                log!(VERBOSE, "Block Context: Quote -> None on {lexeme}");
+                state.context.block = Block::None;
+            }
+        },
+        Block::Verse => {
+            if Verse::probe_end(lexeme) {
+                tokens.push(Token::Verse(Verse::new(false)));
+                log!(VERBOSE, "Block Context: Verse -> None on {lexeme}");
+                state.context.block = Block::None;
+                iterator.next();
+                iterator.next();
+                return true;
+            } else if lexeme.match_char('\n') {
+                tokens.push(Token::LineBreak(LineBreak::default()));
+                return true;
+            }
         },
     }
     false

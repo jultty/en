@@ -69,8 +69,8 @@ pre, code {
 
 a {
     color: #0f6366;
-    text-decoration: underline dotted #138e8e;
-    text-decoration-thickness: 1.5px;
+    text-decoration: underline dotted #159b9b;
+    text-decoration-thickness: 2.5px;
     text-underline-offset: 3px;
     transition: 1500ms;
 }
@@ -92,6 +92,7 @@ a.external {
     color: #1958a7;
     text-decoration-color: #2A7CDF;
     text-decoration-style: solid;
+    text-decoration-thickness: 1.5px;
     transition: 1500ms;
 }
 
@@ -105,8 +106,7 @@ a:visited,
 a.detached:visited,
 a.external:visited
 {
-    text-decoration-color: #999;
-    color: #7e20cf;
+    text-decoration-color: #bbb;
     transition: 1500ms;
 }
 
@@ -367,7 +367,6 @@ p.verse {
 
     a {
         color: #1dd7d7;
-        text-decoration-color: #159b9b;
         transition: 1500ms;
     }
 
@@ -413,7 +412,6 @@ p.verse {
     a.external:visited
     {
         text-decoration-color: #999;
-        color: #a3a5ff;
         transition: 1500ms;
     }
 

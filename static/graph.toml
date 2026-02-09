@@ -379,14 +379,16 @@ Quote blocks have two forms. If you prepend all blocks with a `>`, line breaks w
 If you would like the quote to be collapsed into a single line instead, you can leave just the first `>` and continue until the next empty line:
 
 `
-> Dois grandes mitos dominam a história oficial do Brasil:
-  o mito da índole pacífica do brasileiro e o da "democracia racial".
--- Benedita da Silva, Speech on the Federal Senate, March 3rd, 1995
+> And should I feel kindness towards my enemies?
+No: from that moment I declared everlasting war against the species,
+and more than all, against him who had formed me
+and sent me forth to this insupportable misery.
 `
 
-> Dois grandes mitos dominam a história oficial do Brasil:
-  o mito da índole pacífica do brasileiro e o da "democracia racial".
--- Benedita da Silva, Speech on the Federal Senate, March 3rd, 1995
+> And should I feel kindness towards my enemies?
+No: from that moment I declared everlasting war against the species,
+and more than all, against him who had formed me
+and sent me forth to this insupportable misery.
 
 You can still use `<` characters to force line breaks in this case.
 
@@ -426,7 +428,7 @@ If you have a more complex citation, you can use multiple lines starting with `-
 -- March 3rd, 1995, <
 -- Dia Internacional para a Eliminação da Discriminação Racial.
 
-The first URL found in your citation will be used as the blockquote element's `cite` field.
+The first URL found in your citation will be used as the blockquote element's `cite` value.
 
 ### Lists
 

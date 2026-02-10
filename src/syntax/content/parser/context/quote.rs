@@ -30,7 +30,7 @@ pub fn parse(
     match state.context.block {
         Block::Quote => {
             if Quote::probe_end(lexeme) {
-                log!("Probed end of quote on {lexeme}");
+                log!(VERBOSE, "Probed end of quote on {lexeme}");
                 let (text, text_tokens) = format(&candidate.text, graph);
                 candidate.text = text;
                 state.format_tokens.extend_from_slice(&text_tokens);
@@ -59,18 +59,18 @@ pub fn parse(
                 && lexeme.match_char('\n')
                 && lexeme.next() == "--"
             {
-                log!("Matched citation start on {lexeme}");
+                log!(VERBOSE, "Matched citation start on {lexeme}");
                 buffer.in_citation = true;
                 iterator.next();
                 iterator.next();
             } else if lexeme.match_char_sequence('\n', '>') {
-                log!("Matched break-aware sequence on {lexeme}");
+                log!(VERBOSE, "Matched break-aware sequence on {lexeme}");
                 candidate.text.push_str(" <\n");
                 iterator.next();
             } else {
-                log!("Entered quote else branch on {lexeme}");
+                log!(VERBOSE, "Entered quote else branch on {lexeme}");
                 if buffer.in_citation {
-                    log!("Extending citation on {lexeme}");
+                    log!(VERBOSE, "Extending citation on {lexeme}");
                     candidate.extend_citation(&lexeme.text());
                     if lexeme.match_char('\n') && lexeme.next() == "--" {
                         candidate.text.push('\n');
@@ -79,7 +79,7 @@ pub fn parse(
                         buffer.in_citation = false;
                     }
                 } else {
-                    log!("Extending quote on {lexeme}");
+                    log!(VERBOSE, "Extending quote on {lexeme}");
                     candidate.text.push_str(&lexeme.text());
                 }
             }

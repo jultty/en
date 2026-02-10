@@ -344,6 +344,7 @@ p.verse {
 }
 
 .quote-citation {
+    display: block;
     margin: 0.5em 0 0 0;
     text-indent: -1.2em;
     padding-left: 1em;

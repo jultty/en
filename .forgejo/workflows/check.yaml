@@ -3,6 +3,7 @@ on:
     paths:
       - src/**
       - tests/**
+      - static/graph.toml
       - .forgejo/**
       - Cargo.toml
       - Cargo.lock

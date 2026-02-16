@@ -1,15 +1,18 @@
-use crate::{prelude::*, graph::Graph, syntax::content::TokenOutput};
 use context::{Block, Inline};
+pub use lexeme::Lexeme;
 use lexer::{LEXMAP, lex};
-pub use {lexeme::Lexeme, token::Token, state::State};
+pub use state::State;
+pub use token::Token;
 
-pub mod token;
-pub mod lexer;
-pub mod lexeme;
-pub mod segment;
+use crate::{graph::Graph, prelude::*, syntax::content::TokenOutput};
+
 pub mod context;
+pub mod lexeme;
+pub mod lexer;
 pub mod point;
+pub mod segment;
 pub mod state;
+pub mod token;
 
 fn parse(tokens: &[Token]) -> String {
     tokens.iter().map(Token::render).collect::<String>()
@@ -46,16 +49,10 @@ pub fn flatten(input: &str, graph: &Graph) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        graph::Graph,
-        syntax::content::parser::{token::header::Level},
-    };
-
     use super::*;
+    use crate::{graph::Graph, syntax::content::parser::token::header::Level};
 
-    fn read_noconfig(input: &str) -> String {
-        read(input, &Graph::default())
-    }
+    fn read_noconfig(input: &str) -> String { read(input, &Graph::default()) }
 
     #[test]
     fn empty_render_is_empty() {
@@ -65,7 +62,10 @@ mod tests {
     #[test]
     fn mixed_sample() {
         let en = "`this |test|` tries ## to |brea|k|: things";
-        let html = r#"<p><code>this |test|</code> tries ## to <a class="detached" title="" href="/node/k">brea</a>: things</p>"#;
+        let html = concat!(
+            r#"<p><code>this |test|</code> tries ## to <a "#,
+            r#"class="detached" title="" href="/node/k">brea</a>: things</p>"#,
+        );
 
         assert_eq!(read_noconfig(en), html);
     }

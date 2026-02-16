@@ -1,6 +1,6 @@
 use std::mem::discriminant;
 
-use parser::{Token, Lexeme};
+use parser::{Lexeme, Token};
 
 use crate::graph::Graph;
 
@@ -43,9 +43,7 @@ impl TokenOutput {
     }
 }
 
-pub fn parse(text: &str, graph: &Graph) -> String {
-    parser::read(text, graph)
-}
+pub fn parse(text: &str, graph: &Graph) -> String { parser::read(text, graph) }
 
 pub fn rich_parse(text: &str, graph: &Graph) -> TokenOutput {
     parser::rich_read(text, graph)
@@ -53,9 +51,8 @@ pub fn rich_parse(text: &str, graph: &Graph) -> TokenOutput {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::token::{Bold, Oblique};
-
     use super::*;
+    use crate::syntax::content::parser::token::{Bold, Oblique};
 
     #[test]
     fn only() {

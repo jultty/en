@@ -1,16 +1,13 @@
 use axum::{
+    body::Body,
+    extract::{Path, State},
     http::{HeaderValue, Response, StatusCode, header},
-    {
-        body::Body,
-        extract::{Path, State},
-    },
 };
 
-use crate::prelude::*;
 use crate::{
     graph::{Format, Graph, SerialErrorCause},
-    router::{GlobalState, handlers},
-    router::handlers::mime::Mime,
+    prelude::*,
+    router::{GlobalState, handlers, handlers::mime::Mime},
 };
 
 pub async fn file(

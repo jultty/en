@@ -117,11 +117,9 @@ pub fn parse(
 
 #[cfg(test)]
 mod tests {
-    use crate::{syntax::content::parser, graph::Graph};
+    use crate::{graph::Graph, syntax::content::parser};
 
-    fn read(input: &str) -> String {
-        parser::read(input, &Graph::default())
-    }
+    fn read(input: &str) -> String { parser::read(input, &Graph::default()) }
 
     fn read_loaded(input: &str) -> String {
         parser::read(input, &Graph::load())
@@ -250,11 +248,13 @@ mod tests {
                 "<table>", "\n",
                 "    <tr>", "\n",
                 "        <td>a</td>", "\n",
-                r#"        <td><a class="detached" title="" href="/node/Node">Node</a></td>"#, "\n",
+                r#"        <td><a class="detached" title="" "#,
+                r#"href="/node/Node">Node</a></td>"#, "\n",
                 "        <td>c</td>", "\n",
                 "    </tr>", "\n",
                 "</table>", "\n",
-        ));
+        )
+        );
     }
 
     #[test]
@@ -270,11 +270,14 @@ mod tests {
                 "<table>", "\n",
                 "    <tr>", "\n",
                 "        <td>a</td>", "\n",
-                r#"        <td><a class="attached" title="A node is defined in your graph file starting with a table header of the form:" href="/node/Node">Node</a></td>"#, "\n",
+                r#"        <td><a class="attached" title="A node is defined "#,
+                r#"in your graph file starting with a table header of the "#,
+                r#"form:" href="/node/Node">Node</a></td>"#, "\n",
                 "        <td>c</td>", "\n",
                 "    </tr>", "\n",
                 "</table>", "\n",
-        ));
+        )
+        );
     }
 
     #[test]

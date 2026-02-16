@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, Lexeme},
-};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Strike {
@@ -8,9 +6,7 @@ pub struct Strike {
 }
 
 impl Strike {
-    pub fn new(open: bool) -> Strike {
-        Strike { open }
-    }
+    pub fn new(open: bool) -> Strike { Strike { open } }
 }
 
 impl Parseable for Strike {
@@ -27,9 +23,7 @@ impl Parseable for Strike {
         String::from(tag)
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Strike {
@@ -41,9 +35,8 @@ impl std::fmt::Display for Strike {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render() {
@@ -58,9 +51,7 @@ mod tests {
     #[should_panic(
         expected = "Attempt to lex a strike tag directly from a lexeme"
     )]
-    fn lex() {
-        Strike::lex(&Lexeme::default());
-    }
+    fn lex() { Strike::lex(&Lexeme::default()); }
 
     #[test]
     fn token_display() {

@@ -3,13 +3,13 @@ use axum::{Router, routing::get};
 use crate::graph::Graph;
 
 mod handlers {
-    pub mod graph;
-    pub mod template;
-    pub mod raw;
-    pub mod navigation;
-    pub mod fixed;
     pub mod error;
+    pub mod fixed;
+    pub mod graph;
     pub mod mime;
+    pub mod navigation;
+    pub mod raw;
+    pub mod template;
 }
 
 #[derive(Clone)]
@@ -49,17 +49,15 @@ pub fn new(graph: Graph) -> Router {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        graph::{Graph, Config, Meta},
-    };
-
-    use super::*;
     use axum::{
         body::Body,
         http::{Request, StatusCode},
         response::Response,
     };
     use tower::ServiceExt as _;
+
+    use super::*;
+    use crate::graph::{Config, Graph, Meta};
 
     async fn request(uri: &str, config: Option<&Config>) -> Response<Body> {
         let default_graph = Graph::load();

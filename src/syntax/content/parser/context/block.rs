@@ -8,7 +8,7 @@ use crate::{
         parser::{
             Block, Lexeme, State, Token,
             token::{
-                Header, List, LineBreak, Literal, Paragraph, PreFormat, Quote,
+                Header, LineBreak, List, Literal, Paragraph, PreFormat, Quote,
                 Table, Verse,
             },
         },
@@ -124,16 +124,14 @@ pub fn parse(
 mod tests {
 
     use crate::{
-        syntax::content::parser::{
-            self, Block, Token, context, State,
-            token::{Header, header::Level, PreFormat},
-        },
         graph::Graph,
+        syntax::content::parser::{
+            self, Block, State, Token, context,
+            token::{Header, PreFormat, header::Level},
+        },
     };
 
-    fn read(input: &str) -> String {
-        parser::read(input, &Graph::default())
-    }
+    fn read(input: &str) -> String { parser::read(input, &Graph::default()) }
 
     #[test]
     fn pre() {

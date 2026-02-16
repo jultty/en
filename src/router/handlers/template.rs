@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    http::{header, Response, StatusCode},
+    http::{Response, StatusCode, header},
 };
 
 use crate::{
@@ -135,9 +135,8 @@ fn emergency_wrap(error: &tera::Error) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::graph::Graph;
-
     use super::*;
+    use crate::graph::Graph;
 
     #[test]
     fn by_filename_forced_error() {

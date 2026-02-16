@@ -1,6 +1,4 @@
-pub fn segment(text: &str) -> Vec<String> {
-    delimiter::atomize(text)
-}
+pub fn segment(text: &str) -> Vec<String> { delimiter::atomize(text) }
 
 pub mod delimiter {
 
@@ -146,7 +144,8 @@ pub mod delimiter {
         fn atomize_flankign_sentence() {
             assert_eq!(
                 atomize(
-                    "about_colors: the colors _amber_, _orange_ and _yellow mustard_ to `jane_bishop@mail.com`."
+                    "about_colors: the colors _amber_, _orange_ and \
+                        _yellow mustard_ to `jane_bishop@mail.com`."
                 ),
                 vec![
                     "about_colors",
@@ -188,7 +187,8 @@ pub mod delimiter {
         #[test]
         fn atomize_words() {
             let actual = atomize(
-                "    justification for  the actions   of those  who hold authority   inevitably dwindles  ",
+                "    justification for  the actions   of those  who hold \
+                    authority   inevitably dwindles  ",
             );
             let expected = vec![
                 " ",
@@ -285,7 +285,8 @@ pub mod delimiter {
         #[test]
         fn atomize_pipes_and_ticks() {
             let actual = atomize(
-                "every other |time| as `it could or |perhaps somehow|then or now| it was` perceived",
+                "every other |time| as `it could or |perhaps somehow|then or \
+                    now| it was` perceived",
             );
             let expected = vec![
                 "every",

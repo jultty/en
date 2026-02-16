@@ -101,24 +101,24 @@ mod tests {
     #[test]
     fn anchor_buffer_display_with_text_set() {
         let mut buffer = AnchorBuffer::default();
-        buffer.text = String::from("mX8Z7yWmsK");
+        buffer.text = String::from("mX8Z7sK");
         println!("{buffer:#?}");
         println!("{buffer}");
         assert_eq!(
             format!("{buffer}"),
-            r#"AnchorBuffer [text: "mX8Z7yWmsK"] >> Anchor <empty> -> <unknown>"#
+            r#"AnchorBuffer [text: "mX8Z7sK"] >> Anchor <empty> -> <unknown>"#
         );
     }
 
     #[test]
     fn anchor_buffer_display_with_destination_set() {
         let mut buffer = AnchorBuffer::default();
-        buffer.destination = String::from("VP2aqGngAq");
+        buffer.destination = String::from("VP2gAq");
         println!("{buffer:#?}");
         println!("{buffer}");
         assert_eq!(
             format!("{buffer}"),
-            r#"AnchorBuffer [, dest: "VP2aqGngAq"] >> Anchor <empty> -> <unknown>"#
+            r#"AnchorBuffer [, dest: "VP2gAq"] >> Anchor <empty> -> <unknown>"#
         );
     }
 
@@ -131,7 +131,10 @@ mod tests {
         println!("{buffer}");
         assert_eq!(
             format!("{buffer}"),
-            r#"AnchorBuffer [text: "ECJrzgkBHg", dest: "9dy6gQ2g3E"] >> Anchor <empty> -> <unknown>"#
+            concat!(
+                r#"AnchorBuffer [text: "ECJrzgkBHg", dest: "9dy6gQ2g3E"] "#,
+                r#">> Anchor <empty> -> <unknown>"#,
+            )
         );
     }
 }

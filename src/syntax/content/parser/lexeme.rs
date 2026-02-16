@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{syntax::content::parser::segment::delimiter::Delimiters};
+use crate::syntax::content::parser::segment::delimiter::Delimiters;
 
 #[derive(Clone, Debug, Default)]
 pub struct Lexeme {
@@ -22,25 +22,15 @@ impl Lexeme {
         }
     }
 
-    pub fn text(&self) -> String {
-        self.text.clone()
-    }
+    pub fn text(&self) -> String { self.text.clone() }
 
-    pub fn next(&self) -> String {
-        self.next.clone()
-    }
+    pub fn next(&self) -> String { self.next.clone() }
 
-    pub fn last(&self) -> bool {
-        self.last
-    }
+    pub fn last(&self) -> bool { self.last }
 
-    pub fn first(&self) -> bool {
-        self.first
-    }
+    pub fn first(&self) -> bool { self.first }
 
-    pub fn mutate_text(&mut self, new: &str) {
-        self.text = new.to_string();
-    }
+    pub fn mutate_text(&mut self, new: &str) { self.text = new.to_string(); }
 
     pub fn as_char(&self) -> Option<char> {
         if self.text.chars().count() == 1 {
@@ -141,9 +131,7 @@ impl Lexeme {
                 .is_some_and(|c| delimiters.is_delimiter(c))
     }
 
-    pub fn next_first_char(&self) -> Option<char> {
-        self.next.chars().nth(0)
-    }
+    pub fn next_first_char(&self) -> Option<char> { self.next.chars().nth(0) }
 
     pub fn match_first_char(&self, query: char) -> bool {
         self.text.chars().nth(0).is_some_and(|c| c == query)

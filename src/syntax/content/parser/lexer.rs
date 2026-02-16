@@ -1,13 +1,14 @@
 use crate::{
-    prelude::*,
     graph::Graph,
+    prelude::*,
     syntax::content::{
-        TokenOutput, Parseable as _, LexMap,
+        LexMap, Parseable as _, TokenOutput,
         parser::{
+            context,
             lexeme::Lexeme,
-            token::{Token, LineBreak, Literal},
+            point, segment,
             state::State,
-            segment, context, point,
+            token::{LineBreak, Literal, Token},
         },
     },
 };

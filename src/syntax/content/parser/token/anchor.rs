@@ -1,6 +1,6 @@
 use crate::{
-    syntax::content::{Parseable, parser::Lexeme},
     graph::Node,
+    syntax::content::{Parseable, parser::Lexeme},
 };
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -15,58 +15,36 @@ pub struct Anchor {
 }
 
 impl Anchor {
-    pub fn text(&self) -> String {
-        self.text.clone()
-    }
+    pub fn text(&self) -> String { self.text.clone() }
 
-    pub fn set_text(&mut self, text: &str) {
-        self.text = String::from(text);
-    }
+    pub fn set_text(&mut self, text: &str) { self.text = String::from(text); }
 
-    pub fn text_push(&mut self, text: &str) {
-        self.text.push_str(text);
-    }
+    pub fn text_push(&mut self, text: &str) { self.text.push_str(text); }
 
-    pub fn destination(&self) -> Option<String> {
-        self.destination.clone()
-    }
+    pub fn destination(&self) -> Option<String> { self.destination.clone() }
 
     pub fn set_destination(&mut self, destination: Option<&str>) {
         self.destination = destination.map(str::to_string);
         self.route();
     }
 
-    pub fn balanced(&self) -> bool {
-        self.balanced
-    }
+    pub fn balanced(&self) -> bool { self.balanced }
 
-    pub fn set_balanced(&mut self, balanced: bool) {
-        self.balanced = balanced;
-    }
+    pub fn set_balanced(&mut self, balanced: bool) { self.balanced = balanced; }
 
-    pub fn external(&self) -> bool {
-        self.external
-    }
+    pub fn external(&self) -> bool { self.external }
 
-    pub fn set_external(&mut self, external: bool) {
-        self.external = external;
-    }
+    pub fn set_external(&mut self, external: bool) { self.external = external; }
 
-    pub fn set_leading(&mut self, leading: bool) {
-        self.leading = leading;
-    }
+    pub fn set_leading(&mut self, leading: bool) { self.leading = leading; }
 
-    pub fn node(&self) -> Option<Node> {
-        self.node.clone()
-    }
+    pub fn node(&self) -> Option<Node> { self.node.clone() }
 
     pub fn set_node(&mut self, node: &Node) {
         self.node = Some(node.to_owned());
     }
 
-    pub fn node_id(&self) -> Option<String> {
-        self.node_id.clone()
-    }
+    pub fn node_id(&self) -> Option<String> { self.node_id.clone() }
 
     pub fn set_node_id(&mut self, id: &str) {
         self.node_id = Some(id.to_owned());
@@ -105,7 +83,8 @@ impl Parseable for Anchor {
     fn render(&self) -> String {
         let Some(destination) = &self.destination else {
             panic!(
-                "Attempt to render anchor {self:#?} without knowing its destination."
+                "Attempt to render anchor {self:#?} without knowing \
+                its destination."
             )
         };
 
@@ -131,9 +110,7 @@ impl Parseable for Anchor {
         )
     }
 
-    fn flatten(&self) -> String {
-        self.text.clone()
-    }
+    fn flatten(&self) -> String { self.text.clone() }
 }
 
 impl std::fmt::Display for Anchor {
@@ -177,9 +154,8 @@ impl std::fmt::Display for Anchor {
 #[cfg(test)]
 mod tests {
 
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render_anchor() {
@@ -188,7 +164,10 @@ mod tests {
         anchor.set_destination(Some("AnchorDest"));
         assert_eq!(
             anchor.render(),
-            r#"<a class="detached" title="" href="/node/AnchorDest">AnchorText</a>"#
+            concat!(
+                r#"<a class="detached" title="" "#,
+                r#"href="/node/AnchorDest">AnchorText</a>"#,
+            )
         );
     }
 
@@ -196,9 +175,7 @@ mod tests {
     #[should_panic(
         expected = "Attempt to lex an anchor directly from a lexeme"
     )]
-    fn lex() {
-        Anchor::lex(&Lexeme::default());
-    }
+    fn lex() { Anchor::lex(&Lexeme::default()); }
 
     #[test]
     #[should_panic(expected = "without knowing its destination")]

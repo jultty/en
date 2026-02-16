@@ -15,9 +15,7 @@ impl Table {
         self.headers.push(header.trim().to_string());
     }
 
-    pub fn add_row(&mut self, row: Vec<String>) {
-        self.contents.push(row);
-    }
+    pub fn add_row(&mut self, row: Vec<String>) { self.contents.push(row); }
 
     pub fn add_cell(&mut self, content: &str) {
         if let Some(last) = self.contents.last_mut() {
@@ -37,13 +35,9 @@ impl Table {
 }
 
 impl Parseable for Table {
-    fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.match_char_sequence('%', '\n')
-    }
+    fn probe(lexeme: &Lexeme) -> bool { lexeme.match_char_sequence('%', '\n') }
 
-    fn lex(_lexeme: &Lexeme) -> Table {
-        Table::default()
-    }
+    fn lex(_lexeme: &Lexeme) -> Table { Table::default() }
 
     fn render(&self) -> String {
         let mut xml = String::from("\n<table>\n");
@@ -73,9 +67,7 @@ impl Parseable for Table {
         xml
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Table {

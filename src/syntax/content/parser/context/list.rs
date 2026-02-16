@@ -1,11 +1,11 @@
 use std::{iter::Peekable, slice::Iter};
 
 use crate::{
+    graph::Graph,
     prelude::*,
     syntax::content::parser::{
-        context::Block, Token, Lexeme, State, state, token::Item, format,
+        Lexeme, State, Token, context::Block, format, state, token::Item,
     },
-    graph::Graph,
 };
 
 /// Handles open list contexts until a list is fully parsed.
@@ -88,13 +88,11 @@ pub fn parse(
 #[cfg(test)]
 mod tests {
     use crate::{
-        syntax::content::parser::{self, context::list::parse, Lexeme, State},
         graph::Graph,
+        syntax::content::parser::{self, Lexeme, State, context::list::parse},
     };
 
-    fn read(input: &str) -> String {
-        parser::read(input, &Graph::default())
-    }
+    fn read(input: &str) -> String { parser::read(input, &Graph::default()) }
 
     #[test]
     fn unordered_list() {

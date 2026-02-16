@@ -1,7 +1,8 @@
 use axum::{
-    extract::State,
-    response::IntoResponse as _,
-    {body::Body, extract::Path, http::Response, response::Redirect},
+    body::Body,
+    extract::{Path, State},
+    http::Response,
+    response::{IntoResponse as _, Redirect},
 };
 
 use crate::{
@@ -49,13 +50,10 @@ pub async fn node(
 
 #[cfg(test)]
 mod tests {
-    use axum::{
-        http::{HeaderName, StatusCode},
-    };
-
-    use crate::graph::{Format, Graph};
+    use axum::http::{HeaderName, StatusCode};
 
     use super::*;
+    use crate::graph::{Format, Graph};
 
     async fn wrap_node(query: &str) -> Response<Body> {
         let state = GlobalState {

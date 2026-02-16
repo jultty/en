@@ -1,6 +1,6 @@
-use crate::prelude::*;
+use serde::{Deserialize, Serialize};
 
-use serde::{Serialize, Deserialize};
+use crate::prelude::*;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Meta {
@@ -105,15 +105,9 @@ impl Default for Config {
 }
 
 // See: https://github.com/serde-rs/serde/issues/368
-fn mktrue() -> bool {
-    true
-}
-fn mkfalse() -> bool {
-    false
-}
-fn mk8() -> u16 {
-    8
-}
+fn mktrue() -> bool { true }
+fn mkfalse() -> bool { false }
+fn mk8() -> u16 { 8 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Version {
@@ -314,9 +308,8 @@ impl std::fmt::Display for VersionErrorCause {
 
 #[cfg(test)]
 mod tests {
-    use crate::graph::Graph;
-
     use super::*;
+    use crate::graph::Graph;
 
     #[test]
     fn empty_footer_text() {

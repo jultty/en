@@ -27,8 +27,8 @@ impl Parseable for List {
     /// - Strict division is performed but related panics are unreachable given
     ///   the guarantees described in `List::scale_indent`
     /// - Saturates subtractions from indent levels at zero. This is not
-    ///   unreachable, but a difference of zero is a no-op considering it
-    ///   would cause an iteration of zero times (over an empty range).
+    ///   unreachable, but a difference of zero is a no-op considering it would
+    ///   cause an iteration of zero times (over an empty range).
     fn render(&self) -> String {
         let tag = if self.ordered { "ol" } else { "ul" };
         let mut output = String::new();
@@ -122,9 +122,8 @@ impl std::fmt::Display for List {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render_flat_list() {

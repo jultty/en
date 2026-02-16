@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, Lexeme},
-};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Code {
@@ -8,15 +6,11 @@ pub struct Code {
 }
 
 impl Code {
-    pub fn new(open: bool) -> Code {
-        Code { open }
-    }
+    pub fn new(open: bool) -> Code { Code { open } }
 }
 
 impl Parseable for Code {
-    fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.text() == "`"
-    }
+    fn probe(lexeme: &Lexeme) -> bool { lexeme.text() == "`" }
 
     fn lex(_lexeme: &Lexeme) -> Code {
         panic!("Attempt to lex a code tag directly from a lexeme")
@@ -30,9 +24,7 @@ impl Parseable for Code {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Code {
@@ -44,9 +36,8 @@ impl std::fmt::Display for Code {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render() {
@@ -61,9 +52,7 @@ mod tests {
     #[should_panic(
         expected = "Attempt to lex a code tag directly from a lexeme"
     )]
-    fn lex() {
-        Code::lex(&Lexeme::default());
-    }
+    fn lex() { Code::lex(&Lexeme::default()); }
 
     #[test]
     fn token_display() {

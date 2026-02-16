@@ -32,7 +32,7 @@ impl Data {
         let path = make_display_path(captured_path, &env_level);
 
         let is_silent = env_level <= Level::SILENT;
-        let message_level_is_within_env_level = message_level <= env_level;
+        let level_within_env_level = message_level <= env_level;
         let excluded_in_code =
             !EXCLUSIONS.iter().all(|&s| !trace_string.contains(s));
         let excluded_by_env =
@@ -41,7 +41,7 @@ impl Data {
             filter.is_empty() || captured_path.contains(&filter);
 
         let should_log = !is_silent
-            && message_level_is_within_env_level
+            && level_within_env_level
             && !excluded_in_code
             && !excluded_by_env
             && matches_filter;
@@ -51,7 +51,7 @@ impl Data {
             eprintln!(
                 "Log decision for message from {path}: {should_log} given\n\
                 is_silent: {is_silent} (expected false)\n\
-                message_level_is_within_env_level: {message_level_is_within_env_level}\n\
+                level_within_env_level: {level_within_env_level}\n\
                 excluded_in_code: {excluded_in_code} (expected false)\n\
                 excluded_by_env: {excluded_by_env} (expected false)\n\
                 matches_filter: {matches_filter}\n\
@@ -118,9 +118,7 @@ macro_rules! tlog {
     }};
 }
 
-pub fn now() -> Instant {
-    Instant::now()
-}
+pub fn now() -> Instant { Instant::now() }
 
 #[allow(clippy::print_stderr)]
 pub fn elog(function: &str, message: &str) {
@@ -211,9 +209,7 @@ pub fn wrap(s: &str) -> String {
         }
     }
 
-    fn escape(s: &str) -> String {
-        s.escape_debug().collect()
-    }
+    fn escape(s: &str) -> String { s.escape_debug().collect() }
 
     symbolize(&quote(&escape(s)))
 }

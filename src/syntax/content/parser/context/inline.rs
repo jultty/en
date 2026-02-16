@@ -1,17 +1,16 @@
 use std::{iter::Peekable, slice::Iter};
 
 use crate::{
+    graph::Graph,
     prelude::*,
     syntax::content::{
         Parseable as _,
         parser::{
-            Lexeme, State,
+            Inline, Lexeme, State, Token, context,
             state::AnchorBuffer,
-            Inline, context, Token,
             token::{Anchor, Code, Literal},
         },
     },
-    graph::Graph,
 };
 
 pub fn parse(

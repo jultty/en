@@ -68,10 +68,8 @@ pub async fn not_found(State(state): State<GlobalState>) -> Response<Body> {
 
 #[cfg(test)]
 mod tests {
-    use axum::{
-        http::{StatusCode},
-        extract::State,
-    };
+    use axum::{extract::State, http::StatusCode};
+
     use super::*;
 
     #[tokio::test]

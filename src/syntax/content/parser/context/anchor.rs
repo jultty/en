@@ -1,7 +1,7 @@
 use crate::{
-    prelude::*,
-    syntax::content::parser::{context::Inline, Lexeme, State, Token},
     graph::Graph,
+    prelude::*,
+    syntax::content::parser::{Lexeme, State, Token, context::Inline},
 };
 
 /// Handles open anchor contexts until an anchor token is fully parsed.
@@ -162,11 +162,9 @@ fn push(
 
 #[cfg(test)]
 mod tests {
-    use crate::{syntax::content::parser, graph::Graph};
+    use crate::{graph::Graph, syntax::content::parser};
 
-    fn read(input: &str) -> String {
-        parser::read(input, &Graph::default())
-    }
+    fn read(input: &str) -> String { parser::read(input, &Graph::default()) }
 
     #[test]
     fn flanking() {
@@ -188,7 +186,10 @@ mod tests {
     fn flanking_with_trailing_comma_and_space() {
         assert_eq!(
             read("|Node|, at"),
-            r#"<p><a class="detached" title="" href="/node/Node">Node</a>, at</p>"#
+            concat!(
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/Node">Node</a>, at</p>"#,
+            )
         );
     }
 
@@ -204,7 +205,8 @@ mod tests {
     fn needless_three_pipe_anchor() {
         assert_eq!(
             read("|Node|Destination|"),
-            r#"<p><a class="detached" title="" href="/node/Destination">Node</a></p>"#
+            concat!(r#"<p><a class="detached" title="" "#,
+            r#"href="/node/Destination">Node</a></p>"#)
         );
     }
 
@@ -212,7 +214,10 @@ mod tests {
     fn nonleading_second_pipe() {
         assert_eq!(
             read("Go to Node|Destination|, here"),
-            r#"<p>Go to <a class="detached" title="" href="/node/Destination">Node</a>, here</p>"#,
+            concat!(
+                r#"<p>Go to <a class="detached" title="" "#,
+                r#"href="/node/Destination">Node</a>, here</p>"#
+            ),
         );
     }
 
@@ -220,7 +225,9 @@ mod tests {
     fn anchor_to_node_s() {
         assert_eq!(
             read("The |letter s|s|'s node: |s|!"),
-            r#"<p>The <a class="detached" title="" href="/node/s">letter s</a>'s node: <a class="detached" title="" href="/node/s">s</a>!</p>"#
+            concat!(r#"<p>The <a class="detached" title="" "#,
+                r#"href="/node/s">letter s</a>'s node: "#,
+                r#"<a class="detached" title="" href="/node/s">s</a>!</p>"#)
         );
     }
 
@@ -228,7 +235,10 @@ mod tests {
     fn nonleading_plural_anchor() {
         assert_eq!(
             read("The flower|s bloomed"),
-            r#"<p>The <a class="detached" title="" href="/node/flower">flowers</a> bloomed</p>"#
+            concat!(
+                r#"<p>The <a class="detached" title="" "#,
+                r#"href="/node/flower">flowers</a> bloomed</p>"#,
+            )
         );
     }
 
@@ -236,7 +246,9 @@ mod tests {
     fn leading_plural_anchor() {
         assert_eq!(
             read("Interfaces are |element|s of |system|s."),
-            r#"<p>Interfaces are <a class="detached" title="" href="/node/element">elements</a> of <a class="detached" title="" href="/node/system">systems</a>.</p>"#
+            concat!(r#"<p>Interfaces are <a class="detached" title="" "#,
+                r#"href="/node/element">elements</a> of <a class="detached" "#,
+                r#"title="" href="/node/system">systems</a>.</p>"#)
         );
     }
 
@@ -244,7 +256,11 @@ mod tests {
     fn leading_multiword_anchor() {
         assert_eq!(
             read("interactions are |basic elements| of systems"),
-            r#"<p>interactions are <a class="detached" title="" href="/node/basic elements">basic elements</a> of systems</p>"#
+            concat!(
+                r#"<p>interactions are <a class="detached" title="""#,
+                r#" href="/node/basic elements">basic elements</a> "#,
+                r#"of systems</p>"#,
+            ),
         );
     }
 
@@ -252,7 +268,9 @@ mod tests {
     fn explicit_end_of_destination() {
         assert_eq!(
             read("interactions are |basic elements|BasicElements| of systems"),
-            r#"<p>interactions are <a class="detached" title="" href="/node/BasicElements">basic elements</a> of systems</p>"#
+            concat!(r#"<p>interactions are <a class="detached" title="" "#,
+                r#"href="/node/BasicElements">basic elements</a> of "#,
+                r#"systems</p>"#)
         );
     }
 
@@ -260,7 +278,11 @@ mod tests {
     fn explicit_end_of_external_destination() {
         assert_eq!(
             read("this |anchor example|https://example.com| is external"),
-            r#"<p>this <a class="external" title="" href="https://example.com">anchor example</a> is external</p>"#
+            concat!(
+                r#"<p>this <a class="external" title="" "#,
+                r#"href="https://example.com">anchor example</a> is "#,
+                r#"external</p>"#
+            )
         );
     }
 
@@ -276,7 +298,10 @@ mod tests {
     fn external_anchor_destination_at_eoi() {
         assert_eq!(
             read("a b|https://example.com"),
-            r#"<p>a <a class="external" title="" href="https://example.com">b</a></p>"#
+            concat!(
+                r#"<p>a <a class="external" title="" "#,
+                r#"href="https://example.com">b</a></p>"#,
+            )
         );
     }
 
@@ -284,7 +309,10 @@ mod tests {
     fn nonleading_plural_anchor_at_eoi() {
         assert_eq!(
             read("element|s"),
-            r#"<p><a class="detached" title="" href="/node/element">elements</a></p>"#
+            concat!(
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/element">elements</a></p>"#,
+            )
         );
     }
 
@@ -292,17 +320,22 @@ mod tests {
     fn leading_plural_anchor_at_eoi() {
         assert_eq!(
             read("|element|s"),
-            r#"<p><a class="detached" title="" href="/node/element">elements</a></p>"#
+            concat!(
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/element">elements</a></p>"#,
+            )
         );
     }
 
     #[test]
     fn http_external_anchor() {
         assert_eq!(
-            read(
-                "a |false dichotomy|https://en.wikipedia.org/wiki/False_dilemma|."
+            read("a |false dichotomy|https://wikipedia.org/False_dilemma|."),
+            concat!(
+                r#"<p>a <a class="external" title="" "#,
+                r#"href="https://wikipedia.org/False_dilemma">"#,
+                r#"false dichotomy</a>.</p>"#,
             ),
-            r#"<p>a <a class="external" title="" href="https://en.wikipedia.org/wiki/False_dilemma">false dichotomy</a>.</p>"#
         );
     }
 
@@ -315,7 +348,8 @@ mod tests {
                 "at rustup.rs",
             )),
             concat!(
-                r#"<p><a class="external" title="" href="https://rustup.rs/">Rust toolchain</a>"#,
+                r#"<p><a class="external" title="" "#,
+                r#"href="https://rustup.rs/">Rust toolchain</a>"#,
                 "\n",
                 "at rustup.rs</p>",
             )
@@ -326,7 +360,11 @@ mod tests {
     fn http_external_anchor_leading_no_third_then_space() {
         assert_eq!(
             read("|Rust toolchain|https://rustup.rs/ at rustup.rs"),
-            r#"<p><a class="external" title="" href="https://rustup.rs/">Rust toolchain</a> at rustup.rs</p>"#
+            concat!(
+                r#"<p><a class="external" title="" "#,
+                r#"href="https://rustup.rs/">Rust toolchain</a> "#,
+                r#"at rustup.rs</p>"#,
+            ),
         );
     }
 
@@ -334,7 +372,10 @@ mod tests {
     fn http_external_anchor_leading_no_third_then_eoi() {
         assert_eq!(
             read("|Rust toolchain|https://rustup.rs/"),
-            r#"<p><a class="external" title="" href="https://rustup.rs/">Rust toolchain</a></p>"#
+            concat!(
+                r#"<p><a class="external" title="" "#,
+                r#"href="https://rustup.rs/">Rust toolchain</a></p>"#,
+            )
         );
     }
 
@@ -344,7 +385,10 @@ mod tests {
             read("\n|SomeAnchor|\n"),
             concat!(
                 "\n",
-                r#"<p><a class="detached" title="" href="/node/SomeAnchor">SomeAnchor</a></p>"#
+                concat!(
+                    r#"<p><a class="detached" title="" "#,
+                    r#"href="/node/SomeAnchor">SomeAnchor</a></p>"#,
+                )
             ),
         );
     }
@@ -354,9 +398,11 @@ mod tests {
         assert_eq!(
             read("|SomeAnchor|\n|SomeOtherAnchor|\n"),
             concat!(
-                r#"<p><a class="detached" title="" href="/node/SomeAnchor">SomeAnchor</a>"#,
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/SomeAnchor">SomeAnchor</a>"#,
                 "\n",
-                r#"<a class="detached" title="" href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
+                r#"<a class="detached" title="" "#,
+                r#"href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#,
             )
         );
     }
@@ -366,10 +412,12 @@ mod tests {
         assert_eq!(
             read("|SomeAnchor|\n\n|SomeOtherAnchor|\n"),
             concat!(
-                r#"<p><a class="detached" title="" href="/node/SomeAnchor">SomeAnchor</a></p>"#,
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/SomeAnchor">SomeAnchor</a></p>"#,
                 "\n",
                 "\n",
-                r#"<p><a class="detached" title="" href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/SomeOtherAnchor">SomeOtherAnchor</a></p>"#,
             ),
         );
     }
@@ -378,7 +426,10 @@ mod tests {
     fn trailing_anchor() {
         assert_eq!(
             read("see acks|acks"),
-            r#"<p>see <a class="detached" title="" href="/node/acks">acks</a></p>"#
+            concat!(
+                r#"<p>see <a class="detached" title="" "#,
+                r#"href="/node/acks">acks</a></p>"#,
+            )
         );
     }
 
@@ -388,8 +439,9 @@ mod tests {
             read("\nsee acks|acks\n"),
             concat!(
                 "\n",
-                r#"<p>see <a class="detached" title="" href="/node/acks">acks</a></p>"#
-            )
+                r#"<p>see <a class="detached" title="" "#,
+                r#"href="/node/acks">acks</a></p>"#,
+            ),
         );
     }
 
@@ -417,7 +469,10 @@ mod tests {
     fn anchor_with_trailing_single_quote() {
         assert_eq!(
             read("the |lion|'s mouth"),
-            r#"<p>the <a class="detached" title="" href="/node/lion">lion</a>'s mouth</p>"#,
+            concat!(
+                r#"<p>the <a class="detached" title="" "#,
+                r#"href="/node/lion">lion</a>'s mouth</p>"#,
+            )
         );
     }
 
@@ -425,7 +480,10 @@ mod tests {
     fn anchor_with_trailing_double_quote() {
         assert_eq!(
             read(r#"the "|real|" motive"#),
-            r#"<p>the "<a class="detached" title="" href="/node/real">real</a>" motive</p>"#,
+            concat!(
+                r#"<p>the "<a class="detached" title="" "#,
+                r#"href="/node/real">real</a>" motive</p>"#,
+            )
         );
     }
 
@@ -433,7 +491,10 @@ mod tests {
     fn anchor_with_trailing_parenthesis() {
         assert_eq!(
             read("this (though |true|) was questioned"),
-            r#"<p>this (though <a class="detached" title="" href="/node/true">true</a>) was questioned</p>"#,
+            concat!(
+                r#"<p>this (though <a class="detached" title="" "#,
+                r#"href="/node/true">true</a>) was questioned</p>"#,
+            )
         );
     }
 
@@ -441,7 +502,10 @@ mod tests {
     fn anchor_with_leading_single_quote() {
         assert_eq!(
             read("the 'real|Reality' motive"),
-            r#"<p>the '<a class="detached" title="" href="/node/Reality">real</a>' motive</p>"#,
+            concat!(
+                r#"<p>the '<a class="detached" title="" "#,
+                r#"href="/node/Reality">real</a>' motive</p>"#,
+            )
         );
     }
 
@@ -449,7 +513,10 @@ mod tests {
     fn anchor_with_leading_double_quote() {
         assert_eq!(
             read(r#"the "real|Reality" motive"#),
-            r#"<p>the "<a class="detached" title="" href="/node/Reality">real</a>" motive</p>"#,
+            concat!(
+                r#"<p>the "<a class="detached" title="" "#,
+                r#"href="/node/Reality">real</a>" motive</p>"#,
+            )
         );
     }
 
@@ -457,7 +524,10 @@ mod tests {
     fn anchor_with_leading_parenthesis() {
         assert_eq!(
             read("her (last|Surname) name"),
-            r#"<p>her (<a class="detached" title="" href="/node/Surname">last</a>) name</p>"#,
+            concat!(
+                r#"<p>her (<a class="detached" title="" "#,
+                r#"href="/node/Surname">last</a>) name</p>"#,
+            )
         );
     }
 
@@ -465,7 +535,10 @@ mod tests {
     fn anchor_with_internal_apostrophe() {
         assert_eq!(
             read("the |lion's mouth|album was released"),
-            r#"<p>the <a class="detached" title="" href="/node/album">lion's mouth</a> was released</p>"#
+            concat!(
+                r#"<p>the <a class="detached" title="" "#,
+                r#"href="/node/album">lion's mouth</a> was released</p>"#,
+            )
         );
     }
 
@@ -473,7 +546,10 @@ mod tests {
     fn nonleading_anchor_with_internal_apostrophe() {
         assert_eq!(
             read("they decided to stay at Jane's|YellowHouse that night"),
-            r#"<p>they decided to stay at <a class="detached" title="" href="/node/YellowHouse">Jane's</a> that night</p>"#
+            concat!(
+                r#"<p>they decided to stay at <a class="detached" title="" "#,
+                r#"href="/node/YellowHouse">Jane's</a> that night</p>"#,
+            )
         );
     }
 
@@ -481,7 +557,10 @@ mod tests {
     fn nonleading_anchor_with_internal_apostrophe_at_eoi() {
         assert_eq!(
             read("they decided to stay at Jane's|YellowHouse"),
-            r#"<p>they decided to stay at <a class="detached" title="" href="/node/YellowHouse">Jane's</a></p>"#
+            concat!(
+                r#"<p>they decided to stay at <a class="detached" "#,
+                r#"title="" href="/node/YellowHouse">Jane's</a></p>"#,
+            )
         );
     }
 
@@ -489,7 +568,10 @@ mod tests {
     fn nonleading_anchor_with_internal_apostrophe_at_soi() {
         assert_eq!(
             read("Jane's|YellowHouse that night"),
-            r#"<p><a class="detached" title="" href="/node/YellowHouse">Jane's</a> that night</p>"#
+            concat!(
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/YellowHouse">Jane's</a> that night</p>"#,
+            )
         );
     }
 
@@ -497,7 +579,10 @@ mod tests {
     fn anchor_with_internal_double_quotes() {
         assert_eq!(
             read(r#"the |"real"|Truth motive"#),
-            r#"<p>the <a class="detached" title="" href="/node/Truth">"real"</a> motive</p>"#,
+            concat!(
+                r#"<p>the <a class="detached" title="" "#,
+                r#"href="/node/Truth">"real"</a> motive</p>"#,
+            )
         );
     }
 
@@ -505,7 +590,10 @@ mod tests {
     fn anchor_with_internal_double_quotes_wrapping_spaced_words() {
         assert_eq!(
             read(r#"the |"bare reality"|Ideology they believed"#),
-            r#"<p>the <a class="detached" title="" href="/node/Ideology">"bare reality"</a> they believed</p>"#,
+            concat!(
+                r#"<p>the <a class="detached" title="" "#,
+                r#"href="/node/Ideology">"bare reality"</a> they believed</p>"#,
+            )
         );
     }
 
@@ -513,7 +601,10 @@ mod tests {
     fn anchor_with_internal_parenthesis() {
         assert_eq!(
             read("her |last (name)|Surname was Amad"),
-            r#"<p>her <a class="detached" title="" href="/node/Surname">last (name)</a> was Amad</p>"#,
+            concat!(
+                r#"<p>her <a class="detached" title="" "#,
+                r#"href="/node/Surname">last (name)</a> was Amad</p>"#,
+            )
         );
     }
 
@@ -521,7 +612,11 @@ mod tests {
     fn anchor_with_internal_parenthesis_wrapping_spaced_words() {
         assert_eq!(
             read("this |truth (though questionable) was fine|Absurd to them "),
-            r#"<p>this <a class="detached" title="" href="/node/Absurd">truth (though questionable) was fine</a> to them</p>"#
+            concat!(
+                r#"<p>this <a class="detached" title="" "#,
+                r#"href="/node/Absurd">truth (though questionable) was "#,
+                r#"fine</a> to them</p>"#,
+            )
         );
     }
 }

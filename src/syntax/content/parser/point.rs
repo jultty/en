@@ -58,17 +58,18 @@ pub fn parse(
 
 #[cfg(test)]
 mod tests {
-    use crate::{syntax::content::parser, graph::Graph};
+    use crate::{graph::Graph, syntax::content::parser};
 
-    fn read(input: &str) -> String {
-        parser::read(input, &Graph::default())
-    }
+    fn read(input: &str) -> String { parser::read(input, &Graph::default()) }
 
     #[test]
     fn oblique_anchor() {
         assert_eq!(
             read("w _|S|_ w"),
-            r#"<p>w <em><a class="detached" title="" href="/node/S">S</a></em> w</p>"#
+            concat!(
+                r#"<p>w <em><a class="detached" title="" "#,
+                r#"href="/node/S">S</a></em> w</p>"#,
+            )
         );
     }
 
@@ -76,7 +77,8 @@ mod tests {
     fn oblique_anchor_with_trailing_comma() {
         assert_eq!(
             read("w _|S|_, w"),
-            r#"<p>w <em><a class="detached" title="" href="/node/S">S</a></em>, w</p>"#
+            concat!(r#"<p>w <em><a class="detached" title="" "#,
+            r#"href="/node/S">S</a></em>, w</p>"#)
         );
     }
 
@@ -84,9 +86,17 @@ mod tests {
     fn oblique() {
         assert_eq!(
             read(
-                "_|this anchor is oblique|o as are these literals_ but not these _just these_, not this _and these with an |anc80r| again_"
+                "_|this anchor is oblique|o as are these literals_ but not \
+                    these _just these_, not this _and these with an |anc80r| \
+                    again_"
             ),
-            r#"<p><em><a class="detached" title="" href="/node/o">this anchor is oblique</a> as are these literals</em> but not these <em>just these</em>, not this <em>and these with an <a class="detached" title="" href="/node/anc80r">anc80r</a> again</em></p>"#
+            concat!(
+                r#"<p><em><a class="detached" title="" href="/node/o">"#,
+                r#"this anchor is oblique</a> as are these literals</em> "#,
+                r#"but not these <em>just these</em>, not this <em>and these "#,
+                r#"with an <a class="detached" title="" "#,
+                r#"href="/node/anc80r">anc80r</a> again</em></p>"#,
+            )
         );
     }
 

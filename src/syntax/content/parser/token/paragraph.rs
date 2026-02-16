@@ -6,9 +6,7 @@ pub struct Paragraph {
 }
 
 impl Paragraph {
-    pub fn new(open: bool) -> Paragraph {
-        Paragraph { open: Some(open) }
-    }
+    pub fn new(open: bool) -> Paragraph { Paragraph { open: Some(open) } }
 
     pub fn probe_end(lexeme: &Lexeme) -> bool {
         lexeme.match_char('\n') && lexeme.match_next_char('\n')
@@ -21,9 +19,7 @@ impl Parseable for Paragraph {
         !lexeme.is_whitespace()
     }
 
-    fn lex(_lexeme: &Lexeme) -> Paragraph {
-        Paragraph { open: None }
-    }
+    fn lex(_lexeme: &Lexeme) -> Paragraph { Paragraph { open: None } }
 
     fn render(&self) -> String {
         if let Some(open) = self.open {
@@ -39,9 +35,7 @@ impl Parseable for Paragraph {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Paragraph {
@@ -62,9 +56,8 @@ impl std::fmt::Display for Paragraph {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn lex() {
@@ -73,9 +66,8 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(
-        expected = "Attempt to render a paragraph tag while open state is unknown"
-    )]
+    #[should_panic(expected = "Attempt to render a paragraph tag while \
+            open state is unknown")]
     fn render_state_unknown() {
         let p = Paragraph::lex(&Lexeme::default());
         drop(p.render());

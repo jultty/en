@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, Lexeme},
-};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Underline {
@@ -8,9 +6,7 @@ pub struct Underline {
 }
 
 impl Underline {
-    pub fn new(open: bool) -> Underline {
-        Underline { open }
-    }
+    pub fn new(open: bool) -> Underline { Underline { open } }
 }
 
 impl Parseable for Underline {
@@ -30,9 +26,7 @@ impl Parseable for Underline {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Underline {
@@ -44,9 +38,8 @@ impl std::fmt::Display for Underline {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render() {
@@ -61,9 +54,7 @@ mod tests {
     #[should_panic(
         expected = "Attempt to lex an underline tag directly from a lexeme"
     )]
-    fn lex() {
-        Underline::lex(&Lexeme::default());
-    }
+    fn lex() { Underline::lex(&Lexeme::default()); }
 
     #[test]
     fn token_display() {

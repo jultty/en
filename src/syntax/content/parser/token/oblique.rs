@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, Lexeme},
-};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Oblique {
@@ -8,15 +6,11 @@ pub struct Oblique {
 }
 
 impl Oblique {
-    pub fn new(open: bool) -> Oblique {
-        Oblique { open }
-    }
+    pub fn new(open: bool) -> Oblique { Oblique { open } }
 }
 
 impl Parseable for Oblique {
-    fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.text() == "_"
-    }
+    fn probe(lexeme: &Lexeme) -> bool { lexeme.text() == "_" }
 
     fn lex(_lexeme: &Lexeme) -> Oblique {
         panic!("Attempt to lex an oblique tag directly from a lexeme")
@@ -30,9 +24,7 @@ impl Parseable for Oblique {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Oblique {
@@ -44,9 +36,8 @@ impl std::fmt::Display for Oblique {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render() {
@@ -61,9 +52,7 @@ mod tests {
     #[should_panic(
         expected = "Attempt to lex an oblique tag directly from a lexeme"
     )]
-    fn lex() {
-        Oblique::lex(&Lexeme::default());
-    }
+    fn lex() { Oblique::lex(&Lexeme::default()); }
 
     #[test]
     fn token_display() {

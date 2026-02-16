@@ -43,9 +43,7 @@ impl Parseable for Verse {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Verse {

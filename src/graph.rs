@@ -1,24 +1,24 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use serde::{Serialize, Deserialize};
+pub use edge::Edge;
+pub use meta::{Config, Meta};
+pub use node::Node;
+use serde::{Deserialize, Serialize};
 
-use crate::syntax::{
-    command::Arguments,
-    content::{
-        self,
-        parser::{flatten, Token, token::Anchor},
+use crate::{
+    prelude::*,
+    syntax::{
+        command::Arguments,
+        content::{
+            self,
+            parser::{Token, flatten, token::Anchor},
+        },
     },
 };
-use crate::prelude::*;
-pub use {
-    node::Node,
-    edge::Edge,
-    meta::{Meta, Config},
-};
 
-pub mod node;
 pub mod edge;
 pub mod meta;
+pub mod node;
 
 #[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, Debug)]
 pub struct Graph {
@@ -399,7 +399,7 @@ impl Graph {
         } else {
             log!(
                 VERBOSE,
-                "Chasing candidate for query {query}, collapsed {collapsed_query}"
+                "Chasing candidate: query {query}, collapsed {collapsed_query}"
             );
         }
 

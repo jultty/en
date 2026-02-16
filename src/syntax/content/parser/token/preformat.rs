@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, Lexeme},
-};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PreFormat {
@@ -8,9 +6,7 @@ pub struct PreFormat {
 }
 
 impl PreFormat {
-    pub fn new(open: bool) -> PreFormat {
-        PreFormat { open: Some(open) }
-    }
+    pub fn new(open: bool) -> PreFormat { PreFormat { open: Some(open) } }
 }
 
 impl std::fmt::Display for PreFormat {
@@ -29,9 +25,7 @@ impl Parseable for PreFormat {
         lexeme.match_first_char('`') && (lexeme.next() == "\n" || lexeme.last())
     }
 
-    fn lex(_lexeme: &Lexeme) -> PreFormat {
-        PreFormat { open: None }
-    }
+    fn lex(_lexeme: &Lexeme) -> PreFormat { PreFormat { open: None } }
 
     fn render(&self) -> String {
         if let Some(o) = self.open {
@@ -47,16 +41,13 @@ impl Parseable for PreFormat {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn lex() {
@@ -68,9 +59,8 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(
-        expected = "Attempt to render a preformat tag while open state is unknown"
-    )]
+    #[should_panic(expected = "Attempt to render a preformat tag while \
+            open state is unknown")]
     fn render() {
         let from_empty_lexeme = PreFormat::lex(&Lexeme::default());
         from_empty_lexeme.render();

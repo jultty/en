@@ -1,14 +1,13 @@
 use std::{
     collections::{HashMap, hash_map::Entry},
+    fmt::Display,
 };
 
 use crate::{
-    prelude::*,
     graph::Config,
-    syntax::content::{Parseable, Lexeme},
+    prelude::*,
+    syntax::content::{Lexeme, Parseable},
 };
-
-use std::fmt::Display;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Header {
@@ -113,9 +112,7 @@ impl Parseable for Header {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Header {
@@ -195,9 +192,8 @@ impl Display for Level {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn make_id() {

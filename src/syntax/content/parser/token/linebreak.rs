@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, parser::Lexeme},
-};
+use crate::syntax::content::{Parseable, parser::Lexeme};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct LineBreak {}
@@ -10,17 +8,11 @@ impl Parseable for LineBreak {
         lexeme.match_char('<') && lexeme.match_next_char('\n')
     }
 
-    fn lex(_lexeme: &Lexeme) -> LineBreak {
-        LineBreak {}
-    }
+    fn lex(_lexeme: &Lexeme) -> LineBreak { LineBreak {} }
 
-    fn render(&self) -> String {
-        String::from("<br>")
-    }
+    fn render(&self) -> String { String::from("<br>") }
 
-    fn flatten(&self) -> String {
-        String::from('\n')
-    }
+    fn flatten(&self) -> String { String::from('\n') }
 }
 
 impl std::fmt::Display for LineBreak {
@@ -31,9 +23,8 @@ impl std::fmt::Display for LineBreak {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn token_display() {

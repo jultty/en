@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, Lexeme},
-};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bold {
@@ -8,15 +6,11 @@ pub struct Bold {
 }
 
 impl Bold {
-    pub fn new(open: bool) -> Bold {
-        Bold { open }
-    }
+    pub fn new(open: bool) -> Bold { Bold { open } }
 }
 
 impl Parseable for Bold {
-    fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.text() == "*"
-    }
+    fn probe(lexeme: &Lexeme) -> bool { lexeme.text() == "*" }
 
     fn lex(_lexeme: &Lexeme) -> Bold {
         panic!("Attempt to lex a bold tag directly from a lexeme")
@@ -30,9 +24,7 @@ impl Parseable for Bold {
         }
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Bold {
@@ -44,9 +36,8 @@ impl std::fmt::Display for Bold {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render() {
@@ -61,9 +52,7 @@ mod tests {
     #[should_panic(
         expected = "Attempt to lex a bold tag directly from a lexeme"
     )]
-    fn lex() {
-        Bold::lex(&Lexeme::default());
-    }
+    fn lex() { Bold::lex(&Lexeme::default()); }
 
     #[test]
     fn token_display() {

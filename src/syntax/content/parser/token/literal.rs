@@ -16,13 +16,9 @@ impl Parseable for Literal {
         }
     }
 
-    fn render(&self) -> String {
-        self.text.clone()
-    }
+    fn render(&self) -> String { self.text.clone() }
 
-    fn flatten(&self) -> String {
-        self.text.clone()
-    }
+    fn flatten(&self) -> String { self.text.clone() }
 }
 
 impl std::fmt::Display for Literal {
@@ -33,9 +29,8 @@ impl std::fmt::Display for Literal {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn token_display() {

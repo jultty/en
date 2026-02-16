@@ -1,4 +1,6 @@
-use axum::{Form, body::Body, extract::State, http::Response, response::Redirect};
+use axum::{
+    Form, body::Body, extract::State, http::Response, response::Redirect,
+};
 
 use crate::{
     prelude::*,
@@ -58,9 +60,9 @@ pub struct Query {
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
-    use crate::graph::Graph;
 
     use super::*;
+    use crate::graph::Graph;
 
     async fn wrap_page(path: &str) -> Response<Body> {
         let state = GlobalState {

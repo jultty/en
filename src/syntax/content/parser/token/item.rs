@@ -1,4 +1,4 @@
-use crate::syntax::content::{Parseable, Lexeme};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Item {
@@ -7,9 +7,7 @@ pub struct Item {
 }
 
 impl Parseable for Item {
-    fn probe(_: &Lexeme) -> bool {
-        false
-    }
+    fn probe(_: &Lexeme) -> bool { false }
 
     fn lex(_: &Lexeme) -> Item {
         panic!("Attempt to lex an item directly from a lexeme")
@@ -19,9 +17,7 @@ impl Parseable for Item {
         panic!("Items should only be rendered by a list's render method")
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl Item {
@@ -50,9 +46,8 @@ impl std::fmt::Display for Item {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     #[should_panic(

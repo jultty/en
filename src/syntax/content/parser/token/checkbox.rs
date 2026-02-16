@@ -1,6 +1,4 @@
-use crate::{
-    syntax::content::{Parseable, Lexeme},
-};
+use crate::syntax::content::{Lexeme, Parseable};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CheckBox {
@@ -8,9 +6,7 @@ pub struct CheckBox {
 }
 
 impl CheckBox {
-    pub fn new(checked: bool) -> CheckBox {
-        CheckBox { checked }
-    }
+    pub fn new(checked: bool) -> CheckBox { CheckBox { checked } }
 }
 
 impl Parseable for CheckBox {
@@ -34,9 +30,7 @@ impl Parseable for CheckBox {
         format!(r#"<input type="checkbox"{toggle}/>"#)
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for CheckBox {
@@ -48,9 +42,8 @@ impl std::fmt::Display for CheckBox {
 
 #[cfg(test)]
 mod tests {
-    use crate::syntax::content::parser::Token;
-
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn render() {

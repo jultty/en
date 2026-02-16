@@ -26,9 +26,7 @@ impl Parseable for Quote {
         lexeme.match_char('>') && lexeme.match_next_char(' ')
     }
 
-    fn lex(_lexeme: &Lexeme) -> Quote {
-        Quote::default()
-    }
+    fn lex(_lexeme: &Lexeme) -> Quote { Quote::default() }
 
     fn render(&self) -> String {
         let opening = if let Some(url) = &self.url {
@@ -49,9 +47,7 @@ impl Parseable for Quote {
         format!("\n{opening}\n{content}\n</blockquote>\n")
     }
 
-    fn flatten(&self) -> String {
-        String::default()
-    }
+    fn flatten(&self) -> String { String::default() }
 }
 
 impl std::fmt::Display for Quote {

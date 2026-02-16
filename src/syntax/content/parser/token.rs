@@ -1,4 +1,4 @@
-use crate::syntax::content::{Parseable as _};
+use crate::syntax::content::Parseable as _;
 
 pub mod anchor;
 pub mod bold;
@@ -18,12 +18,23 @@ pub mod table;
 pub mod underline;
 pub mod verse;
 
-pub use {
-    anchor::Anchor, bold::Bold, checkbox::CheckBox, code::Code, header::Header,
-    item::Item, linebreak::LineBreak, list::List, literal::Literal,
-    oblique::Oblique, paragraph::Paragraph, preformat::PreFormat, quote::Quote,
-    strike::Strike, table::Table, underline::Underline, verse::Verse,
-};
+pub use anchor::Anchor;
+pub use bold::Bold;
+pub use checkbox::CheckBox;
+pub use code::Code;
+pub use header::Header;
+pub use item::Item;
+pub use linebreak::LineBreak;
+pub use list::List;
+pub use literal::Literal;
+pub use oblique::Oblique;
+pub use paragraph::Paragraph;
+pub use preformat::PreFormat;
+pub use quote::Quote;
+pub use strike::Strike;
+pub use table::Table;
+pub use underline::Underline;
+pub use verse::Verse;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Token {

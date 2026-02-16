@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use super::edge::Edge;
 
@@ -118,7 +118,9 @@ mod tests {
         assert_eq!(
             format!("{node}"),
             format!(
-                "Node 404 [title:'Not Found' text:15l summary:{} redirect:{redirect}]",
+                "Node 404 [title:'Not Found' \
+                    text:15l summary:{} \
+                    redirect:{redirect}]",
                 summary.len(),
             )
         );

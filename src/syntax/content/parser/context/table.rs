@@ -63,7 +63,6 @@ pub fn parse(
                 log!(VERBOSE, "Adding row: found newline on {lexeme}");
 
                 if !buffer.cell.is_empty() {
-
                     if buffer.in_header {
                         log!(VERBOSE, "Adding unterminated header: {lexeme}");
                         candidate.add_header(&parse_text(&buffer.cell));
@@ -86,7 +85,6 @@ pub fn parse(
                 buffer.in_header = false;
                 buffer.in_cell = false;
                 candidate.add_row(vec![]);
-
             } else if lexeme.match_char_triple(' ', '!', ' ') {
                 buffer.in_header = true;
                 if !buffer.cell.trim().is_empty() {
@@ -115,4 +113,332 @@ pub fn parse(
         },
     }
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{syntax::content::parser, graph::Graph};
+
+    fn read(input: &str) -> String {
+        parser::read(input, &Graph::default())
+    }
+
+    fn read_loaded(input: &str) -> String {
+        parser::read(input, &Graph::load())
+    }
+
+    #[test]
+    fn single_row() {
+        assert_eq!(
+            read(concat!("%", "\n", "a | b | c", "\n", "%", "\n")),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <td>a</td>", "\n",
+                "        <td>b</td>", "\n",
+                "        <td>c</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn two_rows() {
+        assert_eq!(
+            read(concat!(
+                "%", "\n",
+                "a | b | c", "\n",
+                "d | e | f", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <td>a</td>", "\n",
+                "        <td>b</td>", "\n",
+                "        <td>c</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn three_rows() {
+        assert_eq!(
+            read(concat!(
+                "%", "\n",
+                "a | b | c", "\n",
+                "d | e | f", "\n",
+                "g | h | i", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <td>a</td>", "\n",
+                "        <td>b</td>", "\n",
+                "        <td>c</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>g</td>", "\n",
+                "        <td>h</td>", "\n",
+                "        <td>i</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn with_header() {
+        assert_eq!(
+            read(concat!(
+                "%", "\n",
+                "hA ! hB ! hC", "\n",
+                "a | b | c", "\n",
+                "d | e | f", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <th>hA</th>", "\n",
+                "        <th>hB</th>", "\n",
+                "        <th>hC</th>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>a</td>", "\n",
+                "        <td>b</td>", "\n",
+                "        <td>c</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn with_anchor() {
+        assert_eq!(
+            read(concat!(
+                "%", "\n",
+                "a | |Node| | c", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <td>a</td>", "\n",
+                r#"        <td><a class="detached" title="" href="/node/Node">Node</a></td>"#, "\n",
+                "        <td>c</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        ));
+    }
+
+    #[test]
+    fn with_loaded_anchor() {
+        assert_eq!(
+            read_loaded(concat!(
+                "%", "\n",
+                "a | |Node| | c", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <td>a</td>", "\n",
+                r#"        <td><a class="attached" title="A node is defined in your graph file starting with a table header of the form:" href="/node/Node">Node</a></td>"#, "\n",
+                "        <td>c</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        ));
+    }
+
+    #[test]
+    fn no_leading_delimiters() {
+        assert_eq!(
+            read_loaded(concat!(
+                "%", "\n",
+                "a ! b ! c !", "\n",
+                "d | e | f |", "\n",
+                "g | h | i |", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <th>a</th>", "\n",
+                "        <th>b</th>", "\n",
+                "        <th>c</th>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>g</td>", "\n",
+                "        <td>h</td>", "\n",
+                "        <td>i</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn no_trailing_delimiters() {
+        assert_eq!(
+            read_loaded(concat!(
+                "%", "\n",
+                " ! a ! b ! c", "\n",
+                " | d | e | f", "\n",
+                " | g | h | i", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <th>a</th>", "\n",
+                "        <th>b</th>", "\n",
+                "        <th>c</th>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>g</td>", "\n",
+                "        <td>h</td>", "\n",
+                "        <td>i</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn with_leading_and_trailing_delimiters() {
+        assert_eq!(
+            read_loaded(concat!(
+                "%", "\n",
+                " ! a ! b ! c !", "\n",
+                " | d | e | f |", "\n",
+                " | g | h | i |", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <th>a</th>", "\n",
+                "        <th>b</th>", "\n",
+                "        <th>c</th>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>g</td>", "\n",
+                "        <td>h</td>", "\n",
+                "        <td>i</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn no_flanking_delimiters() {
+        assert_eq!(
+            read_loaded(concat!(
+                "%", "\n",
+                "a ! b ! c", "\n",
+                "d | e | f", "\n",
+                "g | h | i", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <th>a</th>", "\n",
+                "        <th>b</th>", "\n",
+                "        <th>c</th>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>g</td>", "\n",
+                "        <td>h</td>", "\n",
+                "        <td>i</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
+
+    #[test]
+    fn with_indent() {
+        assert_eq!(
+            read_loaded(concat!(
+                "%", "\n",
+                "    ! a ! b ! c !", "\n",
+                "           | d | e | f |", "\n",
+                " | g | h | i |", "\n",
+                "%", "\n",
+            )),
+            concat!(
+                "\n",
+                "<table>", "\n",
+                "    <tr>", "\n",
+                "        <th>a</th>", "\n",
+                "        <th>b</th>", "\n",
+                "        <th>c</th>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>d</td>", "\n",
+                "        <td>e</td>", "\n",
+                "        <td>f</td>", "\n",
+                "    </tr>", "\n",
+                "    <tr>", "\n",
+                "        <td>g</td>", "\n",
+                "        <td>h</td>", "\n",
+                "        <td>i</td>", "\n",
+                "    </tr>", "\n",
+                "</table>", "\n",
+        )
+        );
+    }
 }

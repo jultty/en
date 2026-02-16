@@ -314,7 +314,7 @@ b
 c
 `
 
-You still get "a b c" as a result. This is the case for paragraphs, but not for lists, verse blocks and preformatted text. Blockquotes support both modes.
+You still get "a b c" as a result. This is the case for paragraphs, but not for lists, verse blocks, tables and preformatted text. Blockquotes support both modes.
 
 This is useful when editing your text, allowing you to break some thoughts and special syntax without losing control over where your paragraph ends, particularly when handling huge paragraphs.
 
@@ -456,6 +456,50 @@ Lines starting with a `+` character will create numbered lists instead:
 + ni
 + san
 
+### Tables
+
+Tables are blocks delimited by a sole `%` on its own line:
+
+`
+%
+     Country  !  Capital
+    Colombia  |   Bogotá
+    Belgium   |  Brussels
+    Palestine | Jerusalem
+    Zambia    |   Lusaka
+%
+`
+
+%
+     Country  !  Capital
+    Colombia  |   Bogotá
+    Belgium   |  Brussels
+    Palestine | Jerusalem
+    Zambia    |   Lusaka
+%
+
+Table cells are delimited by either a `!` for headers or `|` for common cells. These delimiters must be surrounded by at least one space to each side and are optional at the first and last position of each line.
+
+This means you can use any of the following formats:
+
+`
+%
+      middle | only
+      tail   | only |
+    | lead   | only
+    | fully  | wrapped |
+%
+`
+
+%
+      middle | only
+      tail   | only |
+    | lead   | only
+    | fully  | wrapped |
+%
+
+Because at least one space is required around each delimiter, you must indent the table inside the surrounding `%` markers by at least one space.
+
 ## Rendering unformatted text
 
 The backtick character `\\`` can be used to render unformatted blocks and inline text:
@@ -482,25 +526,23 @@ Finally, you can precede any character with a `\\\\` to fully _escape_ that char
 
 ## Raw HTML
 
-If you need some more advanced feature that is not supported directly by en's markup snytax, you can always just write plain HTML and it will be passed along. For example, you could render a table:
+If you need some more advanced feature that is not supported directly by en's markup snytax, you can always just write plain HTML and it will be passed along. For example, you could render a form:
 
 `
-&lt;table&gt;
-    &lt;tr&gt;
-        &lt;td&gt; Hi, &lt;/td&gt;
-        &lt;td&gt; *HTML*! &lt;/td&gt;
-    &lt;/tr&gt;
-&lt;/table&gt;
+&lt;form style="text-align: center;"&gt;
+    &lt;label for="name"&gt; *__Name__* &lt;/label&gt;
+    &lt;input type="text" id="name"/&gt;
+    &lt;input type="submit"/&gt;
+&lt;/form&gt;
 `
 
-<table>
-    <tr>
-        <td> Hi, </td>
-        <td> *HTML*! </td>
-    </tr>
-</table>
+<form style="text-align: center;">
+    <label for="name"> *__Name__* </label>
+    <input type="text" id="name"/>
+    <input type="submit"/>
+</form>
 
-Notice that, as shown in this example, you can mix en syntax and HTML. You might want to add a space between your HTML tags and en special syntax so the boundary is clearer, but otherwise they don't tend to overlap since the symbols most used in HTML are not special in en.
+Notice that, as shown in this example, you can mix en syntax and HTML. You might want to add a space between your HTML tags and en special syntax so the boundary is clearer, but otherwise they don't tend to overlap since the symbols most used in HTML are not special in en with the exception of `<`, which is interpreted specially only at the end of lines.
 
 If you want to avoid either one of these syntaxes from being interpreted specially, you should escape the relevant characters as explained in the previous section.
 """
@@ -723,11 +765,7 @@ text = """
     - [ ] Invert where redirects are set
     - [x] Formatting
         - [x] Blockquotes
-        - [ ] Tables
-            - `%` block
-            - newline for rows
-            - indented, space-surrounded `!` wrap for headers
-            - indented, space-surrounded `|` wrap for cells
+        - [x] Tables
         - [x] Nested formatting
         - [x] Headers
         - [x] Preformatted blocks

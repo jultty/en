@@ -309,9 +309,15 @@ em#index-node-count {
 }
 
 table {
-    margin: auto;
+    margin: 20px auto;
     border-collapse: collapse;
     border: 0.5px dotted #666;
+}
+
+table th {
+    background: #099;
+    color: #fff;
+    border-color: #222;
 }
 
 td, th {
@@ -435,6 +441,11 @@ p.verse {
 
     span.root-label {
         border-width: 1px;
+    }
+
+    table th {
+        background: #002929;
+    border-color: #666;
     }
 
 }

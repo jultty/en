@@ -22,6 +22,8 @@ impl Table {
     pub fn add_cell(&mut self, content: &str) {
         if let Some(last) = self.contents.last_mut() {
             last.push(content.trim().to_string());
+        } else {
+            self.contents.push(vec![content.trim().to_string()]);
         }
     }
 

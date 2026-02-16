@@ -418,7 +418,7 @@ If you have a more complex citation, you can use multiple lines starting with `-
 -- Benedita da Silva,
 -- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
 -- March 3rd, 1995, <
--- International Day for the Elimination of Racial Discrimination.
+-- International Day for the Elimination of Racial Discrimination
 `
 
 > Dois grandes mitos dominam a história oficial do Brasil:
@@ -426,7 +426,7 @@ If you have a more complex citation, you can use multiple lines starting with `-
 -- Benedita da Silva,
 -- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
 -- March 3rd, 1995, <
--- Dia Internacional para a Eliminação da Discriminação Racial.
+-- International Day for the Elimination of Racial Discrimination
 
 The first URL found in your citation will be used as the blockquote element's `cite` value.
 
@@ -484,9 +484,9 @@ This means you can use any of the following formats:
 
 `
 %
-      middle | only
-      tail   | only |
-    | lead   | only
+      middle |  only
+       tail  |  only   |
+    |  lead  |  only
     | fully  | wrapped |
 %
 `

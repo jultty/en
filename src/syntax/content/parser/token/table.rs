@@ -24,11 +24,19 @@ impl Table {
             last.push(content.trim().to_string());
         }
     }
+
+    pub fn last_row_count(&self) -> usize {
+        if let Some(last) = self.contents.last() {
+            last.len()
+        } else {
+            0
+        }
+    }
 }
 
 impl Parseable for Table {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.match_char_triple('\n', '%', '\n')
+        lexeme.match_char_sequence('%', '\n')
     }
 
     fn lex(_lexeme: &Lexeme) -> Table {
@@ -37,26 +45,29 @@ impl Parseable for Table {
 
     fn render(&self) -> String {
         let mut xml = String::from("\n<table>\n");
+        let tab = "    ";
 
         if !self.headers.is_empty() {
-            xml.push_str("<tr>\n");
+            xml.push_str(format!("{tab}<tr>\n").as_str());
             for header in &self.headers {
-                xml.push_str(format!("<th>{header}</th>\n").as_str());
+                xml.push_str(format!("{tab}{tab}<th>{header}</th>\n").as_str());
             }
-            xml.push_str("\n</tr>\n");
+            xml.push_str(format!("{tab}</tr>\n").as_str());
         }
 
         for row in &self.contents {
-            if !row.is_empty() {
-                xml.push_str("<tr>\n");
+            if !row.is_empty() && row.iter().any(|cell| !cell.is_empty()) {
+                xml.push_str(format!("{tab}<tr>\n").as_str());
                 for cell in row {
-                    xml.push_str(format!("<td>{cell}</td>\n").as_str());
+                    xml.push_str(
+                        format!("{tab}{tab}<td>{cell}</td>\n").as_str(),
+                    );
                 }
-                xml.push_str("\n</tr>\n");
+                xml.push_str(format!("{tab}</tr>\n").as_str());
             }
         }
 
-        xml.push_str("\n</table>\n");
+        xml.push_str("</table>\n");
         xml
     }
 

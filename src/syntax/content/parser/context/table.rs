@@ -41,21 +41,14 @@ pub fn parse(
                 if buffer.in_header {
                     log!(VERBOSE, "Adding unterminated header: {lexeme}");
                     candidate.add_header(&parse_text(&buffer.cell));
-                    buffer.cell.clear();
-                    iterator.next();
-                    iterator.next();
-                } else if buffer.in_cell {
-                    log!(VERBOSE, "Adding unterminated cell: {lexeme}");
-                    candidate.add_cell(&parse_text(&buffer.cell));
-                    buffer.cell.clear();
-                    iterator.next();
-                    iterator.next();
                 } else {
-                    log!(VERBOSE, "Adding undelimited cell: {lexeme}");
+                    let descriptor = if buffer.in_cell {
+                        "unterminated"
+                    } else {
+                        "undelimited"
+                    };
+                    log!(VERBOSE, "Adding {descriptor} cell: {lexeme}");
                     candidate.add_cell(&parse_text(&buffer.cell));
-                    buffer.cell.clear();
-                    iterator.next();
-                    iterator.next();
                 }
 
                 tokens.push(Token::Table(candidate.clone()));
@@ -63,42 +56,53 @@ pub fn parse(
                 state.context.block = Block::None;
                 *buffer = state::TableBuffer::default();
                 iterator.next();
-            } else if lexeme.match_char('\n') {
+            } else if lexeme.match_char('\n')
+                || lexeme.match_char_triple(' ', '!', '\n')
+                || lexeme.match_char_triple(' ', '|', '\n')
+            {
                 log!(VERBOSE, "Adding row: found newline on {lexeme}");
+
                 if !buffer.cell.is_empty() {
 
                     if buffer.in_header {
                         log!(VERBOSE, "Adding unterminated header: {lexeme}");
                         candidate.add_header(&parse_text(&buffer.cell));
-                        buffer.cell.clear();
-                        iterator.next();
-                        iterator.next();
-                    } else if buffer.in_cell {
-                        log!(VERBOSE, "Adding unterminated cell: {lexeme}");
-                        candidate.add_cell(&parse_text(&buffer.cell));
-                        buffer.cell.clear();
-                        iterator.next();
-                        iterator.next();
                     } else {
-                        log!(VERBOSE, "Adding undelimited cell: {lexeme}");
+                        let descriptor = if buffer.in_cell {
+                            "unterminated"
+                        } else {
+                            "undelimited"
+                        };
+                        log!(VERBOSE, "Adding {descriptor} cell: {lexeme}");
                         candidate.add_cell(&parse_text(&buffer.cell));
-                        buffer.cell.clear();
-                        iterator.next();
-                        iterator.next();
                     }
-
+                    buffer.cell.clear();
                 }
+
+                if lexeme.match_next_either_char('|', '!') {
+                    iterator.next();
+                }
+
+                buffer.in_header = false;
+                buffer.in_cell = false;
                 candidate.add_row(vec![]);
+
             } else if lexeme.match_char_triple(' ', '!', ' ') {
-                log!(VERBOSE, "Adding header: found spaced ! on {lexeme}");
-                candidate.add_header(&parse_text(&buffer.cell));
-                buffer.cell.clear();
+                buffer.in_header = true;
+                if !buffer.cell.trim().is_empty() {
+                    log!(VERBOSE, "Adding header: found spaced ! on {lexeme}");
+                    candidate.add_header(&parse_text(&buffer.cell));
+                    buffer.cell.clear();
+                }
                 iterator.next();
                 iterator.next();
             } else if lexeme.match_char_triple(' ', '|', ' ') {
-                log!(VERBOSE, "Adding cell: found spaced | on {lexeme}");
-                candidate.add_cell(&parse_text(&buffer.cell));
-                buffer.cell.clear();
+                buffer.in_cell = true;
+                if !buffer.cell.trim().is_empty() {
+                    log!(VERBOSE, "Adding cell: found spaced | on {lexeme}");
+                    candidate.add_cell(&parse_text(&buffer.cell));
+                    buffer.cell.clear();
+                }
                 iterator.next();
                 iterator.next();
             } else {

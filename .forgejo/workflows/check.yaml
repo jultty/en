@@ -28,7 +28,8 @@ jobs:
 
       - name: Setup Rust toolchain
         run: |
-          rustup component add rustfmt clippy llvm-tools-preview
+          rustup component add clippy llvm-tools-preview
+          rustup component add --toolchain nightly rustfmt
 
       - name: Setup additional tooling
         run: |

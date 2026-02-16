@@ -62,7 +62,7 @@ alias qo := quick-test-cover-watch
 # Format all files
 [group: 'develop']
 format:
-    cargo fmt
+    cargo +nightly fmt
 
 alias f := format
 
@@ -162,7 +162,7 @@ alias do := doc-open
 # Assess formatting
 [group: 'assess']
 format-assess:
-    cargo fmt -- --check
+    cargo +nightly fmt -- --check
 
 alias fc := format-assess
 

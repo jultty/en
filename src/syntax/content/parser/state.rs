@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::syntax::content::parser::{
     Token,
     context::Context,
-    token::{Anchor, Item, List, Quote},
+    token::{Anchor, Item, List, Quote, Table},
 };
 
 #[derive(Clone, Default, Debug)]
@@ -28,6 +28,7 @@ pub struct Buffers {
     pub anchor: AnchorBuffer,
     pub list: ListBuffer,
     pub quote: QuoteBuffer,
+    pub table: TableBuffer,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -48,6 +49,14 @@ pub struct AnchorBuffer {
 pub struct QuoteBuffer {
     pub candidate: Quote,
     pub in_citation: bool,
+}
+
+#[derive(Default, Clone, Debug)]
+pub struct TableBuffer {
+    pub candidate: Table,
+    pub cell: String,
+    pub in_cell: bool,
+    pub in_header: bool,
 }
 
 impl std::fmt::Display for AnchorBuffer {

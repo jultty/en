@@ -9,7 +9,7 @@ use crate::{
             Block, Lexeme, State, Token,
             token::{
                 Header, List, LineBreak, Literal, Paragraph, PreFormat, Quote,
-                Verse,
+                Table, Verse,
             },
         },
     },
@@ -59,6 +59,11 @@ pub fn parse(
                 iterator.next();
                 iterator.next();
                 return true;
+            } else if Table::probe(lexeme) {
+                log!(VERBOSE, "Block Context: None -> Table on {lexeme}");
+                state.context.block = Block::Table;
+                iterator.next();
+                return true;
             } else if Paragraph::probe(lexeme) {
                 log!(VERBOSE, "Block Context: None -> Paragraph on {lexeme}");
                 state.context.block = Block::Paragraph;
@@ -94,6 +99,9 @@ pub fn parse(
         },
         Block::Quote => {
             return super::quote::parse(lexeme, state, tokens, iterator, graph);
+        },
+        Block::Table => {
+            return super::table::parse(lexeme, state, tokens, iterator, graph);
         },
         Block::Verse => {
             if Verse::probe_end(lexeme) {

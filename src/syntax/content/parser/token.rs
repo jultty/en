@@ -14,14 +14,15 @@ pub mod paragraph;
 pub mod preformat;
 pub mod quote;
 pub mod strike;
+pub mod table;
 pub mod underline;
 pub mod verse;
 
 pub use {
     anchor::Anchor, bold::Bold, checkbox::CheckBox, code::Code, header::Header,
     item::Item, linebreak::LineBreak, list::List, literal::Literal,
-    oblique::Oblique, paragraph::Paragraph, preformat::PreFormat,
-    strike::Strike, underline::Underline, quote::Quote, verse::Verse,
+    oblique::Oblique, paragraph::Paragraph, preformat::PreFormat, quote::Quote,
+    strike::Strike, table::Table, underline::Underline, verse::Verse,
 };
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -40,6 +41,7 @@ pub enum Token {
     Paragraph(Paragraph),
     PreFormat(PreFormat),
     Quote(Quote),
+    Table(Table),
     Underline(Underline),
     Verse(Verse),
 }
@@ -61,6 +63,7 @@ impl Token {
             Token::Paragraph(d) => d.render(),
             Token::PreFormat(d) => d.render(),
             Token::Quote(d) => d.render(),
+            Token::Table(d) => d.render(),
             Token::Underline(d) => d.render(),
             Token::Verse(d) => d.render(),
         }
@@ -82,6 +85,7 @@ impl Token {
             Token::Paragraph(d) => d.flatten(),
             Token::PreFormat(d) => d.flatten(),
             Token::Quote(d) => d.flatten(),
+            Token::Table(d) => d.flatten(),
             Token::Underline(d) => d.flatten(),
             Token::Verse(d) => d.flatten(),
         }
@@ -105,6 +109,7 @@ impl std::fmt::Display for Token {
             Token::Paragraph(d) => format!("{d}"),
             Token::PreFormat(d) => format!("{d}"),
             Token::Quote(d) => format!("{d}"),
+            Token::Table(d) => format!("{d}"),
             Token::Underline(d) => format!("{d}"),
             Token::Verse(d) => format!("{d}"),
         };

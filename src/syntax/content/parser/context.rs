@@ -8,6 +8,7 @@ pub mod inline;
 pub mod anchor;
 pub mod list;
 pub mod quote;
+pub mod table;
 
 #[derive(Clone, Default, Debug)]
 pub struct Context {
@@ -22,6 +23,7 @@ pub enum Block {
     List,
     PreFormat,
     Quote,
+    Table,
     Verse,
     #[default]
     None,
@@ -53,6 +55,9 @@ pub fn close(state: &State, tokens: &mut Vec<Token>) {
         },
         Block::Quote => {
             panic!("End of input with open quote")
+        },
+        Block::Table => {
+            panic!("End of input with open table")
         },
         Block::Verse => {
             tokens.push(Token::Verse(Verse::new(false)));

@@ -47,8 +47,8 @@ alias qr := quick-assess-run-watch
 
 [private]
 quick-test-cover:
-    {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
+    {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
     {{ cover_cmd }} report --html
     @{{ cover_cmd }} report | tail -1 | awk '{ print " [ Regions:", $4, "• Functions:", $7, "• Lines:", $10, "]" }'
 
@@ -185,8 +185,10 @@ alias c := check
 # Run tests
 [group: 'assess']
 test:
-    cargo test -- --skip 'serial_tests::'
     cargo test -- --test 'serial_tests::' --test-threads 1
+    cargo test --bin en
+    cargo test --doc
+    cargo test --lib -- --skip 'serial_tests::'
 
 alias t := test
 
@@ -200,8 +202,8 @@ alias oc := test-cover-clean
 # Run tests with coverage
 [group: 'assess']
 test-cover: test-cover-clean
-    {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
+    {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
 
 alias o := test-cover
 

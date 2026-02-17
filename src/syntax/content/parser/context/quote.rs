@@ -26,7 +26,7 @@ pub fn parse(
     let buffer = &mut state.buffers.quote;
     let candidate = &mut buffer.candidate;
 
-    #[allow(clippy::wildcard_enum_match_arm)]
+    #[expect(clippy::wildcard_enum_match_arm)]
     match state.context.block {
         Block::Quote => {
             if Quote::probe_end(lexeme) {

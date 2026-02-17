@@ -8,7 +8,7 @@ use crate::{
     router::{GlobalState, handlers::raw::make_response},
 };
 
-/// Assembles a response containing the graph as its only context
+/// Assembles a response containing the graph as its only context.
 ///
 /// The template name **must not** contain the extension.
 #[expect(clippy::unused_async)]
@@ -38,7 +38,7 @@ pub(in crate::router::handlers) fn with_context(
     make_response(&body, status_code, &[(header::CONTENT_TYPE, "text/html")])
 }
 
-/// Renderes a template into a String and error code
+/// Renderes a template into a String and error code.
 ///
 /// The template name **must not** contain the extension (e.g. `.html`).
 pub(in crate::router::handlers) fn render(

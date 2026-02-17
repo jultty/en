@@ -112,7 +112,7 @@ pub fn parse(
                 iterator.next();
                 return true;
             } else if lexeme.match_char('\n') {
-                tokens.push(Token::LineBreak(LineBreak::default()));
+                tokens.push(Token::LineBreak(LineBreak));
                 return true;
             }
         },

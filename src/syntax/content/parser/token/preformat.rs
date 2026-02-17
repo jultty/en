@@ -6,7 +6,7 @@ pub struct PreFormat {
 }
 
 impl PreFormat {
-    pub fn new(open: bool) -> PreFormat { PreFormat { open: Some(open) } }
+    pub const fn new(open: bool) -> PreFormat { PreFormat { open: Some(open) } }
 }
 
 impl std::fmt::Display for PreFormat {

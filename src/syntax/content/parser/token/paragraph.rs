@@ -6,7 +6,7 @@ pub struct Paragraph {
 }
 
 impl Paragraph {
-    pub fn new(open: bool) -> Paragraph { Paragraph { open: Some(open) } }
+    pub const fn new(open: bool) -> Paragraph { Paragraph { open: Some(open) } }
 
     pub fn probe_end(lexeme: &Lexeme) -> bool {
         lexeme.match_char('\n') && lexeme.match_next_char('\n')

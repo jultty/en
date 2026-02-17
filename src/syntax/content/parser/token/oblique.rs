@@ -6,7 +6,7 @@ pub struct Oblique {
 }
 
 impl Oblique {
-    pub fn new(open: bool) -> Oblique { Oblique { open } }
+    pub const fn new(open: bool) -> Oblique { Oblique { open } }
 }
 
 impl Parseable for Oblique {

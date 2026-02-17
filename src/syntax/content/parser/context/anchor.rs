@@ -61,7 +61,7 @@ pub fn parse(
             && !lexeme.match_next_char('|')
         {
             log!(VERBOSE, "End: Plural anchor");
-            candidate.set_destination(Some(&candidate.text().clone()));
+            candidate.set_destination(Some(&candidate.text()));
             candidate.text_push("s");
             if lexeme.last() {
                 push(None, tokens, state, graph);
@@ -73,7 +73,7 @@ pub fn parse(
                 if candidate.text().contains(':') {
                     candidate.set_external(true);
                 }
-                push(Some(&candidate.text().clone()), tokens, state, graph);
+                push(Some(&candidate.text()), tokens, state, graph);
             } else {
                 push(Some(&buffer.destination.clone()), tokens, state, graph);
             }

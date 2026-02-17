@@ -78,7 +78,7 @@ impl Graph {
         }
     }
 
-    /// Takes a file path to a TOML file and returns a modulated Graph
+    /// Takes a file path to a TOML file and returns a modulated Graph.
     ///
     /// If `path` is None, it will fallback to CLI arguments or their defaults.
     ///
@@ -99,11 +99,18 @@ impl Graph {
         let cli_path = Arguments::default().parse().graph_path;
         let path = in_path.map_or(cli_path, PathBuf::from);
 
-        let toml_source = match std::fs::read_to_string(path) {
+        let toml_source = match std::fs::read_to_string(&path) {
             Ok(s) => s,
             Err(e) => {
-                log!(ERROR, "Failed reading {e}");
-                return Err("Failed reading file at {path}".to_string());
+                log!(
+                    ERROR,
+                    "Error reading path {}: {e}",
+                    path.as_path().display(),
+                );
+                return Err(format!(
+                    "Failed reading file at {}",
+                    path.as_path().display(),
+                ));
             },
         };
 
@@ -192,7 +199,7 @@ impl Graph {
         tlog!(&instant, "Parsed configuration");
     }
 
-    /// Construct a `HashMap` with incoming connections (reversed edges)
+    /// Construct a `HashMap` with incoming connections (reversed edges).
     fn map_incoming(&mut self) {
         for node in self.nodes.clone().into_values() {
             for edge in node.connections.clone().values() {
@@ -372,7 +379,7 @@ impl Graph {
         }
     }
 
-    /// Increments detached node statistics for the given node ID
+    /// Increments detached node statistics for the given node ID.
     ///
     /// Performs checked arithmetic to the following effect:
     /// - Stats will saturate at `u32::MAX`
@@ -392,7 +399,7 @@ impl Graph {
     }
 
     pub fn find_node(&self, query: &str) -> QueryResult {
-        let collapsed_query = query.trim().replace(" ", "");
+        let collapsed_query = query.trim().replace(' ', "");
 
         if query == collapsed_query {
             log!(VERBOSE, "Chasing candidate for query {query}");

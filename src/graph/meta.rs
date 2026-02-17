@@ -105,9 +105,9 @@ impl Default for Config {
 }
 
 // See: https://github.com/serde-rs/serde/issues/368
-fn mktrue() -> bool { true }
-fn mkfalse() -> bool { false }
-fn mk8() -> u16 { 8 }
+const fn mktrue() -> bool { true }
+const fn mkfalse() -> bool { false }
+const fn mk8() -> u16 { 8 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct Version {
@@ -148,7 +148,7 @@ impl Version {
         Version::from_text(env!("CARGO_PKG_VERSION"))
     }
 
-    /// Parses a string into a Version struct
+    /// Parses a string into a Version struct.
     ///
     /// It is expected for the version string to contain exactly three
     /// dot-separated numeric values with an optional leading `v` character.

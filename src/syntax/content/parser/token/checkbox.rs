@@ -6,7 +6,7 @@ pub struct CheckBox {
 }
 
 impl CheckBox {
-    pub fn new(checked: bool) -> CheckBox { CheckBox { checked } }
+    pub const fn new(checked: bool) -> CheckBox { CheckBox { checked } }
 }
 
 impl Parseable for CheckBox {

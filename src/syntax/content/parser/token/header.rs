@@ -32,7 +32,7 @@ impl Header {
     ) -> String {
         let base_id = if !config.ascii_dom_ids || next_lexeme.next().is_ascii()
         {
-            next_lexeme.next().clone()
+            next_lexeme.next()
         } else {
             String::from("h")
         };
@@ -60,7 +60,7 @@ impl Header {
         }
     }
 
-    pub fn level(&self) -> u8 {
+    pub const fn level(&self) -> u8 {
         match self.level {
             Level::One => 1,
             Level::Two => 2,
@@ -147,7 +147,7 @@ pub enum Level {
 }
 
 impl Level {
-    fn from_u8(u: u8) -> Level {
+    const fn from_u8(u: u8) -> Level {
         if u <= 1 {
             Level::One
         } else if u == 2 {

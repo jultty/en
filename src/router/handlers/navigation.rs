@@ -33,7 +33,7 @@ pub async fn data(State(state): State<GlobalState>) -> Response<Body> {
 
     let mut detached_pairs: Vec<(String, u32)> =
         state.graph.stats.detached.clone().into_iter().collect();
-    detached_pairs.sort_by(|a, b| b.1.cmp(&a.1));
+    detached_pairs.sort_by_key(|b| std::cmp::Reverse(b.1));
 
     let mut context = tera::Context::default();
     context.insert("graph", &state.graph);

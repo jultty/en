@@ -32,7 +32,7 @@ pub fn parse(
         parsed_text
     };
 
-    #[allow(clippy::wildcard_enum_match_arm)]
+    #[expect(clippy::wildcard_enum_match_arm)]
     match state.context.block {
         Block::Table => {
             if Table::probe_end(lexeme) {

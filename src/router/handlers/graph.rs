@@ -37,13 +37,10 @@ pub async fn node(
         "node",
         &context,
         if found { 500 } else { 404 },
-        Some(
-            format!(
-                "Failed to generate page for node {} (ID {}).",
-                node.title, id
-            )
-            .to_owned(),
-        ),
+        Some(format!(
+            "Failed to generate page for node {} (ID {}).",
+            node.title, id
+        )),
         !found,
     )
 }

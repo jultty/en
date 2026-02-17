@@ -4,7 +4,7 @@ pub mod prelude {
     pub use crate::{
         log,
         log::{Level::*, now},
-        tlog,
+        tlog, write_log,
     };
 }
 

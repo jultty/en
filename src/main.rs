@@ -3,7 +3,7 @@ use std::{backtrace, io, panic};
 use en::{ONSET, graph::Graph, log, prelude::*, syntax};
 
 #[tokio::main]
-#[allow(clippy::print_stderr, clippy::print_stdout)]
+#[expect(clippy::print_stderr, clippy::print_stdout, clippy::use_debug)]
 async fn main() -> io::Result<()> {
     log::print_state();
     let mut instant = now();

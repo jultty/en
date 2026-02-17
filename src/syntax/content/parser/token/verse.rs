@@ -7,7 +7,7 @@ pub struct Verse {
 }
 
 impl Verse {
-    pub fn new(open: bool) -> Verse {
+    pub const fn new(open: bool) -> Verse {
         Verse {
             open: Some(open),
             citation: None,

@@ -28,15 +28,21 @@ impl Anchor {
         self.route();
     }
 
-    pub fn balanced(&self) -> bool { self.balanced }
+    pub const fn balanced(&self) -> bool { self.balanced }
 
-    pub fn set_balanced(&mut self, balanced: bool) { self.balanced = balanced; }
+    pub const fn set_balanced(&mut self, balanced: bool) {
+        self.balanced = balanced;
+    }
 
-    pub fn external(&self) -> bool { self.external }
+    pub const fn external(&self) -> bool { self.external }
 
-    pub fn set_external(&mut self, external: bool) { self.external = external; }
+    pub const fn set_external(&mut self, external: bool) {
+        self.external = external;
+    }
 
-    pub fn set_leading(&mut self, leading: bool) { self.leading = leading; }
+    pub const fn set_leading(&mut self, leading: bool) {
+        self.leading = leading;
+    }
 
     pub fn node(&self) -> Option<Node> { self.node.clone() }
 
@@ -52,7 +58,7 @@ impl Anchor {
 
     fn route(&mut self) {
         self.destination = if let Some(destination) = self.destination.clone() {
-            if destination.contains(":") || destination.contains("/") {
+            if destination.contains(':') || destination.contains('/') {
                 Some(destination)
             } else if destination.is_empty() && self.text.is_empty() {
                 None

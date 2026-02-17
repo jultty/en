@@ -43,19 +43,19 @@ impl Parseable for List {
                 .unwrap_or(0)
                 .strict_div(scale);
 
-            output.push_str(&format!("<li>{}", item.text));
+            write_log!(output, "<li>{}", item.text);
 
             if next_level > level {
                 // open nested lists
                 for _ in 0..(next_level.saturating_sub(level)) {
-                    output.push_str(&format!("<{tag}>\n"));
+                    write_log!(output, "<{tag}>\n");
                 }
             } else {
                 // close current item
                 output.push_str("</li>");
                 // close nested lists
                 for _ in 0..(level.saturating_sub(next_level)) {
-                    output.push_str(&format!("</{tag}></li>"));
+                    write_log!(output, "</{tag}></li>");
                 }
                 output.push('\n');
             }
@@ -70,7 +70,7 @@ impl Parseable for List {
 }
 
 impl List {
-    pub fn new(ordered: bool) -> List {
+    pub const fn new(ordered: bool) -> List {
         List {
             ordered,
             items: vec![],
@@ -202,7 +202,7 @@ mod tests {
     fn token_display() {
         let list = List::new(false);
         assert_eq!(
-            format!("{}", Token::List(list.clone())),
+            format!("{}", Token::List(list)),
             "Tk:List [0 unordered items]"
         );
     }

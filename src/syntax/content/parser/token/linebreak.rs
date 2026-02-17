@@ -1,7 +1,7 @@
 use crate::syntax::content::{Parseable, parser::Lexeme};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
-pub struct LineBreak {}
+pub struct LineBreak;
 
 impl Parseable for LineBreak {
     fn probe(lexeme: &Lexeme) -> bool {

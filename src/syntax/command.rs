@@ -7,7 +7,7 @@ use crate::prelude::*;
 
 static FIRST_PARSE: AtomicBool = AtomicBool::new(true);
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Arguments {
     pub hostname: String,
     pub port: u16,

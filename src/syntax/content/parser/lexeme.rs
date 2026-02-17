@@ -26,9 +26,9 @@ impl Lexeme {
 
     pub fn next(&self) -> String { self.next.clone() }
 
-    pub fn last(&self) -> bool { self.last }
+    pub const fn last(&self) -> bool { self.last }
 
-    pub fn first(&self) -> bool { self.first }
+    pub const fn first(&self) -> bool { self.first }
 
     pub fn mutate_text(&mut self, new: &str) { self.text = new.to_string(); }
 
@@ -146,7 +146,7 @@ impl Lexeme {
     }
 
     /// # Panics
-    /// Panics if number of chars for a single lexeme exceeds `i32::MAX`
+    /// Panics if number of chars for a single lexeme exceeds `i32::MAX`.
     pub fn count_char(&self, c: char) -> i32 {
         let count = self.text().chars().filter(|&n| n == c).count();
         match i32::try_from(count) {

@@ -6,7 +6,7 @@ pub struct Code {
 }
 
 impl Code {
-    pub fn new(open: bool) -> Code { Code { open } }
+    pub const fn new(open: bool) -> Code { Code { open } }
 }
 
 impl Parseable for Code {

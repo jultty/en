@@ -6,7 +6,7 @@ pub struct Strike {
 }
 
 impl Strike {
-    pub fn new(open: bool) -> Strike { Strike { open } }
+    pub const fn new(open: bool) -> Strike { Strike { open } }
 }
 
 impl Parseable for Strike {

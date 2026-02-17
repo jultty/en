@@ -33,7 +33,7 @@ pub(super) fn rich_read(input: &str, graph: &Graph) -> TokenOutput {
 }
 
 /// Apply end-to-end point and inline parsing for nested formatting, such as
-/// inside the display text of anchors and list items
+/// inside the display text of anchors and list items.
 pub fn format(input: &str, graph: &Graph) -> (String, Vec<Token>) {
     let tokens = lex(input, LEXMAP, graph, false).tokens;
     (parse(&tokens), tokens)

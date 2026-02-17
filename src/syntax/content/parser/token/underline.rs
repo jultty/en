@@ -6,7 +6,7 @@ pub struct Underline {
 }
 
 impl Underline {
-    pub fn new(open: bool) -> Underline { Underline { open } }
+    pub const fn new(open: bool) -> Underline { Underline { open } }
 }
 
 impl Parseable for Underline {

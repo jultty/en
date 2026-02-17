@@ -30,7 +30,7 @@ pub fn parse(
     let candidate = &mut buffer.candidate;
     let item_candidate = &mut buffer.item_candidate;
 
-    #[allow(clippy::wildcard_enum_match_arm)]
+    #[expect(clippy::wildcard_enum_match_arm)]
     match state.context.block {
         Block::List => {
             if lexeme.match_char(' ') && item_candidate.depth.is_none() {

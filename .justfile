@@ -69,7 +69,7 @@ alias f := format
 # Lint
 [group: 'develop']
 lint:
-    cargo clippy
+    cargo +nightly clippy
 
 alias l := lint
 
@@ -94,9 +94,16 @@ rustc-fix:
 
 alias rf := rustc-fix
 
+# Apply clippy lint fixes
+[group: 'develop']
+clippy-fix:
+    cargo +nightly clippy --fix --allow-dirty
+
+alias cf := clippy-fix
+
 # Apply all automatic fixes
 [group: 'develop']
-fix: rustc-fix format
+fix: rustc-fix clippy-fix format
 
 alias x := fix
 
@@ -169,8 +176,9 @@ alias fc := format-assess
 # Assess production lints
 [group: 'assess']
 lint-assess:
-    cargo clippy -- \
-        -D clippy::dbg_macro -D clippy::print_stdout -D clippy::print_stderr \
+    cargo +nightly clippy -- \
+        -D clippy::dbg_macro -D clippy::use_debug \
+        -D clippy::print_stdout -D clippy::print_stderr \
         -D clippy::todo -D clippy::unimplemented -D clippy::unreachable
 
 alias la := lint-assess

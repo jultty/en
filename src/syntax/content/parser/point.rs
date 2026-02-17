@@ -17,9 +17,9 @@ pub fn parse(
     tokens: &mut Vec<Token>,
     iterator: &mut Peekable<Iter<'_, Lexeme>>,
 ) -> bool {
-    if let super::context::Block::PreFormat = state.context.block {
-        return false;
-    } else if let super::context::Inline::Code = state.context.inline {
+    if matches!(state.context.block, super::context::Block::PreFormat)
+        || matches!(state.context.inline, super::context::Inline::Code)
+    {
         return false;
     }
 

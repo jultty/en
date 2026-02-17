@@ -48,11 +48,10 @@ pub fn parse(
                 log!(VERBOSE, "Inline Context: Code -> None on {lexeme}");
                 state.context.inline = Inline::None;
                 tokens.push(Token::Code(Code::new(false)));
-                return true;
             } else {
                 tokens.push(Token::Literal(Literal::lex(lexeme)));
-                return true;
             }
+            return true;
         },
         Inline::Anchor => {
             if context::anchor::parse(lexeme, state, tokens, graph) {

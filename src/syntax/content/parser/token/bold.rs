@@ -6,7 +6,7 @@ pub struct Bold {
 }
 
 impl Bold {
-    pub fn new(open: bool) -> Bold { Bold { open } }
+    pub const fn new(open: bool) -> Bold { Bold { open } }
 }
 
 impl Parseable for Bold {

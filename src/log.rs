@@ -4,7 +4,7 @@ pub use level::*;
 
 mod level;
 
-/// Strings in this slice suppress logging if found in the stack trace
+/// Strings in this slice suppress logging if found in the stack trace.
 pub const EXCLUSIONS: &[&str] = &["en::graph::Graph::parse_config"];
 
 #[derive(Debug)]
@@ -46,7 +46,7 @@ impl Data {
             && !excluded_by_env
             && matches_filter;
 
-        #[allow(clippy::print_stderr)]
+        #[expect(clippy::print_stderr)]
         if env_level == Level::META {
             eprintln!(
                 "Log decision for message from {path}: {should_log} given\n\
@@ -79,7 +79,7 @@ pub fn env_level() -> Level {
     }
 }
 
-#[allow(clippy::print_stderr)]
+#[expect(clippy::print_stderr)]
 pub fn print_state() {
     let env_level = env_level();
     let version = env!("CARGO_PKG_VERSION");
@@ -90,7 +90,7 @@ pub fn print_state() {
     }
 }
 
-#[allow(clippy::print_stderr)]
+#[expect(clippy::print_stderr)]
 pub fn timed(past: &Instant, message: &str) -> Instant {
     let now = Instant::now();
     let env_level = env_level();
@@ -120,7 +120,7 @@ macro_rules! tlog {
 
 pub fn now() -> Instant { Instant::now() }
 
-#[allow(clippy::print_stderr)]
+#[expect(clippy::print_stderr, clippy::use_debug)]
 pub fn elog(function: &str, message: &str) {
     eprintln!("{:?} [{function}] {message}", crate::ONSET.elapsed());
 }
@@ -214,6 +214,17 @@ pub fn wrap(s: &str) -> String {
     symbolize(&quote(&escape(s)))
 }
 
+#[macro_export]
+macro_rules! write_log {
+    ($buffer:expr, $format_string:expr $(, $format_args:expr)* $(,)?) => {{
+        use std::fmt::Write as _;
+        let result = write!($buffer, $format_string $(, $format_args)*);
+        if let Err(error) = result {
+            log!(ERROR, "Unexpected error writing into {}: ${error}", $buffer);
+        }
+    }};
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -239,7 +250,7 @@ mod tests {
     }
 
     fn run_in_debug_level(level: &str) {
-        #[allow(unsafe_code)]
+        #[expect(unsafe_code)]
         unsafe {
             std::env::set_var("DEBUG", level);
             log!("Debug is set to {level}");

@@ -8,7 +8,7 @@ env:
   CARGO_LLVM_COV_VERSION: 0.6.21
   CARGO_LLVM_COV_SHA256SUM: 57f491aedf7cdb261538ceb49cbb1ee9d27df7ca205a5e1a009caaf5cb911afb
 jobs:
-  verify:
+  publish:
     runs-on: docker
     timeout-minutes: 20
     container:
@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Install action dependencies
         run: |
-          apt-get install --no-install-recommends --update -y nodejs curl
+          apt-get install --no-install-recommends --update -y nodejs curl git
 
       - name: Checkout code
         uses: actions/checkout@v6

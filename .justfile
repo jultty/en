@@ -241,8 +241,16 @@ version-assess:
     manifest_version=$(grep '^version' Cargo.toml | cut -d \" -f 2)
     lockfile_version=$(grep -A 1 'name = "en"' Cargo.lock |
         grep version | cut -d '"' -f 2)
-    [ "$last_tag" = "$manifest_version" ]
-    [ "$last_tag" = "$lockfile_version" ]
+    if
+        [ "$last_tag" != "$manifest_version" ] ||
+        [ "$last_tag" != "$lockfile_version" ]
+    then
+        printf 'Last tag: %s\nManifest: %s\nLockfile: %s\n' \
+            "$last_tag" "$manifest_version" "$lockfile_version"
+        exit 1
+    fi
+
+alias va := version-assess
 
 # BUILD
 

@@ -1,4 +1,5 @@
 :root {
+    color-scheme: light dark;
     --base-font-size: 1em;
 }
 
@@ -15,6 +16,8 @@ body {
     line-height: 1.75;
     box-sizing: border-box;
     min-width: 0;
+    background: light-dark(#eee, #222);
+    color: light-dark(#000, #f1e9e5);
 }
 
 main {
@@ -61,14 +64,14 @@ code:hover {
 }
 
 pre, code {
+    background: light-dark(#e0e0e0, #333);
     font-family: mono, monospace;
-    background: #e0e0e0;
-    border: solid 2px #d0d0d0;
+    border: solid 2px light-dark(#d0d0d0, #434343);
     border-radius: 6px;
 }
 
 a {
-    color: #0f6366;
+    color: light-dark(#0f6366, #1dd7d7);
     text-decoration: underline dotted #159b9b;
     text-decoration-thickness: 2.5px;
     text-underline-offset: 3px;
@@ -78,27 +81,27 @@ a {
 a.attached:hover,
 #nav-main a:hover
 {
-    color: #117c7c;
+    color: light-dark(#117c7c, #00ffff);
     text-shadow: 0px 0px 22px #10afaf;
     transition: 1500ms;
 }
 
 a.detached {
-    color: #595959;
-    text-decoration-color: #444444;
+    color: light-dark(#595959, #acacac);
+    text-decoration-color: light-dark(#444444, #777);
 }
 
 a.external {
-    color: #1958a7;
-    text-decoration-color: #2A7CDF;
+    color: light-dark(#1958a7, #2fbae4);
+    text-decoration-color: light-dark(#2A7CDF, #46c1e7);
     text-decoration-style: solid;
     text-decoration-thickness: 1.5px;
     transition: 1500ms;
 }
 
 a.external:hover {
-    color: #0393b2;
-    text-decoration-color: #1ed4f1;
+    color: light-dark(#0393b2, #74e5ff);
+    text-decoration-color: light-dark(#1ed4f1, #aeffff);
     transition: 1500ms;
 }
 
@@ -106,7 +109,7 @@ a:visited,
 a.detached:visited,
 a.external:visited
 {
-    text-decoration-color: #bbb;
+    text-decoration-color: light-dark(#bbb, #999);
     transition: 1500ms;
 }
 
@@ -143,14 +146,14 @@ span.root-label {
 
 span.id-label {
     font-family: mono, monospace;
-    background: #e0e0e0;
-    border: solid 1px #d0d0d0;
+    background: light-dark(#e0e0e0, #444);
+    border: solid 1px light-dark(#d0d0d0, #666);
 }
 
 span.hidden-label  {
-    background: #888;
-    color: #eee;
-    border: solid 1px #d0d0d0;
+    background: light-dark(#888, #000);
+    color: light-dark(#eee, #969696);
+    border: solid 1px light-dark(#d0d0d0, #555);
 }
 
 h1 {
@@ -276,8 +279,8 @@ button
     border-radius: 5px;
     padding: 5px 8px;
     margin-right: 3px;
-    background: #eeeeff00;
-    border-color: #216767;
+    background: light-dark(#eeeeff00, #002020);
+    border-color: light-dark(#216767, #138e8e);
     border-width: 0.5px;
     transition: 1500ms;
 }
@@ -287,7 +290,7 @@ input[type="submit"]:hover,
 select:hover,
 button:hover
 {
-    border-color: #36a9a9;
+    border-color: light-dark(#36a9a9, #00ffff);
     box-shadow: 2px 2px #36a9a9ee;
 }
 
@@ -315,9 +318,9 @@ table {
 }
 
 table th {
-    background: #099;
+    background: light-dark(#099, #002929);
     color: #fff;
-    border-color: #222;
+    border-color: light-dark(#222, #666);
 }
 
 td, th {
@@ -362,92 +365,9 @@ p.verse {
 }
 
 @media (prefers-color-scheme: dark) {
-    * {
-        background: #222222;
-        color: #f1e9e5;
-    }
-
-    pre, code {
-        background: #333333;
-        border: solid 1px #434343;
-    }
-
-    a {
-        color: #1dd7d7;
-        transition: 1500ms;
-    }
-
-    a.attached:hover,
-    #nav-main a:hover
-    {
-        color: #00ffff;
-        transition: 1500ms;
-    }
-
-    a.external {
-        color: #2fbae4;
-        text-decoration-color: #46c1e7;
-        transition: 1500ms;
-    }
-
-    a.external:hover {
-        color: #74e5ff;
-        text-decoration-color: #aeffff;
-        transition: 1500ms;
-    }
-
-    a.detached {
-        color: #acacac;
-        text-decoration-color: #777;
-        transition: 1500ms;
-    }
-
-    span.id-label {
-        background: #444;
-        border-color: #666;
-    }
-
-    span.hidden-label  {
-        background: #000;
-        border-color: #555;
-        color: #969696;
-    }
-
-
-    a:visited,
-    a.detached:visited,
-    a.external:visited
-    {
-        text-decoration-color: #999;
-        transition: 1500ms;
-    }
-
-    input[type="text"],
-    input[type="submit"],
-    select,
-    button
-    {
-        background: #002020;
-        border-color: #138e8e;
-    }
-
-    input[type="text"]:hover,
-    input[type="submit"]:hover,
-    select:hover,
-    button:hover
-    {
-        border-color: #00ffff;
-    }
-
     span.root-label {
         border-width: 1px;
     }
-
-    table th {
-        background: #002929;
-    border-color: #666;
-    }
-
 }
 
 @media (max-width: 600px) {

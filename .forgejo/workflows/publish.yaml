@@ -51,6 +51,16 @@ jobs:
 
           mv -v /tmp/tools/just /tmp/tools/cargo-llvm-cov /usr/local/bin
 
-      - name: Build release binary and upload it
-        run: just upload
+      - name: Build release binary
+        run: just full-build
+      - name: Upload release binary to git.jutty.dev package registry
+        run: |
+          api_root=https://git.jutty.dev/api/
+          url=$api_root/packages/jutty/generic/en/$version/en-x86_64-linux-gnu
 
+          curl -fsSL \
+          --user jutty:${{ secrets.GJD_REGISTRY_TOKEN }} \
+          --upload-file target/release/en $url
+
+      - name: Print sha256sum
+        run: just shasum

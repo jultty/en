@@ -280,16 +280,10 @@ upload: full-build && shasum
     api_root=https://git.jutty.dev/api/
     url=$api_root/packages/jutty/generic/en/$version/en-x86_64-linux-gnu
     file=target/release/en
-    if [ "${CI:-}" = true ]; then
-        curl -fsSL \
-            --user jutty:${{{{ secrets.GJD_REGISTRY_TOKEN }} \
-             --upload-file $file $url
-    else
-        curl -fsSL \
-            --user jutty:$(secret-tool lookup Title gjd-registry-token) \
-             --upload-file $file $url
 
-    fi
+    curl -fsSL \
+        --user jutty:$(secret-tool lookup Title gjd-registry-token) \
+        --upload-file $file $url
 
 alias u := upload
 

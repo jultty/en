@@ -238,8 +238,11 @@ alias v := verify
 version-assess:
     last_tag=$(git describe --tags --abbrev=0 \
         $(git rev-list --tags --max-count=1) | tr -d v)
-    manifest_version=$(cat Cargo.toml | grep '^version' | cut -d \" -f 2)
+    manifest_version=$(grep '^version' Cargo.toml | cut -d \" -f 2)
+    lockfile_version=$(grep -A 1 'name = "en"' Cargo.lock |
+        grep version | cut -d '"' -f 2)
     [ "$last_tag" = "$manifest_version" ]
+    [ "$last_tag" = "$lockfile_version" ]
 
 # BUILD
 

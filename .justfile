@@ -229,7 +229,7 @@ verify:
         git status
         exit 1
     fi
-    {{ just_cmd }} version-assess format-assess lint-assess check test cover-assess
+    {{ just_cmd }} update version-assess format-assess lint-assess check test cover-assess
 
 alias v := verify
 

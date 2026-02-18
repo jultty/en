@@ -226,6 +226,7 @@ verify:
     export RUSTFLAGS=${RUSTFLAGS:-"-Dwarnings"}
     if [ -n "$(git status --porcelain)" ]; then
         echo "Git working tree is dirty: Commit or stash your changes first"
+        git status
         exit 1
     fi
     {{ just_cmd }} version-assess format-assess lint-assess check test cover-assess

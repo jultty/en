@@ -5,8 +5,6 @@
 update:
     cargo update --verbose
 
-alias u := update
-
 # Build and serve
 [group: 'develop']
 run host='::1' port='3003' *args:
@@ -230,9 +228,17 @@ verify:
         echo "Git working tree is dirty: Commit or stash your changes first"
         exit 1
     fi
-    {{ just_cmd }} format-assess lint-assess check test cover-assess
+    {{ just_cmd }} version-assess format-assess lint-assess check test cover-assess
 
 alias v := verify
+
+# Check tag-manifest consistency
+[script, group: 'assess']
+version-assess:
+    last_tag=$(git describe --tags --abbrev=0 \
+        $(git rev-list --tags --max-count=1) | tr -d v)
+    manifest_version=$(cat Cargo.toml | grep '^version' | cut -d \" -f 2)
+    [ "$last_tag" = "$manifest_version" ]
 
 # BUILD
 
@@ -259,9 +265,34 @@ alias rb := release-build
 
 # Clean, run assessments, release build
 [group: 'build']
-full-build: clean update verify release-build
+full-build: clean release-build
 
 alias fb := full-build
+
+# Upload release build to git.jutty.dev package registry
+[script, group: 'build']
+upload: full-build && shasum
+    version=$(./target/release/en --version)
+    api_root=https://git.jutty.dev/api/
+    url=$api_root/packages/jutty/generic/en/$version/en-x86_64-linux-gnu
+    file=target/release/en
+    if [ "${CI:-}" = true ]; then
+        curl -fsSL \
+            --user jutty:${{{{ secrets.GJD_REGISTRY_TOKEN }} \
+             --upload-file $file $url
+    else
+        curl -fsSL \
+            --user jutty:$(secret-tool lookup Title gjd-registry-token) \
+             --upload-file $file $url
+
+    fi
+
+alias u := upload
+
+# Print sha256sum for CI logging
+[group: 'build']
+shasum:
+    sha256sum target/release/en
 
 ## META
 

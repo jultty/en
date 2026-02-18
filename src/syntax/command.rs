@@ -12,6 +12,12 @@ pub struct Arguments {
     pub hostname: String,
     pub port: u16,
     pub graph_path: PathBuf,
+    pub flags: Flags,
+}
+
+#[derive(Default, Clone, Debug, PartialEq, Eq)]
+pub struct Flags {
+    pub version: bool,
 }
 
 impl Arguments {
@@ -32,6 +38,7 @@ impl Default for Arguments {
             hostname: String::from("0.0.0.0"),
             port: 0,
             graph_path: PathBuf::from("./static/graph.toml"),
+            flags: Flags::default(),
         }
     }
 }
@@ -39,21 +46,33 @@ impl Default for Arguments {
 fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
     let mut out_args = defaults.clone();
 
-    let filtered_args = if let Some((head, tail)) = args.split_first() {
+    // The first argument is usually the command path, but this is not
+    // guaranteed on all platforms so we drop it if it is unrecognized.
+    // For now, this is done simply by checking if it starts with a dash
+    let commandless_args = if let Some((head, tail)) = args.split_first() {
         if head.starts_with('-') { args } else { tail }
     } else {
         args
     };
 
-    for arg in filtered_args.chunks(2) {
+    let mut nonflag_args: Vec<&str> = vec![];
+    for arg in commandless_args {
+        if arg == "--version" || arg == "-v" {
+            out_args.flags.version = true;
+        } else {
+            nonflag_args.push(arg);
+        }
+    }
+
+    for arg in nonflag_args.chunks(2) {
         if let Some(argument) = arg.first()
             && let Some(parameter) = arg.get(1)
         {
-            if argument.eq("-h") || argument.eq("--hostname") {
-                out_args.hostname = String::from(parameter);
-            } else if argument.eq("-p") || argument.eq("--port") {
+            if *argument == "-h" || *argument == "--hostname" {
+                out_args.hostname = String::from(*parameter);
+            } else if *argument == "-p" || *argument == "--port" {
                 out_args.port = parameter.parse().unwrap_or(out_args.port);
-            } else if argument.eq("-g") || argument.eq("--graph") {
+            } else if *argument == "-g" || *argument == "--graph" {
                 out_args.graph_path = PathBuf::from(parameter);
             } else {
                 if FIRST_PARSE.load(Ordering::SeqCst) {
@@ -78,6 +97,7 @@ mod tests {
             hostname: String::from("localhost"),
             port: 3007,
             graph_path: PathBuf::default(),
+            flags: Flags::default(),
         };
 
         assert_eq!(args.make_address(), "localhost:3007");

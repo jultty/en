@@ -1,0 +1,54 @@
+on:
+  push:
+    tags:
+      - 'v*'
+env:
+  JUST_VERSION: 1.45.0
+  JUST_SHA256SUM: dc3f958aaf8c6506dd90426e9b03f86dd15e74a6467ee0e54929f750af3d9e49
+  CARGO_LLVM_COV_VERSION: 0.6.21
+  CARGO_LLVM_COV_SHA256SUM: 57f491aedf7cdb261538ceb49cbb1ee9d27df7ca205a5e1a009caaf5cb911afb
+jobs:
+  verify:
+    runs-on: docker
+    timeout-minutes: 20
+    container:
+      image: rust:slim
+    steps:
+      - name: Install action dependencies
+        run: |
+          apt-get install --no-install-recommends --update -y nodejs curl
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        run: |
+          rustup component add clippy llvm-tools-preview
+          rustup component add --toolchain nightly rustfmt
+
+      - name: Setup additional tooling
+        run: |
+          fetch() {
+            repo="$1"; tag="$2"; filename="$3"; digest="$4"
+
+            curl -sSLO -w '%{stderr}HTTP %{response_code} %{url}\n' \
+                "https://github.com/$repo/releases/download/$tag/$filename"
+
+            printf '%s  %s\n' "$digest" "$filename" > digest
+            sha256sum --check digest && tar xf "$filename" -C tools
+          }
+
+          mkdir tools
+
+          fetch casey/just ${{ env.JUST_VERSION }} \
+            just-${{ env.JUST_VERSION }}-x86_64-unknown-linux-musl.tar.gz \
+            ${{ env.JUST_SHA256SUM }}
+          fetch taiki-e/cargo-llvm-cov v${{ env.CARGO_LLVM_COV_VERSION }} \
+            cargo-llvm-cov-x86_64-unknown-linux-gnu.tar.gz \
+            ${{ env.CARGO_LLVM_COV_SHA256SUM }}
+
+          mv -v tools/just tools/cargo-llvm-cov /usr/local/bin
+
+      - name: Build release binary and upload it
+        run: just upload
+

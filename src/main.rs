@@ -5,12 +5,7 @@ use en::{ONSET, graph::Graph, log, prelude::*, syntax};
 #[tokio::main]
 #[expect(clippy::print_stderr, clippy::print_stdout, clippy::use_debug)]
 async fn main() -> io::Result<()> {
-    log::print_state();
     let mut instant = now();
-
-    let args = syntax::command::Arguments::default().parse();
-    let address = args.make_address();
-    instant = tlog!(&instant, "Parsed CLI arguments");
 
     panic::set_hook(Box::new(|info| {
         let payload = info
@@ -37,12 +32,23 @@ async fn main() -> io::Result<()> {
     }));
     instant = tlog!(&instant, "Set up panic hook");
 
+    let args = syntax::command::Arguments::default().parse();
+    instant = tlog!(&instant, "Parsed CLI arguments");
+
+    if args.flags.version {
+        println!(env!("CARGO_PKG_VERSION"));
+        return Ok(());
+    }
+
+    log::print_state();
+
     let graph = Graph::load();
     instant = tlog!(&instant, "Loaded graph");
 
     let router = en::router::new(graph);
     tlog!(&instant, "Initialized router");
 
+    let address = args.make_address();
     let listener =
         tokio::net::TcpListener::bind(&address).await.map_err(|e| {
             log!(ERROR, "Failed to create listener at {address}: {e:#?}");

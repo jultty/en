@@ -1,0 +1,15 @@
+FROM debian:stable-slim
+MAINTAINER Juno Takano juno@jutty.dev
+USER root
+
+# Setup tooling
+RUN apt-get -y --update install --no-install-recommends \
+    curl ca-certificates gcc libc6-dev
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Install
+RUN echo "root_node = 'test'" > /root/graph.toml
+RUN $HOME/.cargo/bin/cargo install --git https://codeberg.org/jutty/en
+
+# Launch
+CMD ["/root/.cargo/bin/en", "-p", "3008", "-g", "/root/graph.toml"]

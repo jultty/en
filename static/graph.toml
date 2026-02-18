@@ -4,25 +4,42 @@ root_node = "Documentation"
 text = """
 ## Installation
 
-For now, if you want to try en, you must build it yourself.
+### Pre-built binaries
 
-In an environment with a |Rust toolchain|https://rustup.rs/ and Git installed, run:
+The easiest way to get started is by downloading a pre-built binary.
+
+x86-64 Linux binaries are available from the |git.jutty.dev package registry|https://git.jutty.dev/jutty/-/packages/generic/en|. Check the links under "Assets" for direct downloads.
+
+Other platforms may be supported in the future depending on CI resources.
+
+### Build from source
+
+If you are on another platform or simply paranoid, you can also build en yourself.
+
+You will need:
+
+- For compiling en, a |Rust toolchain|https://rustup.rs/
+- For compiling dependencies, a C toolchain
+
+Given the above is satisfied, you can build directly through Cargo:
 
 `
-git clone https://codeberg.org/jutty/en
-cd en
-cargo build --release
+cargo install --git https://codeberg.org/jutty/en
 `
 
-The en binary will be in `target/release/en`.
+And you should now have the `en` command available on your shell.
 
-You can start it and point it to an address, port and graph:
+For more information on building from source, see |SourceBuild|.
+
+## Usage
+
+Once you have installed en, run it and point it to your graph:
 
 `
-en --host localhost --port 3003 --graph ./graph.toml
+en --graph my-graph.toml
 `
 
-See |CLI| for defaults and details on the CLI options.
+See |CLI| for defaults and details on the available options.
 
 ## Graph Syntax
 
@@ -86,6 +103,44 @@ This will create a connection from the node with ID `Realism` to a node with ID 
 [nodes.docs]
 redirect = "Documentation"
 hidden = true
+
+[nodes.SourceBuild]
+text = """
+Building from source is briefly described in the |Documentation| page.
+
+Source builds are tested on both Debian and Alpine, meaning en should compile and run on both glibc and musl systems.
+
+## Dependencies
+
+A Rust toolchain is required to build en itself and can be installed through |rustup|https://rustup.rs/|.
+
+For compiling en dependencies, you will need a C compiler and a libc (e.g. `gcc` + `glibc` or `clang` + `musl`), which may already be installed on your system
+
+%
+    Distribution   ! Needed packages
+    *Debian*       | `gcc` `libc6-dev`
+    *Alpine*       | `clang`
+%
+
+You may also need `curl` or `git` depending on how you will fetch sources.
+
+## Building from a Git clone
+
+Aside from the `cargo install` approach described in |Documentation|, ou can alternatively fetch the code yourself first using Git:
+
+`
+git clone https://codeberg.org/jutty/en
+cd en
+cargo build --release
+`
+
+In this case, the `en` binary will be in `target/release/en`.
+
+## Runnable examples
+
+You can find the exact commands used to test installation on both systems in the |<code>tests/containers</code>|https://codeberg.org/jutty/en/src/branch/main/tests/containers| directory of the en source repository.
+
+"""
 
 [nodes.Node]
 text = """

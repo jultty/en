@@ -1,6 +1,6 @@
 [package]
 name = "en"
-version = "0.1.6"
+version = "0.1.7"
 description = "A non-linear writing instrument."
 license = "AGPL-3.0-only"
 

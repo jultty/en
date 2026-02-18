@@ -53,8 +53,9 @@ jobs:
 
       - name: Build release binary
         run: just full-build
-      - name: Upload release binary to git.jutty.dev package registry
+      - name: Publish to git.jutty.dev package registry
         run: |
+          version=$(./target/release/en --version)
           api_root=https://git.jutty.dev/api/
           url=$api_root/packages/jutty/generic/en/$version/en-x86_64-linux-gnu
 

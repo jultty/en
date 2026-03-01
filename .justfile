@@ -134,12 +134,42 @@ cover-open:
 
 alias oo := cover-open
 
+# Tag HEAD with version from Cargo.toml
+[script, group: 'assess']
+tag: update && version-assess
+    last_tag=$(git describe --tags --abbrev=0 \
+        $(git rev-list --tags --max-count=1) | tr -d v)
+    manifest_version=$(grep '^version' Cargo.toml | cut -d \" -f 2)
+    lockfile_version=$(grep -A 1 'name = "en"' Cargo.lock |
+        grep version | cut -d '"' -f 2)
+
+    if [ "$last_tag" = "$manifest_version" ]; then
+        echo "Last tag $last_tag and manifest ($manifest_version) already match"
+        exit 1
+    elif [ "$manifest_version" != "$lockfile_version" ]; then
+        echo "Manifest and lockfile versions don't match: update failed?"
+        exit 1
+    fi
+
+    git tag "v$manifest_version" HEAD
+
 # Verify and push
 [group: 'develop']
 push: verify
     git push
+    git push --tags
 
 alias p := push
+
+# Push without verifying
+[group: 'develop']
+push-unsafe:
+    git push --no-verify
+    git push --tags --no-verify
+
+alias pu := push-unsafe
+
+# DOCUMENT
 
 # Generate crate documentation
 [group: 'document']
@@ -229,13 +259,14 @@ verify:
         git status
         exit 1
     fi
-    {{ just_cmd }} update version-assess format-assess lint-assess check test cover-assess
+    {{ just_cmd }} update version-assess \
+        security-assess format-assess lint-assess check test cover-assess
 
 alias v := verify
 
 # Check tag-manifest consistency
 [script, group: 'assess']
-version-assess:
+version-assess: update
     last_tag=$(git describe --tags --abbrev=0 \
         $(git rev-list --tags --max-count=1) | tr -d v)
     manifest_version=$(grep '^version' Cargo.toml | cut -d \" -f 2)
@@ -251,6 +282,11 @@ version-assess:
     fi
 
 alias va := version-assess
+
+# Audit security advisories
+security-assess:
+    cargo audit --deny warnings
+alias sa := security-assess
 
 # BUILD
 

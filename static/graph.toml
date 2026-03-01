@@ -834,12 +834,17 @@ text = """
         - [x] Checkboxes
             - [x] Move this roadmap to en
     - [ ] Special sections
-        - [ ] Definition (implies metadata `has_definition`)
-        - [ ] See also (implies a kind of connection, e.g. `related`)
-        - [ ] Not to be confused with (implies a kind of connection)
+        - [ ] Top-bound
+            - [ ] Top-bound is not included in the summary (tooltip)
+            - Sections
+                - [ ] Definition (implies metadata `has_definition`)
+                - [ ] See also (implies a kind of connection, e.g. `related`)
+                - [ ] Not to be confused with (implies a kind of connection)
         - [ ] Contrast with (implies a kind of connection)
         - [ ] Example (implies metadata `has_example`)
-        - [ ] References/influences (implies metadata `has_references`)
+        - [ ] Bottom-bound
+            - [ ] References/influences (implies metadata `has_references`)
+                - [ ] Aggregated from the full text content
 - [ ] Meta-awareness
     - [x] Detached edges
     - [ ] Most linked to nodes

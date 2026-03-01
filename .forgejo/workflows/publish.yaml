@@ -2,11 +2,6 @@ on:
   push:
     tags:
       - 'v*'
-env:
-  JUST_VERSION: 1.45.0
-  JUST_SHA256SUM: dc3f958aaf8c6506dd90426e9b03f86dd15e74a6467ee0e54929f750af3d9e49
-  CARGO_LLVM_COV_VERSION: 0.6.21
-  CARGO_LLVM_COV_SHA256SUM: 57f491aedf7cdb261538ceb49cbb1ee9d27df7ca205a5e1a009caaf5cb911afb
 jobs:
   publish:
     runs-on: docker
@@ -27,41 +22,19 @@ jobs:
           rustup component add --toolchain nightly rustfmt clippy
 
       - name: Setup additional tooling
-        run: |
-          fetch() {
-            repo="$1"; tag="$2"; filename="$3"; digest="$4"
-
-            curl -sSLO --output-dir /tmp \
-                -w '%{stderr}HTTP %{response_code} %{url}\n' \
-                "https://github.com/$repo/releases/download/$tag/$filename"
-
-            printf '%s  %s\n' "$digest" "/tmp/$filename" > /tmp/digest
-            sha256sum --check /tmp/digest
-            tar xf "/tmp/$filename" -C /tmp/tools
-          }
-
-          mkdir /tmp/tools
-
-          fetch casey/just ${{ env.JUST_VERSION }} \
-            just-${{ env.JUST_VERSION }}-x86_64-unknown-linux-musl.tar.gz \
-            ${{ env.JUST_SHA256SUM }}
-          fetch taiki-e/cargo-llvm-cov v${{ env.CARGO_LLVM_COV_VERSION }} \
-            cargo-llvm-cov-x86_64-unknown-linux-gnu.tar.gz \
-            ${{ env.CARGO_LLVM_COV_SHA256SUM }}
-
-          mv -v /tmp/tools/just /tmp/tools/cargo-llvm-cov /usr/local/bin
+        run: .forgejo/workflows/setup-tools.sh
 
       - name: Build release binary
         run: just full-build
+      - name: Calculate SHA-256 hash
+        run: just shasum
+
       - name: Publish to git.jutty.dev package registry
         run: |
           version=$(./target/release/en --version)
-          api_root=https://git.jutty.dev/api/
+          api_root=https://git.jutty.dev/api
           url=$api_root/packages/jutty/generic/en/$version/en-x86_64-linux-gnu
 
           curl -fsSL \
           --user jutty:${{ secrets.GJD_REGISTRY_TOKEN }} \
           --upload-file target/release/en $url
-
-      - name: Print sha256sum
-        run: just shasum

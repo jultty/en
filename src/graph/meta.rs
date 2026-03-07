@@ -44,6 +44,8 @@ pub struct Config {
     pub footer_credits: bool,
     #[serde(default = "mktrue")]
     pub footer_date: bool,
+    #[serde(default = "mktrue")]
+    pub footer_version: bool,
     #[serde(default)]
     pub footer_text: String,
     #[serde(default = "mk8")]
@@ -86,6 +88,7 @@ impl Default for Config {
             footer: true,
             footer_credits: true,
             footer_date: true,
+            footer_version: true,
             footer_text: String::default(),
             index_node_count: 8,
             index_node_list: true,

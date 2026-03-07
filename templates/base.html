@@ -1,3 +1,11 @@
+{% if graph.meta.version %}
+{% set en_version = graph.meta.version.major
+    ~ "." ~ graph.meta.version.minor
+    ~ "." ~ graph.meta.version.patch %}
+{% else %}
+{% set en_version = "?.?.?" %}
+{% endif -%}
+
 <!DOCTYPE html>
 {% if graph.meta.config.content_language %}
 <html lang="{{ graph.meta.config.content_language }}">
@@ -12,6 +20,7 @@
         {% endif %}
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="generator" content="en v{{ en_version  }}" />
         <link href="/static/assets/fonts/fonts.css" rel="stylesheet">
         <link href="/static/assets/style.css" rel="stylesheet">
         <link rel="icon" type="image/svg+xml" href="/static/assets/favicon.svg">
@@ -76,13 +85,17 @@
             <br/>
             {% endif %}
             {% if graph.meta.config.footer_date %}
+            <span>
             built
             <time>
                 {{ now(utc=true) | date(format="%Y-%m-%d %H:%M") }} UTC
             </time>
-            &bullet;
-            <time>{{ now(timestamp=true) }} Unix Epoch</time>
             {% endif %}
+            {% if graph.meta.config.footer_version %}
+            &bullet;
+            en v{{en_version}}
+            {% endif %}
+            </span>
             </div>
         </footer>
         {% endif %}

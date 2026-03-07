@@ -4,8 +4,7 @@
 
 {%- block body %}
 <h1>Data</h1>
-
-<h2>Metadata</h2>
+<h2>Graph insights</h2>
 
 <table>
     <tr>
@@ -30,9 +29,19 @@
     </table>
 </details>
 
-{% if graph.meta.config.raw and (graph.meta.config.raw_toml or graph.meta.config.raw_json) %}
-<h2>Raw formats</h2>
-<p>Structured data representing this graph is available in the following formats:</p>
+<h2>Metadata</h2>
+<p>
+    This graph was rendered using en <code>{{ en_version }}</code>
+    (<a
+        href="https://codeberg.org/jutty/en/releases/tag/v{{ en_version }}"
+    >release notes</a>).
+</p>
+
+{% if graph.meta.config.raw
+    and (graph.meta.config.raw_toml
+    or graph.meta.config.raw_json)
+%}
+<p>Structured data for this graph is available in the following formats:</p>
 
 <ul>
     {% if graph.meta.config.raw_toml %}
@@ -43,4 +52,5 @@
     {% endif %}
 </ul>
 {% endif %}
+
 {%- endblock body %}

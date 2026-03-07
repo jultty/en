@@ -17,7 +17,7 @@ jobs:
       image: rust:slim
     steps:
       - name: Install action dependencies
-        run: apt-get install --no-install-recommends --update -y nodejs curl
+        run: apt-get install --no-install-recommends --update -y nodejs curl git
 
       - name: Checkout code
         uses: actions/checkout@v6

@@ -1,10 +1,12 @@
 #!/usr/bin/env sh
 
 set -eu
-distro="$1"
+suffix=$(printf '%s' "$1" | sed 's/.*\.//')
+name="en-$suffix"
+tag="en:$suffix"
 
 podman run \
     --replace \
-    --name "en-$distro" \
+    --name "$name" \
     --publish 3008:80 \
-    "en-$distro"
+    "$tag"

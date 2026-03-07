@@ -1,0 +1,13 @@
+FROM docker.io/library/rust:alpine
+MAINTAINER Juno Takano juno@jutty.dev
+ENV DEBUG=debug
+
+# Install
+COPY en /usr/local/bin/en
+
+# Describe
+RUN sha256sum $(which en)
+
+# Launch
+WORKDIR /root
+CMD ["en", "-p", "80"]

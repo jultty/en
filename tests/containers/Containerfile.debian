@@ -1,15 +1,24 @@
 FROM debian:stable-slim
 MAINTAINER Juno Takano juno@jutty.dev
-USER root
+ENV DEBUG=debug
+ENV TAG=${TAG:-latest}
 
 # Setup tooling
 RUN apt-get -y --update install --no-install-recommends \
-    curl ca-certificates gcc libc6-dev
+    curl ca-certificates gcc libc6-dev git file
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Install
-RUN echo "root_node = 'test'" > /root/graph.toml
-RUN $HOME/.cargo/bin/cargo install --git https://codeberg.org/jutty/en
+RUN git clone -b "$TAG" --single-branch https://codeberg.org/jutty/en /build
+RUN <<EOF
+    cd /build && /root/.cargo/bin/cargo build --locked --release
+    mv /build/target/release/en /usr/local/bin/en
+    rm -rf /build
+EOF
+
+# Describe
+RUN file $(which en) && sha256sum $(which en)
 
 # Launch
-CMD ["/root/.cargo/bin/en", "-p", "3008", "-g", "/root/graph.toml"]
+WORKDIR /root
+CMD ["en", "-p", "80"]

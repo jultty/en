@@ -22,21 +22,40 @@ jobs:
         run: |
           rustup component add llvm-tools-preview
           rustup component add --toolchain nightly rustfmt clippy
+          rustup target add x86_64-unknown-linux-musl
 
       - name: Setup additional tooling
         run: .forgejo/workflows/setup-tools.sh
 
-      - name: Build release binary
-        run: just full-build
-      - name: Calculate SHA-256 hash
+      - name: Run all assessments
+        run: just verify
+
+      - name: Build x64 glibc release binary
+        run: just release-build x86_64-unknown-linux-gnu
+
+      - name: Build x64 musl release binary
+        run: just release-build x86_64-unknown-linux-musl
+
+      - name: Calculate SHA-256 hashes
         run: just shasum
 
-      - name: Publish to git.jutty.dev package registry
+      - name: Publish x64 glibc binary to git.jutty.dev registry
         run: |
-          version=$(./target/release/en --version)
+          version=$(./target/x86_64-unknown-linux-gnu/release/en --version)
           api_root=https://git.jutty.dev/api
-          url=$api_root/packages/jutty/generic/en/$version/en-x86_64-linux-gnu
+          url=$api_root/packages/jutty/generic/en/$version/en-x64-linux-gnu
 
           curl -fsSL \
-          --user jutty:${{ secrets.GJD_REGISTRY_TOKEN }} \
-          --upload-file target/release/en $url
+            --user jutty:${{ secrets.GJD_REGISTRY_TOKEN }} \
+            --upload-file target/x86_64-unknown-linux-gnu/release/en $url
+
+      - name: Publish x64 musl binary to git.jutty.dev registry
+        run: |
+          version=$(./target/x86_64-unknown-linux-musl/release/en --version)
+          api_root=https://git.jutty.dev/api
+          url=$api_root/packages/jutty/generic/en/$version/en-x64-linux-musl
+
+          curl -fsSL \
+            --user jutty:${{ secrets.GJD_REGISTRY_TOKEN }} \
+            --upload-file target/x86_64-unknown-linux-musl/release/en $url
+

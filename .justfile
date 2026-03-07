@@ -260,7 +260,7 @@ verify:
         git status
         exit 1
     fi
-    {{ just_cmd }} update version-assess \
+    {{ just_cmd }} version-assess \
         security-assess format-assess lint-assess check test cover-assess
 
 alias v := verify
@@ -299,42 +299,38 @@ alias cl := clean
 
 # Build project with Cargo
 [group: 'build']
-build: update
-    cargo build --locked
+build target=default_target:
+    cargo build --target {{ target }} --locked
 
 alias b := build
 
 # Release build
 [group: 'build']
-release-build: update verify
-    cargo build --locked --release
+release-build target=default_target:
+    cargo build --target {{ target }}  --locked --release
 
 alias rb := release-build
 
-# Clean, run assessments, release build
+# glibc release build
 [group: 'build']
-full-build: clean release-build
+release-build-gnu:
+    cargo build --target {{ glibc_target }}  --locked --release
 
-alias fb := full-build
+alias rbg := release-build-gnu
 
-# Upload release build to git.jutty.dev package registry
-[script, group: 'build']
-upload: full-build && shasum
-    version=$(./target/release/en --version)
-    api_root=https://git.jutty.dev/api/
-    url=$api_root/packages/jutty/generic/en/$version/en-x86_64-linux-gnu
-    file=target/release/en
+# musl release build
+[group: 'build']
+release-build-musl:
+    cargo build --target {{ musl_target }}  --locked --release
 
-    curl -fsSL \
-        --user jutty:$(secret-tool lookup Title gjd-registry-token) \
-        --upload-file $file $url
+alias rbm := release-build-musl
 
-alias u := upload
-
-# Print sha256sum for CI logging
+# Calculate SHA 256 hashes for release binaries
 [group: 'build']
 shasum:
-    sha256sum target/release/en
+    find target -type d -name 'release' \
+        -exec find '{}' -maxdepth 1 -type f -name en -executable ';' \
+        | xargs sha256sum
 
 ## META
 
@@ -342,7 +338,16 @@ shasum:
 default:
     @just --list --unsorted --justfile {{justfile()}}
 
+choose:
+    @just --choose
+
+alias ch := choose
+
 export CARGO_TERM_COLOR := 'always'
+
+musl_target := "x86_64-unknown-linux-musl"
+glibc_target := "x86_64-unknown-linux-gnu"
+default_target := musl_target
 
 debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "

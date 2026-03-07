@@ -18,8 +18,8 @@ If you are on another platform or simply paranoid, you can also build en yoursel
 
 You will need:
 
-- For compiling en, a |Rust toolchain|https://rustup.rs/
-- For compiling dependencies, a C toolchain
+- For en itself, a |Rust compiler|https://rustup.rs/
+- For dependencies, a C compiler (e.g. `gcc`)
 
 Given the above is satisfied, you can build directly through Cargo:
 
@@ -29,7 +29,7 @@ cargo install --git https://codeberg.org/jutty/en
 
 And you should now have the `en` command available on your shell.
 
-For more information on building from source, see |SourceBuild|.
+For more details on building from source, see |SourceBuild|.
 
 ## Usage
 
@@ -106,7 +106,7 @@ hidden = true
 
 [nodes.SourceBuild]
 text = """
-Building from source is briefly described in the |Documentation| page.
+An overview on building from source is available in the |Documentation| page. This page contains a more detailed and considered approach for those interested.
 
 Source builds are tested on both Debian and Alpine, meaning en should compile and run on both glibc and musl systems.
 
@@ -114,7 +114,9 @@ Source builds are tested on both Debian and Alpine, meaning en should compile an
 
 A Rust toolchain is required to build en itself and can be installed through |rustup|https://rustup.rs/|.
 
-For compiling en dependencies, you will need a C compiler and a libc (e.g. `gcc` + `glibc` or `clang` + `musl`), which may already be installed on your system
+For compiling en dependencies, you will also need a C toolchain: a compiler and a libc (e.g. `gcc` + `glibc` or `clang` + `musl`), which may already be installed on your system.
+
+For the two tested systems, all you need are the following packages:
 
 %
     Distribution   ! Needed packages
@@ -122,11 +124,11 @@ For compiling en dependencies, you will need a C compiler and a libc (e.g. `gcc`
     *Alpine*       | `clang`
 %
 
-You may also need `curl` or `git` depending on how you will fetch sources.
+You may also need `curl`, `git` and `ca-certificates` depending on how you will fetch the source code.
 
 ## Building from a Git clone
 
-Aside from the `cargo install` approach described in |Documentation|, ou can alternatively fetch the code yourself first using Git:
+Aside from the `cargo install` approach described in |Documentation|, ou can alternatively fetch the code yourself using Git, which allows you to inspect and change it before compiling:
 
 `
 git clone https://codeberg.org/jutty/en

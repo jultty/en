@@ -117,6 +117,7 @@ pub struct Version {
     major: u8,
     minor: u8,
     patch: u8,
+    qualifier: Option<String>,
 }
 
 impl Default for Version {
@@ -129,6 +130,7 @@ impl Default for Version {
                     major: 0,
                     minor: 0,
                     patch: 0,
+                    qualifier: None,
                 }
             },
         }
@@ -137,7 +139,15 @@ impl Default for Version {
 
 impl std::fmt::Display for Version {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+        if let Some(qualifier) = &self.qualifier {
+            write!(
+                f,
+                "{}.{}.{}-{qualifier}",
+                self.major, self.minor, self.patch
+            )
+        } else {
+            write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+        }
     }
 }
 
@@ -212,7 +222,13 @@ impl Version {
         let patch: u8 = if triple.len() >= 3
             && let Some(s) = triple.get(2)
         {
-            match s.trim().parse() {
+            let patch_number = if let Some(split) = s.split_once('-') {
+                split.0
+            } else {
+                s
+            };
+
+            match patch_number.trim().parse() {
                 Ok(parsed) => parsed,
                 Err(e) => {
                     return Err(VersionError {
@@ -228,6 +244,12 @@ impl Version {
             });
         };
 
+        let qualifier: Option<String> = if let Some(tail) = triple.get(2) {
+            tail.split_once('-').map(|split| String::from(split.1))
+        } else {
+            None
+        };
+
         let conditions = has_two_dots
             && has_three_elements
             && !has_whitespace
@@ -240,6 +262,7 @@ impl Version {
                 major,
                 minor,
                 patch,
+                qualifier,
             })
         } else {
             Err(VersionError {

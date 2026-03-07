@@ -136,22 +136,23 @@ alias oo := cover-open
 
 # Tag HEAD with version from Cargo.toml
 [script, group: 'assess']
-tag: update && version-assess
-    last_tag=$(git describe --tags --abbrev=0 \
-        $(git rev-list --tags --max-count=1) | tr -d v)
-    manifest_version=$(grep '^version' Cargo.toml | cut -d \" -f 2)
-    lockfile_version=$(grep -A 1 'name = "en"' Cargo.lock |
-        grep version | cut -d '"' -f 2)
-
-    if [ "$last_tag" = "$manifest_version" ]; then
-        echo "Last tag $last_tag and manifest ($manifest_version) already match"
-        exit 1
-    elif [ "$manifest_version" != "$lockfile_version" ]; then
+tag: update
+    if [ "{{ last_tag }}" = "{{ manifest_version }}" ]; then
+        echo "Last tag {{ last_tag }} and manifest ({{ manifest_version }}) already match"
+        if [ "{{ last_tag }}" != "{{ tagged_latest }}" ]; then
+            echo "Last tag {{ last_tag }} and 'latest' tag ({{ tagged_latest }}) diverge"
+            git tag latest "v{{ manifest_version }}"
+            {{ just_cmd }} version-assess
+        fi
+        exit
+    elif [ "{{ manifest_version }}" != "{{ lockfile_version }}" ]; then
         echo "Manifest and lockfile versions don't match: update failed?"
         exit 1
     fi
 
-    git tag "v$manifest_version" HEAD
+    git tag "v{{ manifest_version }}" HEAD
+    git tag latest "v{{ manifest_version }}"
+    {{ just_cmd }} version-assess
 
 # Verify and push
 [group: 'develop']
@@ -267,17 +268,16 @@ alias v := verify
 # Check tag-manifest consistency
 [script, group: 'assess']
 version-assess: update
-    last_tag=$(git describe --tags --abbrev=0 \
-        $(git rev-list --tags --max-count=1) | tr -d v)
-    manifest_version=$(grep '^version' Cargo.toml | cut -d \" -f 2)
-    lockfile_version=$(grep -A 1 'name = "en"' Cargo.lock |
-        grep version | cut -d '"' -f 2)
     if
-        [ "$last_tag" != "$manifest_version" ] ||
-        [ "$last_tag" != "$lockfile_version" ]
+        [ "{{ last_tag }}" != "{{ tagged_latest }}" ] \
+        || [ "{{ last_tag }}" != "{{ lockfile_version }}" ] \
+        || [ "{{ last_tag }}" != "{{ lockfile_version }}" ]
     then
-        printf 'Last tag: %s\nManifest: %s\nLockfile: %s\n' \
-            "$last_tag" "$manifest_version" "$lockfile_version"
+        printf 'Last tag: %s\nManifest: %s\nLockfile: %s\nTagged latest: %s\n' \
+            "{{ last_tag }}" \
+            "{{ manifest_version }}" \
+            "{{ lockfile_version }}" \
+            "{{ tagged_latest }}"
         exit 1
     fi
 
@@ -348,5 +348,17 @@ debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'
 just_cmd := 'just --timestamp --explain --command-color green'
+
+last_tag := ```
+    git tag --sort=-creatordate \
+        | grep -v '^latest$' | head -1 | tr -d v
+    ```
+tagged_latest := `git tag --points-at $(git rev-parse latest) \
+        | grep -v '^latest$' | tr -d v`
+manifest_version := `grep "^version" Cargo.toml | cut -d \" -f 2`
+lockfile_version := ```
+    grep -A 1 'name = "en"' Cargo.lock \
+        | grep version | cut -d '"' -f 2
+    ```
 
 set unstable

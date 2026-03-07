@@ -1,9 +1,14 @@
 {% if graph.meta.version %}
-{% set en_version = graph.meta.version.major
-    ~ "." ~ graph.meta.version.minor
-    ~ "." ~ graph.meta.version.patch %}
+    {% set en_version =
+        graph.meta.version.major
+        ~ "." ~ graph.meta.version.minor
+        ~ "." ~ graph.meta.version.patch
+    %}
+    {% if graph.meta.version.qualifier %}
+    {% set en_version = en_version ~ "-" ~ graph.meta.version.qualifier %}
+    {% endif -%}
 {% else %}
-{% set en_version = "?.?.?" %}
+    {% set en_version = "?.?.?" %}
 {% endif -%}
 
 <!DOCTYPE html>

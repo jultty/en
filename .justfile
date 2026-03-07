@@ -300,14 +300,14 @@ alias cl := clean
 # Build project with Cargo
 [group: 'build']
 build: update
-    cargo build
+    cargo build --locked
 
 alias b := build
 
 # Release build
 [group: 'build']
 release-build: update verify
-    cargo build --release
+    cargo build --locked --release
 
 alias rb := release-build
 

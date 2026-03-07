@@ -21,6 +21,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-tags: true
 
       - name: Setup Rust toolchain
         run: |

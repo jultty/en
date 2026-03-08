@@ -260,7 +260,7 @@ verify:
         git status
         exit 1
     fi
-    {{ just_cmd }} update version-assess \
+    {{ just_cmd }} version-assess \
         security-assess format-assess lint-assess check test cover-assess
 
 alias v := verify
@@ -299,23 +299,31 @@ alias cl := clean
 
 # Build project with Cargo
 [group: 'build']
-build target=default_target: update
+build target=default_target:
     cargo build --target {{ target }} --locked
 
 alias b := build
 
 # Release build
 [group: 'build']
-release-build target=default_target: update verify
+release-build target=default_target:
     cargo build --target {{ target }}  --locked --release
 
 alias rb := release-build
 
-# Clean, run assessments, release build
+# glibc release build
 [group: 'build']
-full-build target: clean (release-build target)
+release-build-gnu:
+    cargo build --target {{ glibc_target }}  --locked --release
 
-alias fb := full-build
+alias rbg := release-build-gnu
+
+# musl release build
+[group: 'build']
+release-build-musl:
+    cargo build --target {{ musl_target }}  --locked --release
+
+alias rbm := release-build-musl
 
 # Calculate SHA 256 hashes for release binaries
 [group: 'build']
@@ -337,7 +345,10 @@ alias ch := choose
 
 export CARGO_TERM_COLOR := 'always'
 
-default_target := "x86_64-unknown-linux-gnu"
+musl_target := "x86_64-unknown-linux-musl"
+glibc_target := "x86_64-unknown-linux-gnu"
+default_target := musl_target
+
 debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'

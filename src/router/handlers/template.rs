@@ -53,7 +53,7 @@ pub(in crate::router::handlers) fn render(
     let tera = match tera::Tera::new("./templates/**/*") {
         Ok(t) => t,
         Err(e) => {
-            return (emergency_wrap(&e), 500);
+            return (emergency_wrap(&e, "Failed instantiating template engine"), 500);
         },
     };
 
@@ -66,15 +66,8 @@ pub(in crate::router::handlers) fn render(
             let mut error_context = tera::Context::default();
 
             let mut out_error_message = match error_message {
-                Some(s) => format!(
-                    "Template render failed.\n\
-                    User message: {s},
-                    Engine message:\n<pre>{e:#?}</pre>"
-                ),
-                None => format!(
-                    "Template render failed.\n\
-                        Engine message:\n<pre>{e:#?}</pre>"
-                ),
+                Some(s) => emergency_wrap(&e, &s),
+                None => emergency_wrap(&e, "Template render failed."),
             };
 
             if log::env_level() >= VERBOSE {
@@ -100,36 +93,42 @@ pub(in crate::router::handlers) fn render(
     }
 }
 
-fn emergency_wrap(error: &tera::Error) -> String {
+fn emergency_wrap(error: &tera::Error, message: &str) -> String {
     log!(ERROR, "{error:#?}");
+
+    let message_element = format!("<p>{message}</p>");
+
     format!(
-        r#"<!DOCTYPE html>
-        <html>
-        <head>
-            <title>Pre-Templating Error</title>
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>
-                @media (prefers-color-scheme: dark) {{
-                    * {{ background-color: #222222;
-                        color: #f1e9e5; }} }}
-                * {{ line-height: 1.6em; }}
-                pre {{ overflow: auto; }}
-            </style>
-        </head>
-        <body>
-            <h2><strong>Early Pre-Templating Error</strong></h2>
-            <p>This normally indicates a malformed template.</p>
-            <pre>
-            {error:#?}
-            </pre>
-            <p>
-                If you haven't modified templates, plese consider
-                <a href="https://codeberg.org/jutty/en/issues">reporting it</a>.
-            </p>
-        </body>
-        </html>
-    "#
+        "<!DOCTYPE html>\n\
+        <html>\n\
+        <head>\n\
+            <title>en Pre-Templating Error</title>\n
+            <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" >\n\
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\
+            <style>\n\
+                :root {{ color-scheme: light dark; }}\n\
+                * {{\n\
+                    background: light-dark(#eee, #222);\n\
+                    color: light-dark(#000, #f1e9e5);\n\
+                    line-height: 1.6em;
+                }}\n\
+                pre {{ overflow: auto; }}\n\
+            </style>\n\
+        </head>\n\
+        <body>\n\
+            <h2><strong>en Early Pre-Templating Error</strong></h2>\n\
+            {message_element}\n\
+            <pre>\n\
+            {error:#?}\n\
+            </pre>\n\
+            <p>This normally indicates a malformed or missing template.</p>\n\
+            <p>\n\
+                If you haven't modified templates, please consider\n\
+                <a href=\"https://codeberg.org/jutty/en/issues\">reporting it</a>.\n\
+            </p>\n\
+        </body>\n\
+        </html>\n\
+    "
     )
 }
 
@@ -229,7 +228,7 @@ mod tests {
     fn emergency_wrap_custom_message() {
         let payload = "JLaTtsnd2IFukIOvqFNymeuiaS6nMaUc";
         let error = tera::Error::msg(payload);
-        let html = emergency_wrap(&error);
+        let html = emergency_wrap(&error, "");
         assert!(html.matches(payload).count() == 1);
     }
 }

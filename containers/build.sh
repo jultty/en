@@ -9,9 +9,9 @@ if podman container exists "$tag"; then
 fi
 
 if [ "$suffix" = 'debian-dev' ]; then
-    cp -v ../target/x86_64-unknown-linux-gnu/release/en en
+    cp -v ../target/x86_64-unknown-linux-gnu/debug/en en
 elif [ "$suffix" = 'alpine-dev' ]; then
-    cp -v ../target/x86_64-unknown-linux-musl/release/en en
+    cp -v ../target/x86_64-unknown-linux-musl/debug/en en
 fi
 
 podman build \

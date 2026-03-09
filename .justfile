@@ -20,6 +20,35 @@ run-watch:
 
 alias w := run-watch
 
+# Build on changes
+[group: 'develop']
+build-watch target=default_target:
+    @{{ watch_cmd }} {{ just_cmd }} build {{ target }}
+
+alias bw := build-watch
+
+# Build dev container
+[group: 'develop', working-directory: 'containers']
+build-containerized distro="alpine": build
+    ./build.sh {{ distro }}-dev
+
+alias bc := build-containerized
+
+# Run dev container
+[group: 'develop', working-directory: 'containers']
+run-containerized distro="alpine":
+    ./run.sh {{ distro }}-dev
+
+alias rc := run-containerized
+
+# Build dev container and serve from it on changes
+[group: 'develop']
+run-watch-containerized:
+    @{{ watch_cmd }} "{{ just_cmd }} build-containerized \
+        && {{ just_cmd }} run-containerized"
+
+alias wc := run-watch-containerized
+
 [private]
 quick-assess:
     {{ just_cmd }} lint check quick-test-cover
@@ -297,12 +326,27 @@ clean:
 
 alias cl := clean
 
-# Build project with Cargo
+# Build
 [group: 'build']
 build target=default_target:
     cargo build --target {{ target }} --locked
 
+
 alias b := build
+
+# glibc build
+[group: 'build']
+build-gnu:
+    cargo build --target {{ glibc_target }} --locked
+
+alias bg := build-gnu
+
+# musl build
+[group: 'build']
+build-musl:
+    cargo build --target {{ musl_target }}  --locked
+
+alias bm := build-musl
 
 # Release build
 [group: 'build']
@@ -314,7 +358,7 @@ alias rb := release-build
 # glibc release build
 [group: 'build']
 release-build-gnu:
-    cargo build --target {{ glibc_target }}  --locked --release
+    cargo build --target {{ glibc_target }} --locked --release
 
 alias rbg := release-build-gnu
 

@@ -53,7 +53,10 @@ pub(in crate::router::handlers) fn render(
     let tera = match tera::Tera::new("./templates/**/*") {
         Ok(t) => t,
         Err(e) => {
-            return (emergency_wrap(&e, "Failed instantiating template engine"), 500);
+            return (
+                emergency_wrap(&e, "Failed instantiating template engine"),
+                500,
+            );
         },
     };
 
@@ -103,8 +106,11 @@ fn emergency_wrap(error: &tera::Error, message: &str) -> String {
         <html>\n\
         <head>\n\
             <title>en Pre-Templating Error</title>\n
-            <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" >\n\
-            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\
+            <meta \
+                http-equiv=\"Content-Type\" \
+                content=\"text/html; charset=utf-8\" >\n\
+            <meta name=\"viewport\" \
+                content=\"width=device-width, initial-scale=1\">\n\
             <style>\n\
                 :root {{ color-scheme: light dark; }}\n\
                 * {{\n\
@@ -121,14 +127,21 @@ fn emergency_wrap(error: &tera::Error, message: &str) -> String {
             <pre>\n\
             {error:#?}\n\
             </pre>\n\
-            <p>This normally indicates a malformed or missing template.</p>\n\
-            <p>\n\
-                If you haven't modified templates, please consider\n\
-                <a href=\"https://codeberg.org/jutty/en/issues\">reporting it</a>.\n\
+            <p>This error may indicate a malformed or missing template.</p>\n\
+            <p>If you haven't modified templates, please consider \
+                <a href=\"https://codeberg.org/jutty/en/issues\">\
+                    reporting it</a>, including:\
             </p>\n\
+            <ul>\n\
+                <li>The error message above</li>\n\
+                <li>en version: <code>{}</code></li>\n\
+                <li>If possible, your graph file's <code>[meta.config]</code> \
+                values and definition for this page.</li>\n\
+            </ul>\n\
         </body>\n\
         </html>\n\
-    "
+    ",
+        env!("CARGO_PKG_VERSION")
     )
 }
 

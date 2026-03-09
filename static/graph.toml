@@ -8,7 +8,7 @@ text = """
 
 The easiest way to get started is by downloading a pre-built binary.
 
-x86-64 Linux binaries are available from the |git.jutty.dev package registry|https://git.jutty.dev/jutty/-/packages/generic/en|. Check the links under "Assets" for direct downloads.
+x64 Linux binaries are available from the |git.jutty.dev package registry|https://git.jutty.dev/jutty/-/packages/generic/en|. Check the links under "Assets" for direct downloads.
 
 Other platforms may be supported in the future depending on CI resources.
 
@@ -24,10 +24,12 @@ You will need:
 Given the above is satisfied, you can build directly through Cargo:
 
 `
-cargo install --git https://codeberg.org/jutty/en
+cargo install --git https://codeberg.org/jutty/en --tag v{{ en_version }}
 `
 
 And you should now have the `en` command available on your shell.
+
+The `cargo install` example shown above will build en from the latest tagged release, which should be more stable. You can remove the `--tag v{{ en_version }}` part if you'd like to build the very latest development sources.
 
 For more details on building from source, see |SourceBuild|.
 
@@ -131,16 +133,16 @@ You may also need `curl`, `git` and `ca-certificates` depending on how you will 
 Aside from the `cargo install` approach described in |Documentation|, ou can alternatively fetch the code yourself using Git, which allows you to inspect and change it before compiling:
 
 `
-git clone https://codeberg.org/jutty/en
+git clone -b v{{ en_version }} --single-branch https://codeberg.org/jutty/en
 cd en
-cargo build --release
+cargo build --locked --release
 `
 
 In this case, the `en` binary will be in `target/release/en`.
 
 ## Runnable examples
 
-You can find the exact commands used to test installation on both systems in the |<code>tests/containers</code>|https://codeberg.org/jutty/en/src/branch/main/tests/containers| directory of the en source repository.
+You can find the exact commands used to test installation on both systems in the |<code>containers</code>|https://codeberg.org/jutty/en/src/branch/main/containers| directory of the en source repository.
 
 """
 

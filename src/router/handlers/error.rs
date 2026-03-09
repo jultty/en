@@ -47,15 +47,17 @@ fn make_body(
     context.insert("message", out_message);
     context.insert("status_code", &out_code.to_string());
 
-    handlers::template::render(
+    match handlers::template::render(
         "error",
         &context,
         Some(&format!(
             "Failed to render template for Error {out_code}: {out_message}"
         ))
         .cloned(),
-    )
-    .0
+    ) {
+        Ok(rendered) => rendered.html,
+        Err(error) => error.template.html,
+    }
 }
 
 pub async fn not_found(State(state): State<GlobalState>) -> Response<Body> {

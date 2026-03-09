@@ -31,39 +31,100 @@ pub(in crate::router::handlers) fn with_context(
     error_message: Option<String>,
     is_error: bool,
 ) -> Response<Body> {
-    let (body, render_status) = render(name, context, error_message);
-
-    let status_code = if is_error { error_code } else { render_status };
-
-    make_response(&body, status_code, &[(header::CONTENT_TYPE, "text/html")])
+    match render(name, context, error_message) {
+        Ok(rendered) => {
+            let status_code = if is_error { error_code } else { rendered.code };
+            make_response(
+                &rendered.html,
+                status_code,
+                &[(header::CONTENT_TYPE, "text/html")],
+            )
+        },
+        Err(error) => make_response(
+            &error.template.html,
+            error.template.code,
+            &[(header::CONTENT_TYPE, "text/html")],
+        ),
+    }
 }
 
-/// Renderes a template into a String and error code.
+#[derive(Debug)]
+pub struct Rendered {
+    pub html: String,
+    pub code: u16,
+}
+
+impl Rendered {
+    fn ok(html: &str) -> Rendered {
+        Rendered {
+            code: 200,
+            html: String::from(html),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct RenderingError {
+    pub message: String,
+    pub template: Rendered,
+}
+
+impl RenderingError {
+    fn new(message: &str, code: u16, error: &tera::Error) -> RenderingError {
+        RenderingError {
+            message: String::from(message),
+            template: Rendered {
+                html: emergency_wrap(error, message),
+                code,
+            },
+        }
+    }
+
+    fn with_template(
+        message: &str,
+        code: u16,
+        template: &str,
+    ) -> RenderingError {
+        RenderingError {
+            message: String::from(message),
+            template: Rendered {
+                html: String::from(template),
+                code,
+            },
+        }
+    }
+}
+
+impl std::fmt::Display for RenderingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Rendering Error: {}", self.message)
+    }
+}
+
+/// Renders a template into a String and error code.
 ///
 /// The template name **must not** contain the extension (e.g. `.html`).
 pub(in crate::router::handlers) fn render(
     template: &str,
-    // TODO take Option, skip context if None,
-    // then template_handler can replace static_template_handler
     context: &tera::Context,
     error_message: Option<String>,
-) -> (String, u16) {
+) -> Result<Rendered, RenderingError> {
     let instant = now();
-    // TODO just return an Option/String> here
     let tera = match tera::Tera::new("./templates/**/*") {
-        Ok(t) => t,
-        Err(e) => {
-            return (
-                emergency_wrap(&e, "Failed instantiating template engine"),
+        Ok(engine) => engine,
+        Err(error) => {
+            return Err(RenderingError::new(
+                "Failed instantiating template engine",
                 500,
-            );
+                &error,
+            ))
         },
     };
 
     match tera.render(format!("{template}.html").as_str(), context) {
-        Ok(t) => {
+        Ok(html) => {
             tlog!(&instant, "Rendered template {template}");
-            (t, 200)
+            Ok(Rendered::ok(&html))
         },
         Err(e) => {
             let mut error_context = tera::Context::default();
@@ -87,11 +148,21 @@ pub(in crate::router::handlers) fn render(
                 &StatusCode::INTERNAL_SERVER_ERROR.to_string(),
             );
 
-            (
-                tera.render("error.html", &error_context)
-                    .unwrap_or(out_error_message.clone()),
-                500,
-            )
+            match tera.render("error.html", &error_context) {
+                Ok(rendered_error) => Err(RenderingError::with_template(
+                    &out_error_message,
+                    500,
+                    &rendered_error,
+                )),
+                Err(error_rendering_error) => Err(RenderingError::new(
+                    &format!(
+                        "Failed to render an error message template for \
+                            \"{out_error_message}\""
+                    ),
+                    500,
+                    &error_rendering_error,
+                )),
+            }
         },
     }
 }
@@ -192,38 +263,63 @@ mod tests {
         context.insert("node", &node);
         context.insert("graph", &graph);
         context.insert("incoming", &graph.incoming.get(&node.id));
-        let (body, status) = render("node", &context, None);
-        assert_eq!(status, 200);
-        assert!(body.matches(payload).count() == 1);
+        match render("node", &context, None) {
+            Ok(rendered) => {
+                assert_eq!(rendered.code, 200);
+                assert!(rendered.html.matches(payload).count() == 1);
+            },
+            Err(error) => {
+                panic!("Errored on template generation with {error:?}")
+            },
+        }
     }
 
     #[test]
     fn render_custom_error_message() {
         let payload = "dBgIw8DnNHxJojiXzu445qUC4UpxwZCy";
-        let (body, status) = render(
+        match render(
             "ObH9jYUl4wMhUNcXnuqwVVzHoqx4ufyN",
             &tera::Context::default(),
             Some(payload.to_string()),
-        );
-        assert_eq!(status, 500);
-        assert!(body.matches(payload).count() == 1);
+        ) {
+            Ok(_) => panic!("Got Ok, expected Error"),
+            Err(error) => {
+                assert_eq!(error.template.code, 500);
+                assert!(error.template.html.matches(payload).count() == 1);
+            },
+        }
     }
 
     #[test]
     fn render_empty() {
-        let (body, status) = render(
+        match render(
             "R8D1pxwHZDxcH5SMjR7rZEnIzmpkiHkH",
             &tera::Context::default(),
             None,
-        );
-        assert_eq!(status, 500);
-        assert!(body.matches("Template render failed").count() == 1);
+        ) {
+            Ok(_) => panic!("Got Ok, expected Error"),
+            Err(error) => {
+                assert_eq!(error.template.code, 500);
+                assert!(
+                    error
+                        .template
+                        .html
+                        .matches("Template render failed")
+                        .count()
+                        == 1
+                );
+            },
+        }
     }
 
     #[test]
     fn render_not_found() {
         let payload = "OL6kb9qHe7Iwr7wFIRKUTeFhF34BRsQo";
-        let (body, status) = render(payload, &tera::Context::default(), None);
+        let (body, status) =
+            match render(payload, &tera::Context::default(), None) {
+                Ok(_) => panic!("Got Ok, expected Error"),
+                Err(error) => (error.template.html, error.template.code),
+            };
 
         assert!(body.matches("TemplateNotFound").count() > 0);
         assert!(body.matches(payload).count() > 0);
@@ -232,7 +328,11 @@ mod tests {
 
     #[test]
     fn render_bad_context() {
-        let (body, status) = render("node", &tera::Context::default(), None);
+        let (body, status) =
+            match render("node", &tera::Context::default(), None) {
+                Ok(rendered) => panic!("Got Ok, expected Error"),
+                Err(error) => (error.template.html, error.template.code),
+            };
         assert!(body.matches("Template render failed.").count() > 0);
         assert_eq!(status, 500);
     }

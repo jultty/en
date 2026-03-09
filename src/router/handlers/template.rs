@@ -1,3 +1,5 @@
+use std::{collections::HashMap, fs, io::ErrorKind, path::PathBuf};
+
 use axum::{
     body::Body,
     http::{Response, StatusCode, header},
@@ -101,6 +103,77 @@ impl std::fmt::Display for RenderingError {
     }
 }
 
+static DEFAULTS: &[(&str, &str)] = &[
+    ("base.html", include_str!("../../../templates/base.html")),
+    ("index.html", include_str!("../../../templates/index.html")),
+    ("about.html", include_str!("../../../templates/about.html")),
+    ("data.html", include_str!("../../../templates/data.html")),
+    ("empty.html", include_str!("../../../templates/empty.html")),
+    ("error.html", include_str!("../../../templates/error.html")),
+    ("node.html", include_str!("../../../templates/node.html")),
+    ("tree.html", include_str!("../../../templates/tree.html")),
+];
+
+fn read_template(name: &str, path: PathBuf) -> Result<String, std::io::Error> {
+    let defaults: HashMap<&str, &str> = DEFAULTS.iter().copied().collect();
+
+    match fs::read_to_string(path) {
+        Ok(content) => Ok(content),
+        Err(error) if error.kind() == ErrorKind::NotFound => {
+            match defaults.get(name) {
+                Some(default) => Ok(default.to_string()),
+                None => Err(error),
+            }
+        },
+        Err(error) => Err(error),
+    }
+}
+
+fn load_templates() -> Result<tera::Tera, tera::Error> {
+    let mut tera = tera::Tera::default();
+
+    let root = PathBuf::from("templates");
+    let default_names: Vec<&str> = DEFAULTS.iter().map(|(n, _)| *n).collect();
+
+    match fs::read_dir(&root) {
+        Ok(dir) => {
+            for file_opt in dir {
+                let file = file_opt?;
+                let path = file.path();
+                if path.is_file() {
+                    if let Some(name) = path.clone().file_name() {
+                        let Some(name_str) = name.to_str() else {
+                            return Err(tera::Error::msg(format!(
+                                "Template filename {} is not valid unicode",
+                                name.display()
+                            )))
+                        };
+                        if !default_names.contains(&name_str) {
+                            tera.add_raw_template(
+                                name_str,
+                                &read_template(name_str, path)?,
+                            )?;
+                        }
+                    }
+                }
+            }
+        },
+        Err(error) => {
+            if error.kind() != ErrorKind::NotFound {
+                return Err(tera::Error::msg(error.to_string()))
+            }
+        },
+    }
+
+    for tuple in DEFAULTS {
+        let path = root.join(tuple.0);
+        let name = tuple.0;
+        tera.add_raw_template(name, &read_template(name, path)?)?;
+    }
+
+    Ok(tera)
+}
+
 /// Renders a template into a String and error code.
 ///
 /// The template name **must not** contain the extension (e.g. `.html`).
@@ -110,7 +183,7 @@ pub(in crate::router::handlers) fn render(
     error_message: Option<String>,
 ) -> Result<Rendered, RenderingError> {
     let instant = now();
-    let tera = match tera::Tera::new("./templates/**/*") {
+    let tera = match load_templates() {
         Ok(engine) => engine,
         Err(error) => {
             return Err(RenderingError::new(
@@ -330,7 +403,7 @@ mod tests {
     fn render_bad_context() {
         let (body, status) =
             match render("node", &tera::Context::default(), None) {
-                Ok(rendered) => panic!("Got Ok, expected Error"),
+                Ok(_) => panic!("Got Ok, expected Error"),
                 Err(error) => (error.template.html, error.template.code),
             };
         assert!(body.matches("Template render failed.").count() > 0);
@@ -343,5 +416,19 @@ mod tests {
         let error = tera::Error::msg(payload);
         let html = emergency_wrap(&error, "");
         assert!(html.matches(payload).count() == 1);
+    }
+
+    #[test]
+    fn default_templates_exist_and_match() {
+        let templates_dir =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("templates");
+
+        for (map_name, map_contents) in DEFAULTS {
+            let path = templates_dir.join(map_name);
+            assert!(path.exists());
+            assert!(path.is_file());
+            let contents = fs::read_to_string(&path).unwrap();
+            assert_eq!(&contents, map_contents);
+        }
     }
 }

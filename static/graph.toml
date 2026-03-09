@@ -856,7 +856,7 @@ text = """
     - [ ] Most linked
 - [ ] Rendering
     - [ ] Sorting of tree, index list and drop-down navigation
-        - [ ] Alphabetic
+        - [x] Alphabetic
         - [ ] By most linked to
         - [ ] By most linked
     - [ ] Tree
@@ -866,7 +866,8 @@ text = """
         - [ ] Custom assets (favicon, CSS)
             - [x] Drop all hardcoded assets endpoints
         - [ ] Custom header include
-        - [ ] Custom templates
+        - [x] Custom templates
+            - [ ] user-supplied loading order (e.g. through filenames)
         - [ ] Themes
 - [x] Anchors and connections
     - [x] Render detached anchors differently

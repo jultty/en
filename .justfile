@@ -170,7 +170,7 @@ tag: update
         echo "Last tag {{ last_tag }} and manifest ({{ manifest_version }}) already match"
         if [ "{{ last_tag }}" != "{{ tagged_latest }}" ]; then
             echo "Last tag {{ last_tag }} and 'latest' tag ({{ tagged_latest }}) diverge"
-            git tag latest "v{{ manifest_version }}"
+            git tag --force latest "v{{ manifest_version }}"
             {{ just_cmd }} version-assess
         fi
         exit
@@ -180,7 +180,7 @@ tag: update
     fi
 
     git tag "v{{ manifest_version }}" HEAD
-    git tag latest "v{{ manifest_version }}"
+    git tag --force latest "v{{ manifest_version }}"
     {{ just_cmd }} version-assess
 
 # Verify and push

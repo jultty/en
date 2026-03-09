@@ -4,9 +4,12 @@ set -eu
 suffix=$(printf '%s' "$1" | sed 's/.*\.//')
 name="en-$suffix"
 tag="en:$suffix"
+shift
 
 podman run \
     --replace \
     --name "$name" \
     --publish 3008:80 \
+    --init \
+    "$@" \
     "$tag"

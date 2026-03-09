@@ -3,6 +3,7 @@
 set -eu
 suffix=$(printf '%s' "$1" | sed 's/.*\.//')
 tag="en:$suffix"
+shift
 
 if podman container exists "$tag"; then
     podman stop --time 3 "$tag"
@@ -16,7 +17,7 @@ fi
 
 podman build \
     --tag "$tag" \
-    -f "Containerfile.$suffix"
+    -f "Containerfile.$suffix" "$@"
 
 if [ -f en ]; then
     rm -v en

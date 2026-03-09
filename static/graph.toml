@@ -138,7 +138,7 @@ You may also need `curl`, `git` and `ca-certificates` depending on how you will 
 
 ## Building from a Git clone
 
-Aside from the `cargo install` approach described in |Documentation|, ou can alternatively fetch the code yourself using Git, which allows you to inspect and change it before compiling:
+Aside from the `cargo install` approach described in |Documentation|, you can alternatively fetch the code yourself using Git, which allows you to inspect and change it before compiling:
 
 `
 git clone -b v{{ en_version }} --single-branch https://codeberg.org/jutty/en

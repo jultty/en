@@ -289,7 +289,7 @@ verify:
         git status
         exit 1
     fi
-    {{ just_cmd }} version-assess \
+    {{ just_cmd }} todos-assess version-assess \
         security-assess format-assess lint-assess check test cover-assess
 
 alias v := verify
@@ -316,6 +316,13 @@ alias va := version-assess
 security-assess:
     cargo audit --deny warnings
 alias sa := security-assess
+
+# Find TODOs
+[group: 'assess']
+todos-assess:
+    ! rg -M 200 --max-columns-preview TODO src
+
+alias ta := todos-assess
 
 # BUILD
 

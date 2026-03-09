@@ -46,7 +46,10 @@ impl TokenOutput {
 pub fn parse(text: &str, graph: &Graph) -> String { parser::read(text, graph) }
 
 pub fn rich_parse(text: &str, graph: &Graph) -> TokenOutput {
-    parser::rich_read(text, graph)
+    parser::rich_read(
+        &text.replace("{{ en_version }}", env!("CARGO_PKG_VERSION")),
+        graph,
+    )
 }
 
 #[cfg(test)]

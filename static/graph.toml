@@ -8,7 +8,15 @@ text = """
 
 The easiest way to get started is by downloading a pre-built binary.
 
-x64 Linux binaries are available from the |git.jutty.dev package registry|https://git.jutty.dev/jutty/-/packages/generic/en|. Check the links under "Assets" for direct downloads.
+x64 Linux binaries are available from the |git.jutty.dev package registry|https://git.jutty.dev/jutty/-/packages/generic/en|:
+
+%
+    Platform        ! Download
+    x64 Linux GNU   | |en-x64-linux-gnu|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-gnu|
+    x64 Linux musl  | |en-x64-linux-musl|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-musl|
+%
+
+If in doubt, it is likely your system uses the GNU libc. Regardless, the musl binary is statically compiled and should run on mostly any x64 Linux system.
 
 Other platforms may be supported in the future depending on CI resources.
 

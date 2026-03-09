@@ -191,6 +191,13 @@ push: verify
 
 alias p := push
 
+# Push tag 'latest'
+[group: 'develop']
+push-tag-latest-unsafe:
+    git push origin tag latest --force --no-verify
+
+alias ptlu := push-tag-latest-unsafe
+
 # Push without verifying
 [group: 'develop']
 push-unsafe:

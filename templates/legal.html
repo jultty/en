@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Legal{% endblock title %}
+
+{%- block body %}
+<h1>Legal</h1>
+
+<p>The following licenses and attributions are made available here in accordance with their terms:</p>
+
+<h2>Fonts</h2>
+
+{% for font_tuple in fonts %}
+    {% set font = font_tuple.1 %}
+    <h3>{{ font.name }}</h3>
+    <p>
+        From
+        <a href="{{ font.attribution.project_url }}">
+            {{ font.attribution.project_name -}}
+        </a>,
+        by
+        <a href="{{ font.attribution.author_url }}">
+            {{ font.attribution.author -}}
+        </a>.
+    </p>
+    <p><strong>License:</strong>
+        <a href="{{ font.license.url }}">
+            {{ font.license.name -}}
+        </a>
+    </p>
+    <details>
+    <summary>
+        Expand full license text
+    </summary>
+        <p>
+            {{ font.attribution.license_header | linebreaksbr | safe }}
+            {{ font.license.text | linebreaksbr | safe }}
+        </p>
+    </details>
+{% endfor %}
+
+{%- endblock body %}

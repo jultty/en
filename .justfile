@@ -247,6 +247,7 @@ lint-assess:
         -D clippy::todo -D clippy::unimplemented -D clippy::unreachable
 
 alias la := lint-assess
+alias lp := lint-assess
 
 # Run cargo check
 [group: 'assess']

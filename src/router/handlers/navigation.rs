@@ -15,6 +15,14 @@ pub async fn about(State(state): State<GlobalState>) -> Response<Body> {
     handlers::template::with_graph("about", state).await
 }
 
+pub async fn legal(State(state): State<GlobalState>) -> Response<Body> {
+    let mut context = tera::Context::default();
+    context.insert("graph", &state.graph);
+    context.insert("fonts", &crate::router::handlers::fixed::FONTS);
+
+    handlers::template::with_context("legal", &context, 500, None, false)
+}
+
 pub async fn tree(State(state): State<GlobalState>) -> Response<Body> {
     let instant = now();
 

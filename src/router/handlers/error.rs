@@ -9,7 +9,7 @@ use crate::{
     router::{GlobalState, handlers},
 };
 
-pub(in crate::router::handlers) fn by_code(
+pub(in crate::router::handlers) fn make(
     code: Option<u16>,
     message: Option<&str>,
     graph: &Graph,
@@ -61,7 +61,7 @@ fn make_body(
 }
 
 pub async fn not_found(State(state): State<GlobalState>) -> Response<Body> {
-    by_code(
+    make(
         Some(404),
         Some("The page you tried to access could not be found."),
         &state.graph,
@@ -86,10 +86,10 @@ mod tests {
     #[tokio::test]
     async fn internal_error() {
         let graph = Graph::load();
-        assert!(by_code(Some(201), None, &graph).status() == 201);
-        assert!(by_code(Some(304), None, &graph).status() == 304);
-        assert!(by_code(Some(418), None, &graph).status() == 418);
-        assert!(by_code(Some(505), None, &graph).status() == 505);
+        assert!(make(Some(201), None, &graph).status() == 201);
+        assert!(make(Some(304), None, &graph).status() == 304);
+        assert!(make(Some(418), None, &graph).status() == 418);
+        assert!(make(Some(505), None, &graph).status() == 505);
     }
 
     #[test]

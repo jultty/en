@@ -33,7 +33,8 @@ pub fn new(graph: Graph) -> Router {
         .route("/graph/{format}", get(handlers::fixed::serial))
         .route("/search", get(handlers::navigation::search))
         .route("/redirect", get(handlers::navigation::redirect))
-        .route("/static/{*path}", get(handlers::fixed::file));
+        .route("/static/{*path}", get(handlers::fixed::file))
+        .route("/legal", get(handlers::navigation::legal));
 
     if state.graph.meta.config.tree {
         router = router.route("/tree", get(handlers::navigation::tree));

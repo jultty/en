@@ -107,6 +107,7 @@ static DEFAULTS: &[(&str, &str)] = &[
     ("base.html", include_str!("../../../templates/base.html")),
     ("index.html", include_str!("../../../templates/index.html")),
     ("about.html", include_str!("../../../templates/about.html")),
+    ("legal.html", include_str!("../../../templates/legal.html")),
     ("data.html", include_str!("../../../templates/data.html")),
     ("empty.html", include_str!("../../../templates/empty.html")),
     ("error.html", include_str!("../../../templates/error.html")),

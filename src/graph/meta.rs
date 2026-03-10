@@ -66,6 +66,8 @@ pub struct Config {
     pub raw_json: bool,
     #[serde(default = "mktrue")]
     pub raw_toml: bool,
+    #[serde(default = "mktrue")]
+    pub serve_fonts: bool,
     #[serde(default)]
     pub site_description: String,
     #[serde(default)]
@@ -99,6 +101,7 @@ impl Default for Config {
             raw: true,
             raw_json: true,
             raw_toml: true,
+            serve_fonts: true,
             site_description: String::default(),
             site_title: String::default(),
             tree: true,

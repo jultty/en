@@ -83,12 +83,58 @@ impl From<Mime> for String {
     }
 }
 
+pub enum Kind {
+    Text,
+    Font,
+    Image,
+    Blob,
+}
+
 impl Mime {
+    /// Guesses the mimetype given the extension of a filename or path.
+    ///
+    /// Only considers the last dot-delimited fragment of `path`.
     pub fn guess(path: &str) -> Mime {
         if let Some(pair) = path.rsplit_once('.') {
             Mime::from(pair.1)
         } else {
             Mime::Unknown
+        }
+    }
+
+    pub fn kind(&self) -> Result<Kind, String> {
+        let string = String::from(self.clone());
+        let mut parts = string.split('/');
+        let first_opt = parts.next();
+        let second_opt = parts.next();
+        if let Some(first) = first_opt
+            && let Some(second) = second_opt
+        {
+            if first == "application" {
+                if second == "toml" || second == "xml" || second == "json" {
+                    Ok(Kind::Text)
+                } else if second == "pdf"
+                    || second == "epub"
+                    || second == "epub+zip"
+                    || second == "octet-stream"
+                {
+                    Ok(Kind::Blob)
+                } else {
+                    Err(format!(
+                        "Unexpected application kind for mimetype {string}"
+                    ))
+                }
+            } else if first == "text" {
+                Ok(Kind::Text)
+            } else if first == "font" {
+                Ok(Kind::Font)
+            } else if first == "image" {
+                Ok(Kind::Image)
+            } else {
+                Err(format!("Could not determine a kind for mimetype {string}"))
+            }
+        } else {
+            Err(format!("Mimetype {string} couldn't be split on a slash"))
         }
     }
 }

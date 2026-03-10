@@ -115,6 +115,7 @@ impl Graph {
         };
 
         let result = Graph::from_serial(&toml_source, &Format::TOML)?;
+
         Ok(result)
     }
 
@@ -127,7 +128,7 @@ impl Graph {
         serial: &str,
         format: &Format,
     ) -> Result<Graph, SerialError> {
-        match *format {
+        let result = match *format {
             Format::TOML => match toml::from_str::<Graph>(serial) {
                 Ok(graph) => Ok(graph),
                 Err(error) => Err(SerialError {
@@ -146,6 +147,23 @@ impl Graph {
                 cause: SerialErrorCause::UnsupportedFormat,
                 message: "Unsupported format".to_string(),
             }),
+        };
+
+        let graph = result?;
+        Graph::print_warnings(&graph);
+        Ok(graph)
+    }
+
+    fn print_warnings(graph: &Graph) {
+        if graph.meta.config.serve_fonts && !graph.meta.config.footer {
+            log!(
+                WARN,
+                "Ignoring 'footer' value of false (hidden) because \
+                    'serve_fonts' is set to true (by default or explicitly). \
+                    This is necessary for compliance with the font licenses. \
+                    Either set 'serve_fonts' to false to disable serving fonts \
+                    or reenable the footer to suppress this warning."
+            );
         }
     }
 

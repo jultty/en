@@ -76,7 +76,7 @@
         {% block body %}
         {% endblock body %}
         </main>
-        {% if graph.meta.config.footer %}
+        {% if graph.meta.config.footer or graph.meta.config.serve_fonts %}
         <footer>
         <hr>
             <div>
@@ -95,6 +95,10 @@
             <time>
                 {{ now(utc=true) | date(format="%Y-%m-%d %H:%M") }} UTC
             </time>
+            {% endif %}
+            {% if graph.meta.config.serve_fonts %}
+            &bullet;
+            <a href="/legal">legal</a>
             {% endif %}
             {% if graph.meta.config.footer_version %}
             &bullet;

@@ -390,8 +390,6 @@ static TEXTS: &[(&str, &str)] = &[
         "assets/favicon.svg",
         include_str!("../../../static/public/assets/favicon.svg"),
     ),
-    ("assets/licenses/SIL_OFL_1_1.txt", OFL.text),
-    ("assets/licenses/CC_BY_ND_4_0_INTERNATIONAL.txt", CCND.text),
 ];
 
 pub static FONTS: &[(&str, &Font)] = &[
@@ -611,7 +609,7 @@ static OFL: License = License {
     kind: &LicenseKind::SIL_OFL_1_1,
     url: "assets/licenses/SIL_OFL_1_1.txt",
     text: include_str!(
-        "../../../static/public/assets/fonts/_canon/SIL_OFL_1_1.LICENSE"
+        "../../../static/public/assets/fonts/_canon/SIL_OFL_1_1.body.LICENSE"
     ),
 };
 
@@ -621,7 +619,7 @@ static CCND: License = License {
     url: "/assets/licenses/CC_BY_ND_4_0_INTERNATIONAL.txt",
     text: include_str!(
         "../../../static/public/assets/fonts/_canon/\
-        CC_BY_ND_4_0_INTERNATIONAL.LICENSE"
+        CC_BY_ND_4_0_INTERNATIONAL.body.LICENSE"
     ),
 };
 

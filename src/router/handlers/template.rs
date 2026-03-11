@@ -432,4 +432,89 @@ mod tests {
             assert_eq!(&contents, map_contents);
         }
     }
+
+    #[test]
+    fn rendering_error_html_contains_inner_error() {
+        let outer_payload = "Gl0c7CyArjlG1Zgvj3D5BFmZT6zRz5Ky";
+        let inner_payload = "t53pvXCf0JqUzwiM5BZbYxAQadYSJ9XW";
+        let inner_error = tera::Error::msg(inner_payload);
+        let error = RenderingError::new(outer_payload, 501, &inner_error);
+        assert!(error.template.html.contains(inner_payload));
+        assert!(error.template.html.contains(outer_payload));
+    }
+
+    #[test]
+    fn rendering_error_display() {
+        let payload = "4LKNOSqfW0Ys3LALDAond8IIp5RgN7vK";
+        let error = RenderingError::new(payload, 501, &tera::Error::msg(""));
+        let display_string = format!("{error}");
+        assert!(display_string.contains(payload));
+    }
+
+    #[test]
+    fn empty_template_read_is_an_error() {
+        let result = read_template("", PathBuf::from(""));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn template_read_without_permissions_is_an_error() {
+        let result = read_template("", PathBuf::from("/etc/shadow"));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn template_read_without_a_default_is_an_error() {
+        let result = read_template(
+            "xkQwFZpqf5iz",
+            PathBuf::from("templates/Boy5CZQUk2oX"),
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn template_read_with_a_default_is_ok() {
+        let result =
+            read_template("base.html", PathBuf::from("templates/St1iFgeOrhCK"));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn template_read_with_a_file_is_ok() {
+        let result =
+            read_template("GpzjjAPhCTIr", PathBuf::from("templates/base.html"));
+        assert!(result.is_ok());
+    }
+}
+
+#[cfg(test)]
+mod serial_tests {
+    use super::*;
+
+    #[cfg_attr(not(unix), ignore)]
+    #[test]
+    fn invalid_utf8_template_filename() {
+        use std::{ffi::OsStr, os::unix::ffi::OsStrExt as _, path::PathBuf};
+
+        let original_working_directory = std::env::current_dir().unwrap();
+        let base_dir = PathBuf::from("tests/mocks/encoding/temp");
+        let templates_dir = base_dir.clone().join("templates");
+        assert!(std::fs::create_dir_all(&base_dir).is_ok());
+        assert!(
+            std::env::set_current_dir(&base_dir)
+            .is_ok()
+        );
+        assert!(std::fs::create_dir_all(&templates_dir).is_ok());
+
+
+        let invalid_name = OsStr::from_bytes(&[0xff, 0xfe, 0x00]);
+        let file_path = templates_dir.join(invalid_name);
+        assert!(std::fs::write(&file_path, b"eNJq4FPUqSKoozdg").is_ok());
+
+        let result = load_templates();
+        assert!(result.is_err());
+
+        assert!(std::fs::remove_dir_all(&base_dir).is_ok());
+        assert!(std::env::set_current_dir(original_working_directory).is_ok());
+    }
 }

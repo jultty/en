@@ -352,20 +352,21 @@ alias bm := build-musl
 [group: 'build']
 release-build target=default_target:
     cargo build --target {{ target }}  --locked --release
+    du -h target/{{ target }}/release/en
 
 alias rb := release-build
 
 # glibc release build
 [group: 'build']
 release-build-gnu:
-    cargo build --target {{ glibc_target }} --locked --release
+    {{ just_cmd }} release-build {{ glibc_target }}
 
 alias rbg := release-build-gnu
 
 # musl release build
 [group: 'build']
 release-build-musl:
-    cargo build --target {{ musl_target }}  --locked --release
+    {{ just_cmd }} release-build {{ musl_target }}
 
 alias rbm := release-build-musl
 

@@ -165,22 +165,16 @@ alias oo := cover-open
 
 # Tag HEAD with version from Cargo.toml
 [script, group: 'assess']
-tag: update
+tag commit="HEAD": update
     if [ "{{ last_tag }}" = "{{ manifest_version }}" ]; then
         echo "Last tag {{ last_tag }} and manifest ({{ manifest_version }}) already match"
-        if [ "{{ last_tag }}" != "{{ tagged_latest }}" ]; then
-            echo "Last tag {{ last_tag }} and 'latest' tag ({{ tagged_latest }}) diverge"
-            git tag --force latest "v{{ manifest_version }}"
-            {{ just_cmd }} version-assess
-        fi
         exit
     elif [ "{{ manifest_version }}" != "{{ lockfile_version }}" ]; then
         echo "Manifest and lockfile versions don't match: update failed?"
         exit 1
     fi
 
-    git tag "v{{ manifest_version }}" HEAD
-    git tag --force latest "v{{ manifest_version }}"
+    git tag "v{{ manifest_version }}" {{ commit }}
     {{ just_cmd }} version-assess
 
 # Verify and push
@@ -190,13 +184,6 @@ push: verify
     git push --tags
 
 alias p := push
-
-# Push tag 'latest'
-[group: 'develop']
-push-tag-latest-unsafe:
-    git push origin tag latest --force --no-verify
-
-alias ptlu := push-tag-latest-unsafe
 
 # Push without verifying
 [group: 'develop']
@@ -306,15 +293,13 @@ alias v := verify
 [script, group: 'assess']
 version-assess: update
     if
-        [ "{{ last_tag }}" != "{{ tagged_latest }}" ] \
-        || [ "{{ last_tag }}" != "{{ lockfile_version }}" ] \
+        [ "{{ last_tag }}" != "{{ lockfile_version }}" ] \
         || [ "{{ last_tag }}" != "{{ lockfile_version }}" ]
     then
-        printf 'Last tag: %s\nManifest: %s\nLockfile: %s\nTagged latest: %s\n' \
+        printf 'Last tag: %s\nManifest: %s\nLockfile: %s\n' \
             "{{ last_tag }}" \
             "{{ manifest_version }}" \
-            "{{ lockfile_version }}" \
-            "{{ tagged_latest }}"
+            "{{ lockfile_version }}"
         exit 1
     fi
 
@@ -413,12 +398,7 @@ watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'
 just_cmd := 'just --timestamp --explain --command-color green'
 
-last_tag := ```
-    git tag --sort=-creatordate \
-        | grep -v '^latest$' | head -1 | tr -d v
-    ```
-tagged_latest := `git tag --points-at $(git rev-parse latest) \
-        | grep -v '^latest$' | tr -d v`
+last_tag := `git tag --sort=-creatordate | head -1 | tr -d v`
 manifest_version := `grep "^version" Cargo.toml | cut -d \" -f 2`
 lockfile_version := ```
     grep -A 1 'name = "en"' Cargo.lock \

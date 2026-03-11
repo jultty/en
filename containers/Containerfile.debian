@@ -1,7 +1,6 @@
 FROM debian:stable-slim
 MAINTAINER Juno Takano juno@jutty.dev
 ENV DEBUG=debug
-ENV TAG=${TAG:-latest}
 
 # Setup tooling
 RUN apt-get -y --update install --no-install-recommends \
@@ -9,7 +8,21 @@ RUN apt-get -y --update install --no-install-recommends \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Install
-RUN git clone -b "$TAG" --single-branch https://codeberg.org/jutty/en /build
+RUN <<EOF
+    REPO_URL=https://codeberg.org/jutty/en
+    LAST_TAG=$(
+        git ls-remote --tags "$REPO_URL" \
+        | grep refs/tags \
+        | sed 's/.*refs\/tags\///' \
+        | sort -V \
+        | tail -n 1
+    )
+    git config --global advice.detachedHead false
+    echo "Selected tag: $LAST_TAG"
+    git clone --verbose -b "$LAST_TAG" \
+        --depth 1 --single-branch --no-tags \
+        "$REPO_URL" /build
+EOF
 RUN <<EOF
     cd /build && /root/.cargo/bin/cargo build --locked --release
     mv /build/target/release/en /usr/local/bin/en

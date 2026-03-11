@@ -37,7 +37,7 @@ cargo install --git https://codeberg.org/jutty/en --tag v{{ en_version }}
 
 And you should now have the `en` command available on your shell.
 
-The `cargo install` example shown above will build en from the latest tagged release, which should be more stable. You can remove the `--tag v{{ en_version }}` part if you'd like to build the very latest development sources.
+The `cargo install` example shown above will build en from the last tagged release, which should be more stable. You can remove the `--tag v{{ en_version }}` part if you'd like to build the most recent development sources.
 
 For more details on building from source, see |SourceBuild|.
 

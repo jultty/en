@@ -50,30 +50,30 @@ run-watch-containerized:
 alias wc := run-watch-containerized
 
 [private]
-quick-assess:
-    {{ just_cmd }} lint check quick-test-cover
+assess-quick:
+    {{ just_cmd }} lint check test-cover-quick
 
 [private]
-quick-assess-run:
-    -{{ just_cmd }} quick-assess
+assess-run-quick:
+    -{{ just_cmd }} assess-quick
     {{ just_cmd }} run
 
 # Run quick assessments on changes
 [group: 'develop']
-quick-assess-watch:
-    {{ watch_cmd }} {{ just_cmd }} quick-assess
+assess-watch-quick:
+    {{ watch_cmd }} {{ just_cmd }} assess-quick
 
-alias qa := quick-assess-watch
+alias qa := assess-watch-quick
 
 # Run quick assessments, build and serve on changes
 [group: 'develop']
-quick-assess-run-watch:
-    {{ watch_cmd }} {{ just_cmd }} quick-assess-run
+assess-run-watch-quick:
+    {{ watch_cmd }} {{ just_cmd }} assess-run-quick
 
-alias qr := quick-assess-run-watch
+alias qr := assess-run-watch-quick
 
 [private]
-quick-test-cover:
+test-cover-quick:
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
     {{ cover_cmd }} --no-report -- --skip 'serial_tests::'
     {{ cover_cmd }} report --html
@@ -81,10 +81,10 @@ quick-test-cover:
 
 # Quickly update coverage reports (inaccurate)
 [group: 'assess']
-quick-test-cover-watch:
-    {{ watch_cmd }} {{ just_cmd }} quick-test-cover
+test-cover-watch-quick:
+    {{ watch_cmd }} {{ just_cmd }} test-cover-quick
 
-alias qo := quick-test-cover-watch
+alias qo := test-cover-watch-quick
 
 # Format all files
 [group: 'develop']
@@ -92,6 +92,26 @@ format:
     cargo +nightly fmt
 
 alias f := format
+
+# Test (short output)
+[group: 'develop']
+test-short pattern="":
+    cargo test {{ pattern }} -q --message-format short \
+        -- 'serial_tests::' --test-threads=1 \
+        --format=terse -- quiet
+    cargo test {{ pattern }} -q --message-format short --bin en
+    cargo test {{ pattern }} -q --message-format short --doc
+    cargo test {{ pattern }} --message-format short --lib \
+        -- --format terse --skip 'serial_tests::'
+
+alias ts := test-short
+
+# Test on changes (shorter output)
+[group: 'develop']
+test-short-watch:
+    {{ watch_cmd }} {{ just_cmd }} test-short
+
+alias tsw := test-short-watch
 
 # Lint
 [group: 'develop']
@@ -106,6 +126,20 @@ lint-watch:
     {{ watch_cmd }} {{ just_cmd }} lint
 
 alias lw := lint-watch
+
+# Lint (short output)
+[group: 'develop']
+lint-short:
+    cargo +nightly clippy --all-targets -q --message-format short
+
+alias ls := lint-short
+
+# Lint on changes (shorter output)
+[group: 'develop']
+lint-short-watch:
+    {{ watch_cmd }} {{ just_cmd }} lint-short
+
+alias lsw := lint-short-watch
 
 # Run cargo check on changes
 [group: 'develop']
@@ -136,8 +170,8 @@ alias x := fix
 
 # Run tests on changes
 [group: 'develop']
-test-watch:
-    {{ watch_cmd }} {{ just_cmd }} test
+test-watch pattern="":
+    {{ watch_cmd }} {{ just_cmd }} test {{ pattern}}
 
 alias tw := test-watch
 
@@ -198,14 +232,14 @@ alias pu := push-unsafe
 # Generate crate documentation
 [group: 'document']
 doc:
-    cargo doc --document-private-items --no-deps
+    cargo doc --timings --document-private-items --no-deps
 
 alias d := doc
 
 # Generate crate and dependencies documentation
 [group: 'document']
 doc-all:
-    cargo doc --document-private-items
+    cargo doc --timings --document-private-items
 
 alias da := doc-all
 
@@ -223,7 +257,7 @@ alias do := doc-open
 format-assess:
     cargo +nightly fmt -- --check
 
-alias fc := format-assess
+alias fa := format-assess
 
 # Assess production lints
 [group: 'assess']
@@ -240,19 +274,27 @@ alias lp := lint-assess
 # Run cargo check
 [group: 'assess']
 check:
-    {{ debug_vars }} cargo check --workspace
+    {{ debug_vars }} cargo check --workspace --all-targets \
+        --future-incompat-report
 
 alias c := check
 
 # Run tests
 [group: 'assess']
-test:
-    cargo test -- --test 'serial_tests::' --test-threads 1
-    cargo test --bin en
-    cargo test --doc
-    cargo test --lib -- --skip 'serial_tests::'
+test pattern="":
+    cargo test {{ pattern}} --timings -- --test-threads=1 'serial_tests::'
+    cargo test {{ pattern}} --timings --bin en
+    cargo test {{ pattern}} --timings --doc
+    cargo test {{ pattern}} --timings --lib -- --skip 'serial_tests::'
 
 alias t := test
+
+# Run tests with unfiltered output
+[group: 'assess']
+test-output pattern="":
+    DEBUG=${DEBUG:-debug} cargo test {{ pattern }} -- --no-capture 2>&1
+
+alias to := test-output
 
 # Clean test coverage data
 [group: 'assess']
@@ -285,8 +327,11 @@ verify:
         git status
         exit 1
     fi
-    {{ just_cmd }} todos-assess version-assess \
-        security-assess format-assess lint-assess check test cover-assess
+    {{ just_cmd }} \
+        todos-assess version-assess \
+        security-assess \
+        format-assess lint-assess check \
+        test "" cover-assess
 
 alias v := verify
 
@@ -330,7 +375,7 @@ alias cl := clean
 # Build
 [group: 'build']
 build target=default_target:
-    cargo build --target {{ target }} --locked
+    cargo build --timings --target {{ target }} --locked
 
 
 alias b := build
@@ -338,21 +383,21 @@ alias b := build
 # glibc build
 [group: 'build']
 build-gnu:
-    cargo build --target {{ glibc_target }} --locked
+    cargo build --timings --target {{ glibc_target }} --locked
 
 alias bg := build-gnu
 
 # musl build
 [group: 'build']
 build-musl:
-    cargo build --target {{ musl_target }}  --locked
+    cargo build --timings --target {{ musl_target }} --locked
 
 alias bm := build-musl
 
 # Release build
 [group: 'build']
 release-build target=default_target:
-    cargo build --target {{ target }}  --locked --release
+    cargo build --timings --target {{ target }} --locked --release
     du -h target/{{ target }}/release/en
 
 alias rb := release-build

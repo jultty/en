@@ -8,6 +8,7 @@ use axum::{
 use serde::Serialize;
 
 use crate::{
+    dev::log,
     graph::{Format, Graph, SerialErrorCause},
     prelude::*,
     router::{
@@ -18,17 +19,6 @@ use crate::{
 
 /// Assembles an HTTP response given Asset.
 fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
-    let kind = match asset.mime.kind() {
-        Ok(kind) => kind,
-        Err(error) => {
-            return error::make(
-                Some(500),
-                Some(&format!("Could not determine a mimetype kind: {error}")),
-                graph,
-            )
-        },
-    };
-
     let set_content_type = |response: &mut Response<_>, content_type: &str| {
         if let Ok(header_value) =
             HeaderValue::from_str(&String::from(content_type))
@@ -37,6 +27,8 @@ fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
                 .headers_mut()
                 .append(header::CONTENT_TYPE, header_value);
         } else {
+            // This should be unreachable considering the possible mimetypes
+            // and their string representations are internal to en
             log!(
                 WARN,
                 "Failed to create content type header value from {content_type}"
@@ -44,7 +36,7 @@ fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
         }
     };
 
-    match kind {
+    match asset.mime.kind() {
         mime::Kind::Text => {
             if let Some(text) = asset.text {
                 let mut response = Response::new(Body::from(text));
@@ -54,6 +46,8 @@ fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
                 );
                 response
             } else {
+                // This should be unreachable, considering the constructors
+                // will convert to text even if a blob is passed
                 let mut response = error::make(
                     Some(500),
                     Some(
@@ -75,6 +69,8 @@ fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
                 );
                 response
             } else {
+                // This should be unreachable, considering the constructors
+                // will convert to blob even if a text is passed
                 let mut response = error::make(
                     Some(500),
                     Some(
@@ -182,7 +178,7 @@ struct Asset {
 
 impl Asset {
     fn new(blob: &[u8], mime: mime::Mime) -> Result<Asset, AssetError> {
-        match mime.kind()? {
+        match mime.kind() {
             mime::Kind::Text => Ok(Asset {
                 text: Some(String::from_utf8(blob.to_vec())?),
                 blob: None,
@@ -198,19 +194,17 @@ impl Asset {
         }
     }
 
-    fn from_str(str: &str, mime: mime::Mime) -> Result<Asset, AssetError> {
-        match mime.kind()? {
-            mime::Kind::Text => Ok(Asset {
+    fn from_str(str: &str, mime: mime::Mime) -> Asset {
+        match mime.kind() {
+            mime::Kind::Text => Asset {
                 text: Some(String::from(str)),
                 blob: None,
                 mime,
-            }),
-            mime::Kind::Font | mime::Kind::Image | mime::Kind::Blob => {
-                Ok(Asset {
-                    text: None,
-                    blob: Some(String::from(str).into_bytes()),
-                    mime,
-                })
+            },
+            mime::Kind::Font | mime::Kind::Image | mime::Kind::Blob => Asset {
+                text: None,
+                blob: Some(String::from(str).into_bytes()),
+                mime,
             },
         }
     }
@@ -239,7 +233,7 @@ fn fallback(path: &str, graph: &Graph) -> Result<Asset, AssetError> {
         Err(io_error) => {
             if io_error.kind() == ErrorKind::NotFound {
                 if let Some(content) = defaults.get(path) {
-                    Asset::from_str(content, mime)
+                    Ok(Asset::from_str(content, mime))
                 } else {
                     let not_found_error = Err(AssetError::new(
                         path,
@@ -625,6 +619,8 @@ static CCND: License = License {
 
 #[cfg(test)]
 mod tests {
+    use axum::http::status::StatusCode;
+
     use super::*;
 
     async fn wrap_serial(format: &str) -> Response<Body> {
@@ -670,6 +666,6 @@ mod tests {
             graph: Graph::default(),
         };
         let response = file(Path("/k/j/m".to_string()), State(state)).await;
-        assert!(response.status() == axum::http::status::StatusCode::NOT_FOUND);
+        assert!(response.status() == StatusCode::NOT_FOUND);
     }
 }

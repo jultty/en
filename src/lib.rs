@@ -2,14 +2,13 @@ use std::{sync, time};
 
 pub mod prelude {
     pub use crate::{
-        log,
-        log::{Level::*, now},
-        tlog, write_log,
+        dev::log::{Level::*, now},
+        log, tlog, write_log,
     };
 }
 
+pub mod dev;
 pub mod graph;
-pub mod log;
 pub mod router;
 pub mod syntax;
 

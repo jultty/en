@@ -6,6 +6,7 @@ use axum::{
 };
 
 use crate::{
+    dev::log,
     prelude::*,
     router::{GlobalState, handlers::raw::make_response},
 };
@@ -135,6 +136,13 @@ fn load_templates() -> Result<tera::Tera, tera::Error> {
 
     let root = PathBuf::from("templates");
     let default_names: Vec<&str> = DEFAULTS.iter().map(|(n, _)| *n).collect();
+
+    log!(
+        DEBUG,
+        "Reading templates from {}, canonical form {:?}",
+        root.display(),
+        root.canonicalize()
+    );
 
     match fs::read_dir(&root) {
         Ok(dir) => {

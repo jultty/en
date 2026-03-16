@@ -114,7 +114,7 @@ pub fn timed(past: &Instant, message: &str) -> Instant {
 #[macro_export]
 macro_rules! tlog {
     ($instant:expr, $fmt:expr $(, $($arg:tt)+ )?) => {{
-        $crate::log::timed($instant, &format!($fmt $(, $($arg)+ )?))
+        $crate::dev::log::timed($instant, &format!($fmt $(, $($arg)+ )?))
     }};
 }
 
@@ -129,26 +129,26 @@ pub fn elog(function: &str, message: &str) {
 macro_rules! log {
     ($level:path, $fmt:expr $(, $($arg:tt)+ )?) => {{
 
-         let data = $crate::log::Data::new(
+         let data = $crate::dev::log::Data::new(
             Some($level),
             std::any::type_name_of_val(&|| {}),
             std::backtrace::Backtrace::capture(),
         );
 
         if data.should_log {
-            $crate::log::elog(&data.path, &format!($fmt $(, $($arg)+ )?));
+            $crate::dev::log::elog(&data.path, &format!($fmt $(, $($arg)+ )?));
         }
     }};
     ($fmt:expr $(, $($arg:tt)+ )?) => {{
 
-        let data = $crate::log::Data::new(
+        let data = $crate::dev::log::Data::new(
             None,
             std::any::type_name_of_val(&|| {}),
             std::backtrace::Backtrace::capture(),
         );
 
         if data.should_log {
-            $crate::log::elog(&data.path, &format!($fmt $(, $($arg)+ )?));
+            $crate::dev::log::elog(&data.path, &format!($fmt $(, $($arg)+ )?));
         };
 
     }};
@@ -272,7 +272,7 @@ mod tests {
             fn test(&self);
         }
 
-        struct Logger {}
+        struct Logger;
 
         impl Loggable for Logger {
             fn test(&self) {

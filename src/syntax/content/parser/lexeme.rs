@@ -224,7 +224,7 @@ impl Lexeme {
 
 impl fmt::Display for Lexeme {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use crate::log::wrap;
+        use crate::dev::log::wrap;
 
         let properties = if self.last && self.first {
             "[S] "

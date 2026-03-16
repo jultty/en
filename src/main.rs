@@ -1,6 +1,6 @@
 use std::{backtrace, io, panic};
 
-use en::{ONSET, graph::Graph, log, prelude::*, syntax};
+use en::{ONSET, dev::log, graph::Graph, prelude::*, syntax};
 
 #[tokio::main]
 #[expect(clippy::print_stderr, clippy::print_stdout, clippy::use_debug)]

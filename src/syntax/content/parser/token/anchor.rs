@@ -121,7 +121,7 @@ impl Parseable for Anchor {
 
 impl std::fmt::Display for Anchor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use crate::log::wrap;
+        use crate::dev::log::wrap;
 
         let wrapped_text = wrap(&self.text);
         let display_text = if wrapped_text.is_empty() {

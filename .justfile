@@ -63,14 +63,14 @@ assess-run-quick:
 assess-watch-quick:
     {{ watch_cmd }} {{ just_cmd }} assess-quick
 
-alias qa := assess-watch-quick
+alias aq := assess-watch-quick
 
 # Run quick assessments, build and serve on changes
 [group: 'develop']
 assess-run-watch-quick:
     {{ watch_cmd }} {{ just_cmd }} assess-run-quick
 
-alias qr := assess-run-watch-quick
+alias rq := assess-run-watch-quick
 
 [private]
 test-cover-quick:
@@ -84,7 +84,7 @@ test-cover-quick:
 test-cover-watch-quick:
     {{ watch_cmd }} {{ just_cmd }} test-cover-quick
 
-alias qo := test-cover-watch-quick
+alias oq := test-cover-watch-quick
 
 # Format all files
 [group: 'develop']

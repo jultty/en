@@ -62,10 +62,7 @@ mod tests {
         );
 
         strike.open = false;
-        assert_eq!(
-            format!("{}", Token::Strike(strike.clone())),
-            "Tk:Strike [closed]"
-        );
+        assert_eq!(format!("{}", Token::Strike(strike)), "Tk:Strike [closed]");
     }
 
     #[test]

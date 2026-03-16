@@ -28,7 +28,6 @@ mod tests {
 
     #[test]
     fn token_display() {
-        let linebreak = LineBreak::default();
-        assert_eq!(format!("{}", Token::LineBreak(linebreak)), "Tk:LineBreak");
+        assert_eq!(format!("{}", Token::LineBreak(LineBreak)), "Tk:LineBreak");
     }
 }

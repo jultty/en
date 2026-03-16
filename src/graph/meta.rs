@@ -600,7 +600,6 @@ mod tests {
         assert!(
             validation_error
                 .message
-                .clone()
                 .unwrap()
                 .contains("Splits to three elements: false")
         );

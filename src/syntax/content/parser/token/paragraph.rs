@@ -89,7 +89,7 @@ mod tests {
 
         paragraph.open = None;
         assert_eq!(
-            format!("{}", Token::Paragraph(paragraph.clone())),
+            format!("{}", Token::Paragraph(paragraph)),
             "Tk:Paragraph [unknown]"
         );
     }

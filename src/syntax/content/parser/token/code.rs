@@ -60,9 +60,6 @@ mod tests {
         assert_eq!(format!("{}", Token::Code(code.clone())), "Tk:Code [open]");
 
         code.open = false;
-        assert_eq!(
-            format!("{}", Token::Code(code.clone())),
-            "Tk:Code [closed]"
-        );
+        assert_eq!(format!("{}", Token::Code(code)), "Tk:Code [closed]");
     }
 }

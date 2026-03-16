@@ -96,7 +96,7 @@ alias f := format
 # Lint
 [group: 'develop']
 lint:
-    cargo +nightly clippy
+    cargo +nightly clippy --timings --all-targets
 
 alias l := lint
 
@@ -228,9 +228,10 @@ alias fc := format-assess
 # Assess production lints
 [group: 'assess']
 lint-assess:
-    cargo +nightly clippy -- \
-        -D clippy::dbg_macro -D clippy::use_debug \
+    cargo +nightly clippy --timings -- \
         -D clippy::print_stdout -D clippy::print_stderr \
+        -D clippy::dbg_macro -D clippy::use_debug
+    cargo +nightly clippy --timings --all-targets -- \
         -D clippy::todo -D clippy::unimplemented -D clippy::unreachable
 
 alias la := lint-assess

@@ -85,7 +85,7 @@ mod tests {
 
         preformat.open = None;
         assert_eq!(
-            format!("{}", Token::PreFormat(preformat.clone())),
+            format!("{}", Token::PreFormat(preformat)),
             "Tk:PreFormat [unknown]"
         );
     }

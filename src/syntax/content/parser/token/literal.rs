@@ -43,9 +43,6 @@ mod tests {
         );
 
         literal.text = String::from("TjY02");
-        assert_eq!(
-            format!("{}", Token::Literal(literal.clone())),
-            "Tk:Literal TjY02"
-        );
+        assert_eq!(format!("{}", Token::Literal(literal)), "Tk:Literal TjY02");
     }
 }

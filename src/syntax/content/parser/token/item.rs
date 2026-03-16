@@ -80,7 +80,7 @@ mod tests {
         );
         item.depth = None;
         assert_eq!(
-            format!("{}", Token::Item(item.clone())),
+            format!("{}", Token::Item(item)),
             "Tk:Item [<unknown>] dRMy4"
         );
     }

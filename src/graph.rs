@@ -721,8 +721,8 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        let node = graph.nodes.get("Node").unwrap();
-        let connection = node.connections.get("Nowhere").unwrap();
+        let node = &graph.nodes["Node"];
+        let connection = &node.connections["Nowhere"];
         assert!(connection.detached);
     }
 
@@ -743,8 +743,8 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        let node = graph.nodes.get("NodeOne").unwrap();
-        let connection = node.connections.get("NodeTwo").unwrap();
+        let node = &graph.nodes["NodeOne"];
+        let connection = &node.connections["NodeTwo"];
         println!("{connection:#?}");
         assert!(!connection.detached);
     }
@@ -763,10 +763,10 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        let n01 = graph.nodes.get("n01").unwrap();
-        let n02 = graph.nodes.get("n02").unwrap();
-        let n01_to_n02 = n01.connections.get("n02").unwrap();
-        let n02_to_n03 = n02.connections.get("n03").unwrap();
+        let n01 = &graph.nodes["n01"];
+        let n02 = &graph.nodes["n02"];
+        let n01_to_n02 = &n01.connections["n02"];
+        let n02_to_n03 = &n02.connections["n03"];
 
         assert_eq!(n01_to_n02.from, "n01");
         assert_eq!(n01_to_n02.to, "n02");
@@ -793,16 +793,16 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        let n01 = graph.nodes.get("n01").unwrap();
-        let n02 = graph.nodes.get("n02").unwrap();
-        let n04 = graph.nodes.get("n04").unwrap();
+        let n01 = &graph.nodes["n01"];
+        let n02 = &graph.nodes["n02"];
+        let n04 = &graph.nodes["n04"];
 
-        let n01_to_n02 = n01.connections.get("n02").unwrap();
-        let n01_to_n03 = n01.connections.get("n03").unwrap();
-        let n01_to_n04 = n01.connections.get("n04").unwrap();
+        let n01_to_n02 = &n01.connections["n02"];
+        let n01_to_n03 = &n01.connections["n03"];
+        let n01_to_n04 = &n01.connections["n04"];
 
-        let n04_to_n01 = n04.connections.get("n01").unwrap();
-        let n04_to_n03 = n04.connections.get("n03").unwrap();
+        let n04_to_n01 = &n04.connections["n01"];
+        let n04_to_n03 = &n04.connections["n03"];
 
         assert_eq!(n01_to_n02.from, "n01");
         assert_eq!(n01_to_n02.to, "n02");
@@ -861,8 +861,8 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        assert!(graph.nodes.get("n01").unwrap().summary.contains(text));
-        assert!(graph.nodes.get("n01").unwrap().text.contains(text));
+        assert!(&graph.nodes["n01"].summary.contains(text));
+        assert!(&graph.nodes["n01"].text.contains(text));
     }
 
     #[test]
@@ -881,8 +881,8 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        assert_eq!(graph.nodes.get("n01").unwrap().summary, summary);
-        assert!(graph.nodes.get("n01").unwrap().text.contains(text));
+        assert_eq!(&graph.nodes["n01"].summary, summary);
+        assert!(&graph.nodes["n01"].text.contains(text));
     }
 
     #[test]
@@ -900,7 +900,7 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        assert_eq!(graph.nodes.get("n01").unwrap().summary, first_sentence);
+        assert_eq!(&graph.nodes["n01"].summary, first_sentence);
     }
 
     #[test]
@@ -919,7 +919,7 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        assert_eq!(graph.nodes.get("n01").unwrap().summary, first_paragraph);
+        assert_eq!(&graph.nodes["n01"].summary, first_paragraph);
     }
 
     #[test]
@@ -948,7 +948,7 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        assert_eq!(graph.nodes.get("n01").unwrap().summary, summary);
+        assert_eq!(graph.nodes["n01"].summary, summary);
     }
 
     #[test]
@@ -967,9 +967,9 @@ mod tests {
         .unwrap();
         graph.modulate();
 
-        let n1_to_n2 = graph.nodes.get("n1").unwrap().connections.get("n2");
+        let n1_to_n2 = &graph.nodes["n1"].connections.get("n2");
 
-        let n2_to_n0 = graph.nodes.get("n2").unwrap().connections.get("n0");
+        let n2_to_n0 = &graph.nodes["n2"].connections.get("n0");
 
         println!("{n1_to_n2:#?}");
         println!("{n2_to_n0:#?}");
@@ -991,8 +991,8 @@ mod tests {
         graph.modulate();
 
         assert_eq!(graph.stats.detached_total, 2);
-        assert_eq!(*graph.stats.detached.get("anchor").unwrap(), 1);
-        assert_eq!(*graph.stats.detached.get("this one").unwrap(), 1);
+        assert_eq!(graph.stats.detached["anchor"], 1);
+        assert_eq!(graph.stats.detached["this one"], 1);
     }
 
     #[test]
@@ -1008,7 +1008,7 @@ mod tests {
         graph.modulate();
 
         assert_eq!(graph.stats.detached_total, 2);
-        assert_eq!(*graph.stats.detached.get("anchor").unwrap(), 2);
+        assert_eq!(graph.stats.detached["anchor"], 2);
     }
 
     #[test]
@@ -1295,7 +1295,7 @@ mod tests {
         assert!(!format!("{none}").contains("exact"));
 
         let some = QueryResult {
-            node: Some(node.clone()),
+            node: Some(node),
             exact: false,
             redirect: false,
         };

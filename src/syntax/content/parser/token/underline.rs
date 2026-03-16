@@ -66,7 +66,7 @@ mod tests {
 
         underline.open = false;
         assert_eq!(
-            format!("{}", Token::Underline(underline.clone())),
+            format!("{}", Token::Underline(underline)),
             "Tk:Underline [closed]"
         );
     }

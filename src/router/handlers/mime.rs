@@ -102,39 +102,18 @@ impl Mime {
         }
     }
 
-    pub fn kind(&self) -> Result<Kind, String> {
-        let string = String::from(self.clone());
-        let mut parts = string.split('/');
-        let first_opt = parts.next();
-        let second_opt = parts.next();
-        if let Some(first) = first_opt
-            && let Some(second) = second_opt
-        {
-            if first == "application" {
-                if second == "toml" || second == "xml" || second == "json" {
-                    Ok(Kind::Text)
-                } else if second == "pdf"
-                    || second == "epub"
-                    || second == "epub+zip"
-                    || second == "octet-stream"
-                {
-                    Ok(Kind::Blob)
-                } else {
-                    Err(format!(
-                        "Unexpected application kind for mimetype {string}"
-                    ))
-                }
-            } else if first == "text" {
-                Ok(Kind::Text)
-            } else if first == "font" {
-                Ok(Kind::Font)
-            } else if first == "image" {
-                Ok(Kind::Image)
-            } else {
-                Err(format!("Could not determine a kind for mimetype {string}"))
-            }
-        } else {
-            Err(format!("Mimetype {string} couldn't be split on a slash"))
+    /// Returns one of four kind of mimetypes among text, font, image and blob.
+    ///
+    /// This is mainly used when serving assets through the `fixed` module in
+    /// order to determine what `Asset` field to use when assemblimg a response
+    /// body.
+    pub const fn kind(&self) -> Kind {
+        use Mime::*;
+        match self {
+            Txt | Csv | Css | Toml | Xml | Json | Js | Svg => Kind::Text,
+            Ttf | Otf | Woff | Woff2 => Kind::Font,
+            Ico | Jpeg | Png | Apng | Gif | Webp | Avif => Kind::Image,
+            Pdf | Epub | Unknown => Kind::Blob,
         }
     }
 }

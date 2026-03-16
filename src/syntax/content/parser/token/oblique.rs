@@ -64,7 +64,7 @@ mod tests {
 
         oblique.open = false;
         assert_eq!(
-            format!("{}", Token::Oblique(oblique.clone())),
+            format!("{}", Token::Oblique(oblique)),
             "Tk:Oblique [closed]"
         );
     }

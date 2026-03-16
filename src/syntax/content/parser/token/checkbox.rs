@@ -64,7 +64,7 @@ mod tests {
 
         checkbox.checked = false;
         assert_eq!(
-            format!("{}", Token::CheckBox(checkbox.clone())),
+            format!("{}", Token::CheckBox(checkbox)),
             "Tk:CheckBox [empty]"
         );
     }

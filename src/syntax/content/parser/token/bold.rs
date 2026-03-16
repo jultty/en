@@ -60,10 +60,7 @@ mod tests {
         assert_eq!(format!("{}", Token::Bold(bold.clone())), "Tk:Bold [open]");
 
         bold.open = false;
-        assert_eq!(
-            format!("{}", Token::Bold(bold.clone())),
-            "Tk:Bold [closed]"
-        );
+        assert_eq!(format!("{}", Token::Bold(bold)), "Tk:Bold [closed]");
     }
 
     #[test]

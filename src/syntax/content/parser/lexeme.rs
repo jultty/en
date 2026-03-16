@@ -286,7 +286,7 @@ mod tests {
     fn first_segment() {
         let payload = "nhNc fGev QnGW E4hj ExyZ";
         let lexeme = Lexeme::new(payload, "", "");
-        assert_eq!(lexeme.clone().first_segment(), Some(String::from("nhNc")));
+        assert_eq!(lexeme.first_segment(), Some(String::from("nhNc")));
     }
 
     #[test]
@@ -381,8 +381,8 @@ mod tests {
         let lexemes = Lexeme::collect(&input);
 
         let first = lexemes.first().unwrap();
-        let second = lexemes.get(1).unwrap();
-        let third = lexemes.get(2).unwrap();
+        let second = &lexemes[1];
+        let third = &lexemes[2];
         let last = lexemes.last().unwrap();
 
         assert_eq!(

@@ -216,7 +216,7 @@ mod tests {
         anchor.external = true;
 
         assert_eq!(
-            format!("{}", Token::Anchor(Box::new(anchor.clone()))),
+            format!("{}", Token::Anchor(Box::new(anchor))),
             "Tk:Anchor 'wPVo1 0OmYm' -> \"M1UEp 1gbfr\" \
             +Leading +Balanced +External",
         );

@@ -496,33 +496,101 @@ mod tests {
 }
 
 #[cfg(test)]
+#[expect(clippy::panic_in_result_fn)]
 mod serial_tests {
+    use std::{ffi::OsStr, os::unix::ffi::OsStrExt as _};
+
     use super::*;
+    use crate::dev::test::{Directories, Error};
 
-    #[cfg_attr(not(unix), ignore)]
     #[test]
-    fn invalid_utf8_template_filename() {
-        use std::{ffi::OsStr, os::unix::ffi::OsStrExt as _, path::PathBuf};
+    #[cfg_attr(not(unix), ignore)]
+    fn invalid_utf8_template_filename() -> Result<(), Error> {
+        let dirs = Directories::setup("encoding")?;
 
-        let original_working_directory = std::env::current_dir().unwrap();
-        let base_dir = PathBuf::from("tests/mocks/encoding/temp");
-        let templates_dir = base_dir.clone().join("templates");
-        assert!(std::fs::create_dir_all(&base_dir).is_ok());
-        assert!(
-            std::env::set_current_dir(&base_dir)
-            .is_ok()
-        );
-        assert!(std::fs::create_dir_all(&templates_dir).is_ok());
+        let invalid_name = OsStr::from_bytes(&[0xff, 0xfe, 0x80]);
+        let file_path = dirs.templates.join(invalid_name);
+        fs::write(file_path, b"")?;
 
+        let template_load_result = load_templates();
+        let err = template_load_result.err().unwrap();
 
-        let invalid_name = OsStr::from_bytes(&[0xff, 0xfe, 0x00]);
-        let file_path = templates_dir.join(invalid_name);
-        assert!(std::fs::write(&file_path, b"eNJq4FPUqSKoozdg").is_ok());
+        let error_message = err.to_string();
+        assert!(error_message.contains("not valid unicode"));
 
-        let result = load_templates();
-        assert!(result.is_err());
+        Ok(())
+    }
 
-        assert!(std::fs::remove_dir_all(&base_dir).is_ok());
-        assert!(std::env::set_current_dir(original_working_directory).is_ok());
+    #[test]
+    fn custom_template() -> Result<(), Error> {
+        let dirs = Directories::setup("custom_template")?;
+
+        let file_name = "custom.html";
+        let file_path = dirs.templates.join(file_name);
+        fs::write(file_path, b"")?;
+
+        let engine = load_templates()?;
+        assert!(engine.get_template_names().any(|t| t == "custom.html"));
+
+        Ok(())
+    }
+
+    #[test]
+    fn custom_template_inheritance_error() -> Result<(), Error> {
+        let dirs = Directories::setup("custom_template")?;
+
+        let file_name = "custom.html";
+        let file_path = dirs.templates.join(file_name);
+        fs::write(file_path, br#"{% extends "nonexistent.html" %}"#)?;
+
+        let template_load_result = load_templates();
+        assert!(template_load_result.is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn inner_template_no_op() -> Result<(), Error> {
+        let dirs = Directories::setup("inner_template")?;
+
+        let inner_dir = dirs.templates.join("inner");
+        fs::create_dir(&inner_dir)?;
+        let inner_template = inner_dir.join("inner.html");
+        fs::write(inner_template, br#"{% extends "nonexistent.html" %}"#)?;
+
+        let engine = load_templates()?;
+        let default_count = dirs.original.join("templates").read_dir()?.count();
+        let template_count = engine.get_template_names().count();
+        assert!(template_count == default_count);
+
+        Ok(())
+    }
+
+    #[test]
+    fn templates_dir_not_found_ok() -> Result<(), Error> {
+        let dirs = Directories::setup("not_found_error")?;
+
+        std::fs::remove_dir_all(&dirs.templates)?;
+        let template_load_result = load_templates();
+        template_load_result?;
+
+        Ok(())
+    }
+
+    #[test]
+    // Unexpected here means any error other than 'not found'
+    fn templates_dir_unexpected_error() -> Result<(), Error> {
+        let dirs = Directories::setup("unexpected_error")?;
+
+        log!(DEBUG, "Working directory is {:?}", std::env::current_dir());
+
+        std::fs::remove_dir_all(&dirs.templates)?;
+        let templates = dirs.test.join("templates");
+        fs::write(&templates, b"")?;
+
+        let template_load_result = load_templates();
+        assert!(template_load_result.is_err());
+
+        Ok(())
     }
 }

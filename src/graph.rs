@@ -1308,24 +1308,19 @@ mod tests {
 }
 
 #[cfg(test)]
+#[expect(clippy::panic_in_result_fn)]
 mod serial_tests {
     use super::*;
+    use crate::dev::test::{Directories, Error};
 
     #[test]
-    fn bad_graph_path() {
-        let original_working_directory = std::env::current_dir().unwrap();
-
-        assert!(
-            std::env::set_current_dir(std::path::Path::new(
-                "tests/mocks/no_graph"
-            ))
-            .is_ok()
-        );
+    fn bad_graph_path() -> Result<(), Error> {
+        let _dirs = Directories::setup("bad_graph_path")?;
 
         let graph = Graph::load();
         let message = graph.meta.messages.first().unwrap();
         assert!(message.contains("Failed reading file at"));
 
-        assert!(std::env::set_current_dir(original_working_directory).is_ok());
+        Ok(())
     }
 }

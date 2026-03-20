@@ -3,16 +3,10 @@ use crate::syntax::content::{Parseable, parser::Lexeme};
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Verse {
     open: Option<bool>,
-    citation: Option<String>,
 }
 
 impl Verse {
-    pub const fn new(open: bool) -> Verse {
-        Verse {
-            open: Some(open),
-            citation: None,
-        }
-    }
+    pub const fn new(open: bool) -> Verse { Verse { open: Some(open) } }
 
     pub fn probe_end(lexeme: &Lexeme) -> bool {
         lexeme.match_char_triple('\n', '&', '\n')
@@ -24,12 +18,7 @@ impl Parseable for Verse {
         lexeme.match_char_triple('\n', '&', '\n')
     }
 
-    fn lex(_lexeme: &Lexeme) -> Verse {
-        Verse {
-            open: None,
-            citation: None,
-        }
-    }
+    fn lex(_lexeme: &Lexeme) -> Verse { Verse { open: None } }
 
     fn render(&self) -> String {
         if let Some(open) = self.open {
@@ -59,12 +48,44 @@ impl std::fmt::Display for Verse {
             None => "unknown",
         };
 
-        let citation = if self.citation.is_some() {
-            " cited"
-        } else {
-            ""
-        };
+        write!(f, "Verse [{display_open_state}]")
+    }
+}
 
-        write!(f, "Verse [{display_open_state}{citation}]")
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lexed_verse_is_empty() {
+        let verse = Verse::lex(&Lexeme::default());
+        assert!(verse.open.is_none());
+    }
+
+    #[test]
+    fn flat_verse_is_empty() {
+        let verse = Verse::new(true);
+        assert!(verse.flatten().is_empty());
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Attempt to render a verse tag while open state is unknown"
+    )]
+    fn render_attempt_with_unknown_open_state() {
+        let verse = Verse::lex(&Lexeme::default());
+        verse.render();
+    }
+
+    #[test]
+    fn display() {
+        let open = Verse::new(true);
+        assert_eq!(format!("{open}"), "Verse [open]");
+
+        let closed = Verse::new(false);
+        assert_eq!(format!("{closed}"), "Verse [closed]");
+
+        let unknown = Verse::lex(&Lexeme::default());
+        assert_eq!(format!("{unknown}"), "Verse [unknown]");
     }
 }

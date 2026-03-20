@@ -86,9 +86,9 @@ fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
     }
 }
 
-#[expect(clippy::upper_case_acronyms)]
 #[derive(Debug)]
-enum AssetErrorKind {
+#[expect(clippy::upper_case_acronyms)]
+pub enum AssetErrorKind {
     NotFound,
     IO,
     UTF8,
@@ -96,11 +96,11 @@ enum AssetErrorKind {
 }
 
 #[derive(Debug)]
-struct AssetError {
-    path: String,
-    kind: AssetErrorKind,
-    io_error: Option<std::io::Error>,
-    utf8_error: Option<FromUtf8Error>,
+pub struct AssetError {
+    pub path: String,
+    pub kind: AssetErrorKind,
+    pub io_error: Option<std::io::Error>,
+    pub utf8_error: Option<FromUtf8Error>,
 }
 
 impl AssetError {
@@ -136,8 +136,7 @@ impl std::fmt::Display for AssetError {
         let mut message = match self.kind {
             AssetErrorKind::IO => {
                 format!(
-                    "A default fallback for {} was found, \
-                    but it could not be loaded",
+                    "File {} was found, but it could not be loaded",
                     self.path
                 )
             },
@@ -170,6 +169,7 @@ impl std::fmt::Display for AssetError {
     }
 }
 
+#[derive(Debug)]
 struct Asset {
     blob: Option<Vec<u8>>,
     text: Option<String>,
@@ -224,13 +224,14 @@ fn fallback(path: &str, graph: &Graph) -> Result<Asset, AssetError> {
     let mime = mime::Mime::guess(path);
 
     match std::fs::read(&target) {
-        // A matching file exists on disk
+        // A matching file exists on disk and is accessible
         Ok(content) => Ok(Asset {
             blob: Some(content),
             text: None,
             mime,
         }),
         Err(io_error) => {
+            // A matching file does not exist on disk
             if io_error.kind() == ErrorKind::NotFound {
                 if let Some(content) = defaults.get(path) {
                     Ok(Asset::from_str(content, mime))
@@ -252,6 +253,7 @@ fn fallback(path: &str, graph: &Graph) -> Result<Asset, AssetError> {
                         None => not_found_error,
                     }
                 }
+            // A matching file exists on disk and is not accessible
             } else {
                 Err(AssetError::new(
                     path,
@@ -667,5 +669,104 @@ mod tests {
         };
         let response = file(Path("/k/j/m".to_string()), State(state)).await;
         assert!(response.status() == StatusCode::NOT_FOUND);
+    }
+
+    #[test]
+    fn error_from_utf8error() {
+        let bytes = vec![0, 159];
+        let utf8error = String::from_utf8(bytes.clone()).unwrap_err();
+        let error = AssetError::from(utf8error);
+        assert!(error.utf8_error.is_some());
+        assert_eq!(error.utf8_error.unwrap().into_bytes(), bytes);
+    }
+
+    #[test]
+    fn error_from_string() {
+        let payload = "r5MDnkEojW9HZDAG";
+        let asset_error = AssetError::from(payload.to_string());
+        println!("{asset_error}");
+        assert!(asset_error.path.contains(payload));
+    }
+
+    #[test]
+    fn new_text_asset() {
+        let asset = Asset::new(&[1, 0, 1], mime::Mime::Txt).unwrap();
+
+        assert!(asset.blob.is_none());
+        assert!(asset.text.is_some());
+        assert_eq!(asset.text.unwrap(), "\u{1}\0\u{1}");
+    }
+
+    #[test]
+    fn new_blob_asset() {
+        let asset = Asset::new(&[1, 0, 1], mime::Mime::Png).unwrap();
+
+        assert!(asset.blob.is_some());
+        assert!(asset.text.is_none());
+        assert_eq!(asset.blob.unwrap(), &[1, 0, 1]);
+    }
+
+    #[test]
+    fn asset_from_str() {
+        let payload = "\u{1}\0\u{6}";
+        let asset = Asset::from_str(payload, mime::Mime::Ico);
+        assert_eq!(asset.blob.unwrap(), &[1, 0, 6]);
+    }
+
+    #[test]
+    fn new_asset_utf8_error() {
+        let bad_bytes = [0xff, 0xc0, 0xf5, 0xc1, 0x80];
+
+        let error = Asset::new(&bad_bytes, mime::Mime::Txt).unwrap_err();
+
+        assert!(matches!(&error.kind, AssetErrorKind::UTF8));
+        assert!(format!("{error}").contains("UTF8 decoding error"));
+    }
+
+    #[test]
+    fn not_found_asset_error() {
+        let error = fallback("not_found.png", &Graph::default()).unwrap_err();
+
+        assert!(matches!(&error.kind, AssetErrorKind::NotFound));
+        assert!(
+            format!("{error}")
+                .contains("The file was not found in the searched path")
+        );
+    }
+}
+
+#[cfg(test)]
+#[cfg(unix)]
+#[expect(clippy::panic_in_result_fn)]
+mod serial_tests {
+    use std::{fs, os::unix::fs::PermissionsExt as _};
+
+    use super::*;
+    use crate::dev::test::{Directories, Error};
+
+    #[test]
+    fn io_asset_error() -> Result<(), Error> {
+        let dirs = Directories::setup("io_asset_error")?;
+
+        let assets = dirs.assets.clone();
+        let file = assets.join("unreadable.png");
+
+        fs::write(&file, [1, 0, 1])?;
+        let mut permissions = fs::metadata(&file)?.permissions();
+        permissions.set_mode(0o200);
+        fs::set_permissions(&file, permissions)?;
+
+        let new_permissions = fs::metadata(&file)?.permissions();
+        assert_eq!(new_permissions.mode() & 0o777, 0o200);
+
+        let error = fallback("unreadable.png", &Graph::default()).unwrap_err();
+
+        assert!(matches!(&error.kind, AssetErrorKind::IO));
+        assert!(
+            format!("{error}")
+                .contains("was found, but it could not be loaded")
+        );
+
+        Ok(())
     }
 }

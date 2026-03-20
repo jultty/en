@@ -2,9 +2,11 @@ use std::{env, fs, io, path::PathBuf};
 
 use crate::prelude::*;
 
+#[derive(Debug)]
 pub struct Directories {
     pub original: PathBuf,
     pub templates: PathBuf,
+    pub assets: PathBuf,
     pub test: PathBuf,
 }
 
@@ -20,6 +22,7 @@ impl Directories {
         let original = env::current_dir()?;
         let test = original.join(format!("target/mocks/{dir_name}"));
         let templates = test.join("templates");
+        let assets = test.join("static").join("public").join("assets");
 
         drop(fs::remove_dir_all(&test));
 
@@ -37,6 +40,13 @@ impl Directories {
             ))
         }
 
+        if let Err(error) = fs::create_dir_all(&assets) {
+            return Err(Error::with_io(
+                "Failed 'assets' directory creation",
+                error,
+            ))
+        }
+
         if let Err(error) = env::set_current_dir(&test) {
             return Err(Error::with_io("Failed current directory change", error))
         }
@@ -44,6 +54,7 @@ impl Directories {
         Ok(Directories {
             original,
             templates,
+            assets,
             test,
         })
     }
@@ -68,10 +79,10 @@ pub struct Error {
 }
 
 impl Error {
-    fn with_io(message: &str, inner_io: io::Error) -> Error {
+    fn with_io(message: &str, inner_error: io::Error) -> Error {
         Error {
             message: String::from(message),
-            inner_io: Some(inner_io),
+            inner_io: Some(inner_error),
             inner_tera: None,
         }
     }
@@ -131,5 +142,49 @@ mod tests {
     fn bad_test_directory_name() {
         let dirs = Directories::setup("\0");
         assert!(dirs.is_err());
+    }
+
+    #[test]
+    fn display_contains_str_from_from() {
+        let payload = "rHneusPkYNGW0Ia0";
+        let error = Error::from(payload);
+        assert!(format!("{error}").contains(payload));
+    }
+
+    #[test]
+    fn display_contains_str_from_io_error() {
+        let payload = "SsVi0d3Ywc8kVhwp";
+        let io_payload = "LoPbZP7cJEHzAjGW";
+        let io_error = std::io::Error::other(io_payload);
+        let error = Error::with_io(payload, io_error);
+        assert!(format!("{error}").contains(payload));
+        assert!(format!("{error}").contains(io_payload));
+    }
+
+    #[test]
+    fn from_io_error() {
+        let payload = "YgmTKBm3VtHt5h3x9";
+        let io_error = std::io::Error::other(payload);
+        let error = Error::from(io_error);
+
+        assert!(error.message.contains(payload));
+    }
+}
+
+#[cfg(test)]
+mod serial_tests {
+    use super::*;
+
+    #[test]
+    fn failed_working_directory_reset() {
+        let dirs = Directories::setup("\0");
+
+        let error = dirs.unwrap_err();
+        println!("{error}");
+        assert!(error.message.contains("Failed test's directory creation"));
+        assert!(
+            format!("{error}")
+                .contains("file name contained an unexpected NUL byte")
+        );
     }
 }

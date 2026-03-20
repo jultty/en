@@ -82,7 +82,8 @@ test-cover-quick:
 # Quickly update coverage reports (inaccurate)
 [group: 'assess']
 test-cover-watch-quick:
-    {{ watch_cmd }} {{ just_cmd }} test-cover-quick
+    @{{ watch_cmd }} {{ just_cmd_no_ts }} test-cover-quick 2>&1 \
+        | grep -v "process didn't exit successfully:" || true
 
 alias oq := test-cover-watch-quick
 
@@ -432,6 +433,12 @@ default:
 choose:
     @just --choose
 
+[script, private]
+ci recipe:
+    id -u ci >/dev/null 2>&1 || useradd -m ci
+    chown -R ci:ci .
+    su ci -c "just {{ recipe }}"
+
 alias ch := choose
 
 export CARGO_TERM_COLOR := 'always'
@@ -441,9 +448,10 @@ glibc_target := "x86_64-unknown-linux-gnu"
 default_target := musl_target
 
 debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
+just_cmd := 'just --timestamp --explain --command-color green'
+just_cmd_no_ts := 'just --explain --command-color green'
 watch_cmd := "watchexec -qc -r -e rs,toml,html --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'
-just_cmd := 'just --timestamp --explain --command-color green'
 
 last_tag := `git tag --sort=-creatordate | head -1 | tr -d v`
 manifest_version := `grep "^version" Cargo.toml | cut -d \" -f 2`

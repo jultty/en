@@ -34,7 +34,7 @@ jobs:
       - name: Setup additional tooling
         run: .forgejo/workflows/setup-tools.sh
 
-      - name: Setup permissions for ci user
+      - name: Setup CI user
         run: |
           useradd -m ci && chown -R ci:ci .
           git config --global --add safe.directory "$PWD"

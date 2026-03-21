@@ -45,4 +45,12 @@ mod tests {
         literal.text = String::from("TjY02");
         assert_eq!(format!("{}", Token::Literal(literal)), "Tk:Literal TjY02");
     }
+
+    #[test]
+    fn flatten() {
+        let payload = "vJtsvWD7ErYB";
+        let literal = Literal::lex(&Lexeme::new(payload, "", ""));
+        assert_eq!(literal.flatten(), payload);
+        assert_eq!(Token::Literal(literal).flatten(), payload);
+    }
 }

@@ -93,4 +93,15 @@ mod tests {
             "Tk:Paragraph [unknown]"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let open = Paragraph::new(true);
+        let closed = Paragraph::new(false);
+
+        assert_eq!(open.flatten(), "");
+        assert_eq!(closed.flatten(), "");
+        assert_eq!(Token::Paragraph(open).flatten(), "");
+        assert_eq!(Token::Paragraph(closed).flatten(), "");
+    }
 }

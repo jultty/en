@@ -73,5 +73,8 @@ mod tests {
     fn flatten() {
         let checkbox = CheckBox::new(false);
         assert_eq!(checkbox.flatten(), "");
+
+        let token = Token::CheckBox(checkbox);
+        assert_eq!(token.flatten(), "");
     }
 }

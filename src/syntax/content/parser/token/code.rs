@@ -62,4 +62,13 @@ mod tests {
         code.open = false;
         assert_eq!(format!("{}", Token::Code(code)), "Tk:Code [closed]");
     }
+
+    #[test]
+    fn flatten() {
+        let code = Code::new(true);
+        assert_eq!(code.flatten(), "");
+
+        let token = Token::Code(code);
+        assert_eq!(token.flatten(), "");
+    }
 }

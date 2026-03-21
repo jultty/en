@@ -25,6 +25,7 @@ impl Table {
         }
     }
 
+    /// Counts the number of cells in the last row.
     pub fn last_row_count(&self) -> usize {
         if let Some(last) = self.contents.last() {
             last.len()
@@ -37,7 +38,9 @@ impl Table {
 impl Parseable for Table {
     fn probe(lexeme: &Lexeme) -> bool { lexeme.match_char_sequence('%', '\n') }
 
-    fn lex(_lexeme: &Lexeme) -> Table { Table::default() }
+    fn lex(_lexeme: &Lexeme) -> Table {
+        panic!("Attempt to lex a table directly from a lexeme")
+    }
 
     fn render(&self) -> String {
         let mut xml = String::from("\n<table>\n");
@@ -67,11 +70,100 @@ impl Parseable for Table {
         xml
     }
 
-    fn flatten(&self) -> String { String::default() }
+    fn flatten(&self) -> String { String::from("[Table]") }
 }
 
 impl std::fmt::Display for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Table")
+        let headers_width = self.headers.len();
+        let contents_height = self.contents.len();
+        let contents_width = self.last_row_count();
+
+        let mut extra = String::default();
+        if headers_width > 0 && contents_height > 0 {
+            extra = format!(
+                " [{contents_width}x{contents_height} +{headers_width} headers]"
+            );
+        } else if headers_width > 0 {
+            extra = format!(" [+{headers_width} headers]");
+        } else if contents_height > 0 {
+            extra = format!(" [{contents_width}x{contents_height}]");
+        }
+
+        write!(f, "Table{extra}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::syntax::content::parser::Token;
+
+    #[test]
+    #[should_panic(expected = "Attempt to lex a table directly from a lexeme")]
+    fn lex() {
+        let lexeme = Lexeme::new("tp0h", "rrFt", "Qouf");
+        Table::lex(&lexeme);
+    }
+
+    #[test]
+    fn flatten() {
+        assert_eq!(Table::default().flatten(), "[Table]");
+        assert_eq!(Token::Table(Table::default()).flatten(), "[Table]");
+    }
+
+    #[test]
+    fn display() {
+        use std::string::ToString;
+
+        let mut table = Table::default();
+        table.add_header("A");
+        table.add_header("B");
+        table.add_header("C");
+
+        let table_token = Token::Table(table.clone());
+        assert_eq!(format!("{table}"), format!("Table [+3 headers]"));
+        assert_eq!(format!("{table_token}"), format!("Tk:Table [+3 headers]"));
+
+        table.add_row(
+            ["1", "2", "3"]
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>(),
+        );
+        table.add_row(
+            ["4", "5", "6"]
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>(),
+        );
+        table.add_row(
+            ["7", "8", "9"]
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>(),
+        );
+
+        let table_token2 = Token::Table(table.clone());
+        assert_eq!(format!("{table}"), "Table [3x3 +3 headers]");
+        assert_eq!(format!("{table_token2}"), "Tk:Table [3x3 +3 headers]");
+
+        let mut table2 = Table::default();
+        table2.add_row(
+            ["1", "2", "3"]
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>(),
+        );
+        table2.add_row(
+            ["2", "4", "6"]
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>(),
+        );
+
+        let table2_token = Token::Table(table2.clone());
+        assert_eq!(format!("{table2}"), "Table [3x2]");
+        assert_eq!(format!("{table2_token}"), "Tk:Table [3x2]");
     }
 }

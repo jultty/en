@@ -55,6 +55,7 @@ impl std::fmt::Display for Verse {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::syntax::content::parser::Token;
 
     #[test]
     fn lexed_verse_is_empty() {
@@ -63,9 +64,12 @@ mod tests {
     }
 
     #[test]
-    fn flat_verse_is_empty() {
+    fn flatten() {
         let verse = Verse::new(true);
         assert!(verse.flatten().is_empty());
+
+        let token = Token::Verse(verse);
+        assert_eq!(token.flatten(), "");
     }
 
     #[test]
@@ -80,12 +84,18 @@ mod tests {
     #[test]
     fn display() {
         let open = Verse::new(true);
+        let open_token = Token::Verse(open.clone());
         assert_eq!(format!("{open}"), "Verse [open]");
+        assert_eq!(format!("{open_token}"), "Tk:Verse [open]");
 
         let closed = Verse::new(false);
+        let closed_token = Token::Verse(closed.clone());
         assert_eq!(format!("{closed}"), "Verse [closed]");
+        assert_eq!(format!("{closed_token}"), "Tk:Verse [closed]");
 
         let unknown = Verse::lex(&Lexeme::default());
+        let unknown_token = Token::Verse(unknown.clone());
         assert_eq!(format!("{unknown}"), "Verse [unknown]");
+        assert_eq!(format!("{unknown_token}"), "Tk:Verse [unknown]");
     }
 }

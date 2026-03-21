@@ -30,4 +30,10 @@ mod tests {
     fn token_display() {
         assert_eq!(format!("{}", Token::LineBreak(LineBreak)), "Tk:LineBreak");
     }
+
+    #[test]
+    fn flatten() {
+        assert_eq!(LineBreak.flatten(), "\n");
+        assert_eq!(Token::LineBreak(LineBreak).flatten(), "\n");
+    }
 }

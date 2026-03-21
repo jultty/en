@@ -53,9 +53,19 @@ mod tests {
     #[should_panic(
         expected = "Items should only be rendered by a list's render method"
     )]
-    fn render() {
+    fn token_render() {
         let item = Item::new("aCNuZwwzrt", None);
         item.render();
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Items should only be rendered by a list's render method"
+    )]
+    fn render() {
+        let item = Item::new("vuv3ipykTzuf", None);
+        let token = Token::Item(item);
+        token.render();
     }
 
     #[test]
@@ -89,5 +99,6 @@ mod tests {
     fn flatten() {
         let item = Item::new("", None);
         assert_eq!(item.flatten(), "");
+        assert_eq!(Token::Item(item).flatten(), "");
     }
 }

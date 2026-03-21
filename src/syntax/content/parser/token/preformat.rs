@@ -94,5 +94,8 @@ mod tests {
     fn flatten() {
         let preformat = PreFormat::new(false);
         assert_eq!(preformat.flatten(), "");
+
+        let token = Token::PreFormat(preformat);
+        assert_eq!(token.flatten(), "");
     }
 }

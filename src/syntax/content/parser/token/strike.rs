@@ -69,5 +69,8 @@ mod tests {
     fn flatten() {
         let strike = Strike::new(false);
         assert_eq!(strike.flatten(), "");
+
+        let token = Token::Strike(strike);
+        assert_eq!(token.flatten(), "");
     }
 }

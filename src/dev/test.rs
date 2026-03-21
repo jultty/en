@@ -162,10 +162,31 @@ mod tests {
     }
 
     #[test]
+    fn display_contains_str_from_tera_error() {
+        let payload = "pA6B0LhiiDMNCl1J";
+        let tera_payload = "5ob8H594dCAQ8pfk";
+        let error = Error {
+            message: payload.to_string(),
+            inner_tera: Some(tera::Error::msg(tera_payload)),
+            inner_io: None,
+        };
+        assert!(format!("{error}").contains(payload));
+        assert!(format!("{error}").contains(tera_payload));
+    }
+    #[test]
     fn from_io_error() {
         let payload = "YgmTKBm3VtHt5h3x9";
         let io_error = std::io::Error::other(payload);
         let error = Error::from(io_error);
+
+        assert!(error.message.contains(payload));
+    }
+
+    #[test]
+    fn from_tera_error() {
+        let payload = "XEB3dcvYuz0M1lYt";
+        let tera_error = tera::Error::msg(payload);
+        let error = Error::from(tera_error);
 
         assert!(error.message.contains(payload));
     }

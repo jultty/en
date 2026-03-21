@@ -624,6 +624,7 @@ mod tests {
     use axum::http::status::StatusCode;
 
     use super::*;
+    use crate::router::handlers::mime::Mime;
 
     async fn wrap_serial(format: &str) -> Response<Body> {
         let state = GlobalState {
@@ -733,16 +734,28 @@ mod tests {
                 .contains("The file was not found in the searched path")
         );
     }
+
+    #[test]
+    fn assemble_from_blob() {
+        let asset = Asset::new(&[1, 0, 1], Mime::Pdf).unwrap();
+        let response = assemble(asset, &Graph::default());
+        let content_type =
+            response.headers().get(header::CONTENT_TYPE).unwrap();
+        assert_eq!(content_type, "application/pdf");
+    }
 }
 
 #[cfg(test)]
 #[cfg(unix)]
-#[expect(clippy::panic_in_result_fn)]
+#[expect(clippy::panic_in_result_fn, clippy::unwrap_in_result)]
 mod serial_tests {
-    use std::{fs, os::unix::fs::PermissionsExt as _};
+    use std::{fs, os::unix::fs::PermissionsExt as _, path::PathBuf};
 
     use super::*;
-    use crate::dev::test::{Directories, Error};
+    use crate::{
+        dev::test::{Directories, Error},
+        router::handlers::mime::Mime,
+    };
 
     #[test]
     fn io_asset_error() -> Result<(), Error> {
@@ -766,6 +779,100 @@ mod serial_tests {
             format!("{error}")
                 .contains("was found, but it could not be loaded")
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn target_file_exists() -> Result<(), Error> {
+        let dirs = Directories::setup("target_file_exists")?;
+
+        let assets = dirs.assets.clone();
+        let file = assets.join("asset.woff2");
+
+        fs::write(&file, [1, 0, 1])?;
+        let asset = fallback("asset.woff2", &Graph::default()).unwrap();
+        assert!(asset.text.is_none());
+        assert!(asset.blob.is_some());
+        assert!(matches!(asset.mime, Mime::Woff2));
+
+        Ok(())
+    }
+
+    #[test]
+    fn default_font_found_if_serving_enabled() -> Result<(), Error> {
+        let dirs = Directories::setup("font_found_if_serving_enabled")?;
+
+        let assets = dirs.assets.clone();
+        let relative_font_path =
+            PathBuf::from(FONTS[0].0.replace("assets/", ""));
+        let font_path = assets.join(&relative_font_path);
+        let font_dir = font_path.parent().expect("failed getting font dir");
+
+        println!("{font_dir:?}");
+        fs::create_dir_all(font_dir)?;
+        fs::write(&font_path, [1, 0, 1])?;
+        let graph = Graph::from_serial(
+            "[meta.config]\nserve_fonts = true",
+            &Format::TOML,
+        )
+        .expect("failed instantiating graph");
+        println!("{font_path:?}");
+        let asset = fallback(relative_font_path.to_str().unwrap(), &graph)
+            .expect("fallback failed");
+
+        assert!(asset.text.is_none());
+        assert!(asset.blob.is_some());
+        assert!(matches!(asset.mime, Mime::Woff2));
+
+        Ok(())
+    }
+
+    #[test]
+    fn custom_font_found_if_serving_enabled() -> Result<(), Error> {
+        let dirs = Directories::setup("font_found_if_serving_enabled")?;
+
+        let assets = dirs.assets.clone();
+        let relative_font_path = "fonts/custom.ttf";
+        let font_path = assets.join(relative_font_path);
+        let font_dir = font_path.parent().unwrap();
+
+        fs::create_dir_all(font_dir)?;
+        fs::write(&font_path, [1, 0, 1])?;
+        let graph = Graph::from_serial(
+            "[meta.config]\nserve_fonts = true",
+            &Format::TOML,
+        )
+        .expect("failed instantiating graph");
+        let asset =
+            fallback(relative_font_path, &graph).expect("fallback failed");
+
+        assert!(asset.text.is_none());
+        assert!(asset.blob.is_some());
+        assert!(matches!(asset.mime, Mime::Ttf));
+
+        Ok(())
+    }
+
+    #[test]
+    fn font_not_found_if_serving_disabled() -> Result<(), Error> {
+        let dirs = Directories::setup("target_file_exists")?;
+
+        let assets = dirs.assets.clone();
+        let relative_font_path =
+            PathBuf::from(FONTS[0].0.replace("assets/", ""));
+        let font_path = assets.join(&relative_font_path);
+        let font_dir = font_path.parent().unwrap();
+
+        fs::create_dir_all(font_dir)?;
+        fs::write(&font_path, [1, 0, 1])?;
+        let graph = Graph::from_serial(
+            "[meta.config]\nserve_fonts = false",
+            &Format::TOML,
+        )
+        .unwrap();
+        let error = fallback(font_path.to_str().unwrap(), &graph).unwrap_err();
+        assert!(matches!(error.kind, AssetErrorKind::NotFound));
 
         Ok(())
     }

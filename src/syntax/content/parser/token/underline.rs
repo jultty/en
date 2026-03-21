@@ -75,5 +75,8 @@ mod tests {
     fn flatten() {
         let underline = Underline::new(false);
         assert_eq!(underline.flatten(), "");
+
+        let token = Token::Underline(underline);
+        assert_eq!(token.flatten(), "");
     }
 }

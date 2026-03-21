@@ -232,4 +232,13 @@ mod tests {
             </ol>\n\n"
         );
     }
+
+    #[test]
+    fn flatten() {
+        let list = List::new(true);
+        assert_eq!(list.flatten(), "[List: 0 items]");
+
+        let token = Token::List(List::new(true));
+        assert_eq!(token.flatten(), "[List: 0 items]");
+    }
 }

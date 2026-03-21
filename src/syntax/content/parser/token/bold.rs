@@ -67,5 +67,8 @@ mod tests {
     fn flatten() {
         let bold = Bold::new(false);
         assert_eq!(bold.flatten(), "");
+
+        let token = Token::Bold(bold);
+        assert_eq!(token.flatten(), "");
     }
 }

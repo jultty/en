@@ -261,4 +261,15 @@ mod tests {
         let anchor = Anchor::default();
         assert_eq!(format!("{anchor}"), "Anchor <empty> -> <unknown>");
     }
+
+    #[test]
+    fn flatten() {
+        let payload = "tpBTViYnldoTqDsB";
+        let mut anchor = Anchor::default();
+        anchor.text = String::from(payload);
+        assert_eq!(anchor.flatten(), payload);
+
+        let token = Token::Anchor(Box::new(anchor));
+        assert_eq!(token.flatten(), payload);
+    }
 }

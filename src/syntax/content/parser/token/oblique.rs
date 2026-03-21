@@ -73,5 +73,8 @@ mod tests {
     fn flatten() {
         let oblique = Oblique::new(false);
         assert_eq!(oblique.flatten(), "");
+
+        let token = Token::Oblique(oblique);
+        assert_eq!(token.flatten(), "");
     }
 }

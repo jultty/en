@@ -322,4 +322,13 @@ mod tests {
             format!("Header [unknown L1 DOM ID {payload}]")
         );
     }
+
+    #[test]
+    fn flatten() {
+        let header = Header::new(Level::Two, true, Some("MNxqaFfIbCzw"));
+        assert_eq!(header.flatten(), "");
+
+        let token = Token::Header(header);
+        assert_eq!(token.flatten(), "");
+    }
 }

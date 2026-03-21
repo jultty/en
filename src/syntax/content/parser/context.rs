@@ -77,4 +77,27 @@ mod tests {
         state.context.block = Block::List;
         super::close(&state, &mut vec![]);
     }
+
+    #[test]
+    #[should_panic(expected = "End of input with open quote")]
+    fn open_quote_eoi() {
+        let mut state = State::default();
+        state.context.block = Block::Quote;
+        super::close(&state, &mut vec![]);
+    }
+
+    #[test]
+    #[should_panic(expected = "End of input with open table")]
+    fn open_table_eoi() {
+        let mut state = State::default();
+        state.context.block = Block::Table;
+        super::close(&state, &mut vec![]);
+    }
+
+    #[test]
+    fn open_verse_eoi() {
+        let mut state = State::default();
+        state.context.block = Block::Verse;
+        super::close(&state, &mut vec![]);
+    }
 }

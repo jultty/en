@@ -32,19 +32,21 @@ jobs:
           rustup target add x86_64-unknown-linux-musl
 
       - name: Setup additional tooling
-        run: .forgejo/workflows/setup-tools.sh
+        run: |
+          .forgejo/workflows/setup-tools.sh
+          git config --add safe.directory "$PWD"
 
       - name: Build
-        run: just build
+        run: just ci build
 
       - name: Format
-        run: just format-assess
+        run: just ci format-assess
       - name: Lint
-        run: just lint-assess
+        run: just ci lint-assess
       - name: Cargo check
-        run: just check
+        run: just ci check
       - name: Test
-        run: just test
+        run: just ci test
       - name: Assess test coverage
-        run: just cover-assess
+        run: just ci cover-assess
 

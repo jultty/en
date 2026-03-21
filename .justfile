@@ -433,6 +433,12 @@ default:
 choose:
     @just --choose
 
+[script, private]
+ci recipe:
+    id -u ci >/dev/null 2>&1 || useradd -m ci
+    chown -R ci:ci .
+    su ci -c "just {{ recipe }}"
+
 alias ch := choose
 
 export CARGO_TERM_COLOR := 'always'

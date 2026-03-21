@@ -724,7 +724,7 @@ mod tests {
     }
 
     #[test]
-    fn not_found_fallback_error() {
+    fn not_found_asset_error() {
         let error = fallback("not_found.png", &Graph::default()).unwrap_err();
 
         assert!(matches!(&error.kind, AssetErrorKind::NotFound));
@@ -736,6 +736,7 @@ mod tests {
 }
 
 #[cfg(test)]
+#[cfg(unix)]
 #[expect(clippy::panic_in_result_fn)]
 mod serial_tests {
     use std::{fs, os::unix::fs::PermissionsExt as _};
@@ -754,6 +755,9 @@ mod serial_tests {
         let mut permissions = fs::metadata(&file)?.permissions();
         permissions.set_mode(0o200);
         fs::set_permissions(&file, permissions)?;
+
+        let new_permissions = fs::metadata(&file)?.permissions();
+        assert_eq!(new_permissions.mode() & 0o777, 0o200);
 
         let error = fallback("unreadable.png", &Graph::default()).unwrap_err();
 

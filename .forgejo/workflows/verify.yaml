@@ -32,9 +32,12 @@ jobs:
           rustup target add x86_64-unknown-linux-musl
 
       - name: Setup additional tooling
+        run: .forgejo/workflows/setup-tools.sh
+
+      - name: Setup permissions for ci user
         run: |
-          .forgejo/workflows/setup-tools.sh
-          git config --add safe.directory "$PWD"
+          useradd -m ci && chown -R ci:ci .
+          git config --global --add safe.directory "$PWD"
 
       - name: Build
         run: just ci build

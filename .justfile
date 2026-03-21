@@ -463,3 +463,4 @@ lockfile_version := ```
 ## OPTIONS
 
 set unstable
+set lazy

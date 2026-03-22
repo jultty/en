@@ -360,7 +360,7 @@ alias sa := security-assess
 # Find TODOs
 [group: 'assess']
 todos-assess:
-    ! rg -M 200 --max-columns-preview TODO src
+    ! grep -rn TODO src
 
 alias ta := todos-assess
 

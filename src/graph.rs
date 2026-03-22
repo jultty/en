@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, io, path::PathBuf};
 
 pub use edge::Edge;
 pub use meta::{Config, Meta};
@@ -43,6 +43,18 @@ pub struct Stats {
 }
 
 impl Graph {
+    fn welcome() -> Graph {
+        let toml = include_str!("../static/welcome.toml");
+        let mut welcome_graph = match Graph::from_serial(toml, &Format::TOML) {
+            Ok(graph) => graph,
+            Err(error) => {
+                panic!("Welcome graph parsing must be infallible: {error:?}")
+            },
+        };
+        welcome_graph.modulate();
+        welcome_graph
+    }
+
     pub fn with_message(message: &str) -> Graph {
         let graph = Graph::default();
         let mut messages = graph.meta.messages;
@@ -69,12 +81,23 @@ impl Graph {
     /// Loads a Graph TOML file from CLI arguments or their defaults and
     /// returns a modulated Graph.
     ///
+    /// Loads a default graph with basic usage instructions if no file is found.
+    ///
     /// Returns a graph with an error message if any errors are propagated.
     pub fn load() -> Graph {
         let result = Graph::load_file(None);
         match result {
             Ok(graph) => graph,
-            Err(error) => Graph::malformed(Some(&error)),
+            Err(error) => {
+                if error.not_found {
+                    return Graph::welcome()
+                }
+                if let Some(message) = error.message {
+                    Graph::malformed(Some(&message))
+                } else {
+                    Graph::malformed(None)
+                }
+            },
         }
     }
 
@@ -84,7 +107,7 @@ impl Graph {
     ///
     /// # Errors
     /// Propagates errors from `Graph::read_file`.
-    pub fn load_file(path: Option<&str>) -> Result<Graph, String> {
+    pub fn load_file(path: Option<&str>) -> Result<Graph, LoadError> {
         let mut graph = Graph::from_file(path)?;
         graph.modulate();
         Ok(graph)
@@ -95,21 +118,24 @@ impl Graph {
     /// # Errors
     /// Returns Err if it can't read the contents of `in_path`.
     /// Propagates errors from `Graph::from_serial`.
-    pub fn from_file(in_path: Option<&str>) -> Result<Graph, String> {
+    pub fn from_file(in_path: Option<&str>) -> Result<Graph, LoadError> {
         let cli_path = Arguments::default().parse().graph_path;
         let path = in_path.map_or(cli_path, PathBuf::from);
 
         let toml_source = match std::fs::read_to_string(&path) {
             Ok(s) => s,
-            Err(e) => {
+            Err(error) => {
                 log!(
                     ERROR,
-                    "Error reading path {}: {e}",
+                    "Error reading path {}: {error}",
                     path.as_path().display(),
                 );
-                return Err(format!(
-                    "Failed reading file at {}",
-                    path.as_path().display(),
+                return Err(LoadError::from_io_with_message(
+                    &format!(
+                        "Failed reading file at {}",
+                        path.as_path().display(),
+                    ),
+                    error,
                 ));
             },
         };
@@ -489,10 +515,58 @@ impl Graph {
     }
 }
 
+#[derive(Debug)]
 pub enum Format {
     TOML,
     JSON,
     Unsupported,
+}
+
+#[derive(Debug)]
+pub struct LoadError {
+    pub message: Option<String>,
+    pub not_found: bool,
+    pub io_error: Option<io::Error>,
+    pub serial_error: Option<SerialError>,
+}
+
+impl LoadError {
+    fn from_io_with_message(message: &str, io_error: io::Error) -> LoadError {
+        LoadError {
+            message: Some(String::from(message)),
+            not_found: io_error.kind() == io::ErrorKind::NotFound,
+            io_error: Some(io_error),
+            serial_error: None,
+        }
+    }
+}
+
+impl From<SerialError> for LoadError {
+    fn from(error: SerialError) -> LoadError {
+        LoadError {
+            message: Some(error.message.clone()),
+            not_found: false,
+            serial_error: Some(error),
+            io_error: None,
+        }
+    }
+}
+
+impl From<io::Error> for LoadError {
+    fn from(error: io::Error) -> LoadError {
+        LoadError {
+            message: Some(error.to_string()),
+            not_found: error.kind() == io::ErrorKind::NotFound,
+            io_error: Some(error),
+            serial_error: None,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SerialError {
+    pub cause: SerialErrorCause,
+    pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -509,12 +583,6 @@ impl std::fmt::Display for SerialErrorCause {
         };
         write!(f, "{text}")
     }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct SerialError {
-    pub cause: SerialErrorCause,
-    pub message: String,
 }
 
 impl From<SerialError> for String {
@@ -1314,12 +1382,11 @@ mod serial_tests {
     use crate::dev::test::{Directories, Error};
 
     #[test]
-    fn bad_graph_path() -> Result<(), Error> {
+    fn no_graph_fallback() -> Result<(), Error> {
         let _dirs = Directories::setup("bad_graph_path")?;
 
         let graph = Graph::load();
-        let message = graph.meta.messages.first().unwrap();
-        assert!(message.contains("Failed reading file at"));
+        assert_eq!(graph.nodes["GettingStarted"].title, "Getting Started");
 
         Ok(())
     }

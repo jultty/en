@@ -1,0 +1,17 @@
+[nodes.GettingStarted]
+title = "Getting Started"
+text = """
+## Welcome to en!
+#
+If you are seeing this, it's working!
+
+Now that you know how to run it, tell en how to find your graph file by adding a `--graph` option:
+
+`
+en --graph my_graph.toml
+`
+
+Alternatively, you can also add a `static` directory next to the en binary with a `graph.toml` file in it.
+
+To learn how to write your first graph and everything else about en, check out the |documentation|https://en.jutty.dev|.
+"""

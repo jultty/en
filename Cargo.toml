@@ -9,7 +9,7 @@ homepage = "https://en.jutty.dev"
 documentation = "https://en.jutty.dev/node/Documentation"
 
 edition = "2024"
-rust-version= "1.91.1"
+rust-version= "1.94.0"
 
 [features]
 serial-tests = []

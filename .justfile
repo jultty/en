@@ -198,6 +198,22 @@ cover-open:
 
 alias oo := cover-open
 
+mutate:
+    -just mutate-single -- --test-threads=1 serial_tests::
+    -just mutate-single -- --skip serial_tests::
+
+alias m := mutate
+
+[private]
+mutate-single *cargo_test_args:
+    cargo mutants --iterate \
+        -E '<impl Debug<' \
+        -E '<impl From<' \
+        -E '<impl std::fmt::Display for ' \
+        -E 'print_help -> bool' \
+        --output target/mutants \
+        -- {{ cargo_test_args }}
+
 # Tag HEAD with version from Cargo.toml
 [script, group: 'assess']
 tag commit="HEAD": update

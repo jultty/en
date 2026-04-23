@@ -204,6 +204,9 @@ mutate:
 
 alias m := mutate
 
+deny:
+    cargo deny check
+
 [private]
 mutate-single *cargo_test_args:
     cargo mutants --iterate \
@@ -345,8 +348,7 @@ verify:
         exit 1
     fi
     {{ just_cmd }} \
-        todos-assess version-assess \
-        security-assess \
+        todos-assess version-assess deny \
         format-assess lint-assess check \
         test "" cover-assess
 
@@ -367,11 +369,6 @@ version-assess: update
     fi
 
 alias va := version-assess
-
-# Audit security advisories
-security-assess:
-    cargo audit --deny warnings
-alias sa := security-assess
 
 # Find TODOs
 [group: 'assess']

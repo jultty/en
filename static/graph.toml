@@ -1,4 +1,28 @@
-root_node = "Documentation"
+root_node = "Start"
+
+[nodes.Start]
+text = """
+en is a writing tool. It was designed with complex, inter-connected projects in mind where the relationships between concepts matter. You can use to write non-linear, connected pieces of text and have their references mapped out as a |graph| of metadata-rich, connected information.
+
+It works by ingesting |TOML| files containing your node specifications and serving it as a human-readable website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes. It also serves this node as raw data for integration with other tools that can then further transform what you have written.
+
+## Motivation
+
+en was created out of the desire to write complex, long-form descriptions of a personal worldview without being constrained or getting stuck trying to mimic the linearity of a typical philosophy book.
+
+It's described as a "writing instrument" because it's not so much about the presentation or even the web format. While that's the medium for this particular implementation, you can notice en serves its raw data in both TOML and JSON. It's first and foremost about mapping out and structuring written thoughts.
+
+Because en is defined in simple configuration files, you can add new pages easily from a few lines and start connecting them. Instead of having to create a dedicated file or resource for each new entry you find deserving of observation, with its own beginning and end, its own "I'm empty, fill me to completion" demeanor, you can stay in the flow of your sprawling thoughts. This is meant to fit the specific wiring of minds whose thoughts spread and fork quickly and often, whether to great depth or across wide expanses.
+
+## Get started
+
+- Check the |docs| to learn how to install and use en
+- Read about the |syntax| used to create nodes
+- Glimpse into en's future in the |roadmap|
+- Visit the |data endpoints|/data| for a raw view of this very graph
+- Look under the hood in the |source code|https://codeberg.org/jutty/en repo
+- See an index of all pages in the |tree|/tree|
+"""
 
 [nodes.Documentation]
 text = """
@@ -71,6 +95,8 @@ The main electronic component of a computer is its |motherboard|.
 \"""
 `
 
+In |the future|Roadmap, en should support both individual node files with TOML frontmatter and also multiple TOML files containing several nodes each. In the current implementation, all nodes live in a single `graph.toml` file.
+
 Some special syntax is allowed inside the node text. See |Syntax| for supported features.
 
 A node can have several other attributes. See |Node| for details on all of them.
@@ -94,20 +120,27 @@ Even if a node is not mentioned in the node text, you can still add connections 
 [nodes.Quark]
 text = "A subatomic particle that forms hadrons."
 
-links = [ "Particle", "Hadron" ]
-`
+links = [ "Particle", "Hadron" ] `
 
 This will create two outgoing connections from Quark: to Particle and to Hadron.
 
-For metadata-rich connections, which allow you to add properties to the connection, you can use the full connection syntax:
+For richer connections that have their own properties, you can use the full connection syntax:
 
 `
-[[nodes.Realism.connections]]
-to = "Surrealism"
-kind = "contrast"
+[nodes.Earth.connections.Moon]
+kind = "Satellite"
+
+[nodes.Earth.connections.MilkyWay]
+kind = "Galaxy"
 `
 
-This will create a connection from the node with ID `Realism` to a node with ID `Surrealism` and add the "contrast" kind to the connection. See |Connections| for the existing kinds and how they affect your graph.
+This will create connections from the node with ID `Earth` to the nodes with ID `Moon` and `MilkyWay` and add the "Satellite" and "Galaxy" kinds to each connection, respectively. This can be used to render connections in special ways and is reflected in the |outputs|.
+
+## Where to go from here
+
+en is in its infancy. If you are curious, you can download it and try it by using the |Syntax| docs as a reference or build the |SourceBuild|latest version| yourself to see what's new. Your bug reports are much appreciated.
+
+If you like what you see and are curious about en's future, take a look at the |roadmap| for a peek into what's to come.
 """
 
 [nodes.docs]
@@ -612,6 +645,10 @@ If you need some more advanced feature that is not supported directly by en's ma
 Notice that, as shown in this example, you can mix en syntax and HTML. You might want to add a space between your HTML tags and en special syntax so the boundary is clearer, but otherwise they don't tend to overlap since the symbols most used in HTML are not special in en with the exception of `<`, which is interpreted specially only at the end of lines.
 
 If you want to avoid either one of these syntaxes from being interpreted specially, you should escape the relevant characters as explained in the previous section.
+
+## Known issues
+
+- Nesting multiple different formatting symbols is currently supported only in a few cases. Better nesting is on the |roadmap|, but currently may not work as expected.
 """
 
 [nodes.Escaping]
@@ -748,21 +785,6 @@ en must differentiate node anchors from outgoing URLs:
 It does this by looking at the destination and checking if it contains a `:`. That's one more reason to avoid this character in your node IDs.
 """
 
-[nodes.en]
-text = """
-en is a tool to write non-linear, connected pieces of text and have their references mapped out as a |graph| of connected information.
-
-It works by ingesting a |TOML| file containing your node specification and serving it as a website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes.
-
-## Motivation
-
-en was created out of the desire to write complex, long-form descriptions of a personal worldview without being constrained or getting stuck trying to mimic the linearity of a typical philosophy book.
-
-It's described as a "writing instrument" because it's not so much about the presentation or even the web format. While that's the medium for this particular implementation, you can notice en serves its raw data in both TOML and JSON. It's first and foremost about mapping out and structuring written thoughts.
-
-Because en is defined in simple configuration files, you can add new pages easily from a few lines and start connecting them. Instead of having to create a dedicated file or resource for each new entry you find deserving of observation, with its own beginning and end, its own "I'm empty, fill me to completion" demeanor, you can stay in the flow of your sprawling thoughts. This is meant to fit the specific wiring of minds whose thoughts spread and fork quickly and often, whether to great depth or across wide expanses.
-"""
-
 [nodes.Graph]
 text = """
 A graph is a data structure composed of connected (and disconnected) nodes.
@@ -829,6 +851,7 @@ text = """
     - [x] Further centralize state
     - [ ] Reduce O(n) calls in the formats module
 - [ ] Input syntax
+    - [ ] Improve nested formatting
     - [ ] Invert where redirects are set
     - [x] Formatting
         - [x] Blockquotes
@@ -915,6 +938,7 @@ text = """
         - See: |https://keats.github.io/tera/docs/#whitespace-control|
 - [ ] Full-text search
 - [ ] Assess Option return types that should be Result
+- [ ] Consider printing parsing errors to console by default
 
 ## Done
 

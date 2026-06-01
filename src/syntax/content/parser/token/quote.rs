@@ -40,7 +40,7 @@ impl Parseable for Quote {
         let content = if let Some(citation) = &self.citation {
             format!(
                 r#"{}<br/><cite class="quote-citation">{citation}</cite>"#,
-                &self.text
+                self.text
             )
         } else {
             String::from(&self.text)

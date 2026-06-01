@@ -122,8 +122,8 @@ mod tests {
         table.add_header("C");
 
         let table_token = Token::Table(table.clone());
-        assert_eq!(format!("{table}"), format!("Table [+3 headers]"));
-        assert_eq!(format!("{table_token}"), format!("Tk:Table [+3 headers]"));
+        assert_eq!(format!("{table}"), "Table [+3 headers]");
+        assert_eq!(format!("{table_token}"), "Tk:Table [+3 headers]");
 
         table.add_row(
             ["1", "2", "3"]

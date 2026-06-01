@@ -198,14 +198,13 @@ cover-open:
 
 alias oo := cover-open
 
+# Perform mutation testing
+[group: 'develop']
 mutate:
     -just mutate-single -- --test-threads=1 serial_tests::
     -just mutate-single -- --skip serial_tests::
 
 alias m := mutate
-
-deny:
-    cargo deny check
 
 [private]
 mutate-single *cargo_test_args:
@@ -376,6 +375,12 @@ todos-assess:
     ! grep -rn TODO src
 
 alias ta := todos-assess
+
+# Check for security advisories, unexpected licenses, allowed registries
+[group: 'assess']
+deny:
+    cargo deny check
+
 
 # BUILD
 

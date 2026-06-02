@@ -6,15 +6,17 @@ use crate::{
     syntax::content::{
         Parseable as _,
         parser::{
-            Block, Lexeme, State, Token,
+            Block, Lexeme, State, Token, context,
             token::{
-                Header, LineBreak, List, Literal, Paragraph, PreFormat, Quote,
-                Table, Verse,
+                Header, LineBreak, List, Paragraph, PreFormat, Quote, Table,
+                Verse,
             },
         },
     },
 };
 
+/// A return of `true` will trigger a `continue` on the outer parser, causing
+/// no more subsequent parsing of the current lexeme.
 pub fn parse(
     lexeme: &Lexeme,
     state: &mut State,
@@ -27,8 +29,7 @@ pub fn parse(
             if PreFormat::probe(lexeme) {
                 log!(VERBOSE, "Block Context: None -> PreFormat on {lexeme}");
                 state.context.block = Block::PreFormat;
-                tokens.push(Token::PreFormat(PreFormat::new(true)));
-                return true;
+                return true
             } else if Header::probe(lexeme) {
                 let mut header = Header::lex(lexeme);
                 header.dom_id = Some(Header::make_id(
@@ -44,7 +45,7 @@ pub fn parse(
                 log!(VERBOSE, "Block Context: None -> List on {lexeme}");
                 state.context.block = Block::List;
                 state.buffers.list.candidate.ordered = lexeme.match_char('+');
-                return super::list::parse(
+                return context::list::parse(
                     lexeme, state, tokens, iterator, graph,
                 );
             } else if Quote::probe(lexeme) {
@@ -71,14 +72,7 @@ pub fn parse(
             }
         },
         Block::PreFormat => {
-            if PreFormat::probe(lexeme) {
-                tokens.push(Token::PreFormat(PreFormat::new(false)));
-                log!(VERBOSE, "Block Context: PreFormat -> None on {lexeme}");
-                state.context.block = Block::None;
-            } else {
-                tokens.push(Token::Literal(Literal::lex(lexeme)));
-            }
-            return true;
+            return context::preformat::parse(lexeme, state, tokens, iterator);
         },
         Block::Paragraph => {
             if Paragraph::probe_end(lexeme) {
@@ -95,13 +89,17 @@ pub fn parse(
             }
         },
         Block::List => {
-            return super::list::parse(lexeme, state, tokens, iterator, graph);
+            return context::list::parse(lexeme, state, tokens, iterator, graph);
         },
         Block::Quote => {
-            return super::quote::parse(lexeme, state, tokens, iterator, graph);
+            return context::quote::parse(
+                lexeme, state, tokens, iterator, graph,
+            );
         },
         Block::Table => {
-            return super::table::parse(lexeme, state, tokens, iterator, graph);
+            return context::table::parse(
+                lexeme, state, tokens, iterator, graph,
+            );
         },
         Block::Verse => {
             if Verse::probe_end(lexeme) {
@@ -127,7 +125,7 @@ mod tests {
         graph::Graph,
         syntax::content::parser::{
             self, Block, State, Token, context,
-            token::{Header, PreFormat, header::Level},
+            token::{Header, header::Level},
         },
     };
 
@@ -159,16 +157,6 @@ mod tests {
         let mut vec: Vec<Token> = vec![];
         context::close(&state, &mut vec);
         assert_eq!(vec, vec![Token::Header(Header::from_u8(1, false, None))]);
-    }
-
-    #[test]
-    fn end_with_open_preformat() {
-        let mut state = State::default();
-        state.context.block = Block::PreFormat;
-
-        let mut vec: Vec<Token> = vec![];
-        context::close(&state, &mut vec);
-        assert_eq!(vec, vec![Token::PreFormat(PreFormat::new(false))]);
     }
 
     #[test]

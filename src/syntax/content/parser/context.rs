@@ -1,12 +1,13 @@
 use crate::syntax::content::parser::{
     State, Token,
-    token::{Header, Paragraph, PreFormat, Verse},
+    token::{Header, Paragraph, Verse},
 };
 
 pub mod anchor;
 pub mod block;
 pub mod inline;
 pub mod list;
+pub mod preformat;
 pub mod quote;
 pub mod table;
 
@@ -38,29 +39,31 @@ pub enum Inline {
 }
 
 /// # Panics
-/// Panics if there is an open header or list at end of input.
+/// Panics if there is an open token at end of input that can't be easily
+/// closed by simply adding a matching closing token. This normally is handled
+/// by context parsers and probably indicates an error in one of them.
 pub fn close(state: &State, tokens: &mut Vec<Token>) {
     match state.context.block {
-        Block::PreFormat => {
-            tokens.push(Token::PreFormat(PreFormat::new(false)));
-        },
         Block::Paragraph => {
             tokens.push(Token::Paragraph(Paragraph::new(false)));
-        },
-        Block::List => {
-            panic!("End of input with open list")
         },
         Block::Header(level) => {
             tokens.push(Token::Header(Header::from_u8(level, false, None)));
         },
-        Block::Quote => {
-            panic!("End of input with open quote")
-        },
-        Block::Table => {
-            panic!("End of input with open table")
-        },
         Block::Verse => {
             tokens.push(Token::Verse(Verse::new(false)));
+        },
+        Block::PreFormat => {
+            panic!("End of input with open preformat: {tokens:#?}")
+        },
+        Block::List => {
+            panic!("End of input with open list: {tokens:#?}")
+        },
+        Block::Quote => {
+            panic!("End of input with open quote: {tokens:#?}")
+        },
+        Block::Table => {
+            panic!("End of input with open table: {tokens:#?}")
         },
         Block::None => (),
     }

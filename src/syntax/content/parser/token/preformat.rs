@@ -1,45 +1,41 @@
 use crate::syntax::content::{Lexeme, Parseable};
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct PreFormat {
-    open: Option<bool>,
+    pub text: String,
 }
 
 impl PreFormat {
-    pub const fn new(open: bool) -> PreFormat { PreFormat { open: Some(open) } }
+    pub fn new(text: &str) -> PreFormat {
+        PreFormat {
+            text: String::from(text),
+        }
+    }
 }
 
 impl std::fmt::Display for PreFormat {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let display_open_state = if let Some(open_state) = self.open {
-            if open_state { "open" } else { "closed" }
+        let character_count = self.text.chars().count();
+        let is_whitespace = self.text.trim_ascii().is_empty();
+        let summary = if is_whitespace {
+            "empty"
         } else {
-            "unknown"
+            &format!("{character_count} chars")
         };
-        write!(f, "PreFormat [{display_open_state}]")
+        write!(f, "PreFormat [{summary}]")
     }
 }
 
 impl Parseable for PreFormat {
     fn probe(lexeme: &Lexeme) -> bool {
-        lexeme.match_first_char('`') && (lexeme.next() == "\n" || lexeme.last())
+        lexeme.match_char('`') && (lexeme.next() == "\n" || lexeme.last())
     }
 
-    fn lex(_lexeme: &Lexeme) -> PreFormat { PreFormat { open: None } }
-
-    fn render(&self) -> String {
-        if let Some(o) = self.open {
-            if o {
-                "<pre>".to_owned()
-            } else {
-                "</pre>".to_owned()
-            }
-        } else {
-            panic!(
-                "Attempt to render a preformat tag while open state is unknown"
-            )
-        }
+    fn lex(_lexeme: &Lexeme) -> PreFormat {
+        panic!("Attempt to lex a preformat directly from a lexeme")
     }
+
+    fn render(&self) -> String { format!("<pre>{}</pre>", self.text) }
 
     fn flatten(&self) -> String { String::default() }
 }
@@ -50,49 +46,39 @@ mod tests {
     use crate::syntax::content::parser::Token;
 
     #[test]
+    #[should_panic(
+        expected = "Attempt to lex a preformat directly from a lexeme"
+    )]
     fn lex() {
-        let from_empty_lexeme = PreFormat::lex(&Lexeme::default());
-        assert!(from_empty_lexeme.open.is_none());
-
-        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::default());
-        assert!(from_non_empty_lexeme.open.is_none());
-    }
-
-    #[test]
-    #[should_panic(expected = "Attempt to render a preformat tag while \
-            open state is unknown")]
-    fn render() {
-        let from_empty_lexeme = PreFormat::lex(&Lexeme::default());
-        from_empty_lexeme.render();
-
-        let from_non_empty_lexeme = PreFormat::lex(&Lexeme::default());
-        from_non_empty_lexeme.render();
+        let lexeme = Lexeme::new("a", "b", "c");
+        PreFormat::lex(&lexeme);
     }
 
     #[test]
     fn token_display() {
-        let mut preformat = PreFormat::new(true);
+        let mut preformat = PreFormat::new("");
+
         assert_eq!(
             format!("{}", Token::PreFormat(preformat.clone())),
-            "Tk:PreFormat [open]"
+            "Tk:PreFormat [empty]"
         );
 
-        preformat.open = Some(false);
+        preformat.text = "\n ".to_string();
         assert_eq!(
             format!("{}", Token::PreFormat(preformat.clone())),
-            "Tk:PreFormat [closed]"
+            "Tk:PreFormat [empty]"
         );
 
-        preformat.open = None;
+        preformat.text = "text".to_string();
         assert_eq!(
             format!("{}", Token::PreFormat(preformat)),
-            "Tk:PreFormat [unknown]"
+            "Tk:PreFormat [4 chars]"
         );
     }
 
     #[test]
     fn flatten() {
-        let preformat = PreFormat::new(false);
+        let preformat = PreFormat::new("");
         assert_eq!(preformat.flatten(), "");
 
         let token = Token::PreFormat(preformat);

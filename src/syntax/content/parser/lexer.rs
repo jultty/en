@@ -38,7 +38,9 @@ pub(super) fn lex(
 
     let mut iterator = lexemes.iter().peekable();
     while let Some(lexeme) = iterator.next() {
-        if lexeme.match_char('\\') {
+        if lexeme.match_char('\\')
+            && !matches!(state.context.block, context::Block::PreFormat)
+        {
             if let Some(next) = iterator.next() {
                 tokens.push(Token::Literal(Literal::lex(next)));
             }

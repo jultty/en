@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::syntax::content::parser::{
     Token,
     context::Context,
-    token::{Anchor, Item, List, Quote, Table},
+    token::{Anchor, Item, List, PreFormat, Quote, Table},
 };
 
 #[derive(Clone, Default, Debug)]
@@ -29,6 +29,7 @@ pub struct Buffers {
     pub list: ListBuffer,
     pub quote: QuoteBuffer,
     pub table: TableBuffer,
+    pub preformat: PreFormatBuffer,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -57,6 +58,11 @@ pub struct TableBuffer {
     pub cell: String,
     pub in_cell: bool,
     pub in_header: bool,
+}
+
+#[derive(Default, Clone, Debug)]
+pub struct PreFormatBuffer {
+    pub candidate: PreFormat,
 }
 
 impl std::fmt::Display for AnchorBuffer {

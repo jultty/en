@@ -32,6 +32,8 @@ impl Lexeme {
 
     pub fn mutate_text(&mut self, new: &str) { self.text = new.to_string(); }
 
+    /// Returns an Option containing the character if the raw lexeme text
+    /// is composed of a single character, None if it has multiple characters.
     pub fn as_char(&self) -> Option<char> {
         if self.text.chars().count() == 1 {
             self.text.chars().nth(0)
@@ -56,6 +58,7 @@ impl Lexeme {
         }
     }
 
+    /// Returns true if the raw lexeme text is a single matching character.
     pub fn match_char(&self, c: char) -> bool {
         self.as_char().is_some_and(|as_char| as_char == c)
     }
@@ -86,6 +89,8 @@ impl Lexeme {
             && self.match_third_char(c3)
     }
 
+    /// Returns true if the lexeme raw text is composed of a single character
+    /// and this character is in the provided slice.
     pub fn match_char_in(&self, slice: &[char]) -> bool {
         self.as_char().is_some_and(|c| slice.contains(&c))
     }

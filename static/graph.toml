@@ -1,30 +1,43 @@
+#:schema ./graph-schema.json
+
 root_node = "Start"
 
 [nodes.Start]
 text = """
-en is a writing tool. It was designed with complex, inter-connected projects in mind where the relationships between concepts matter. You can use to write non-linear, connected pieces of text and have their references mapped out as a |graph| of metadata-rich, connected information.
+## What is en?
 
-It works by ingesting |TOML| files containing your node specifications and serving it as a human-readable website that allows nodes to be browsed, searched and listed in relation to each other or as a shallow tree of nodes. It also serves this node as raw data for integration with other tools that can then further transform what you have written.
+en is a writing tool. It was designed with complex, conceptually heavy projects in mind where the relationships between terms matter and possibly have their own attributes. You can use it to write non-linear, connected textual works and have their references to which other mapped out as a |graph| of metadata-rich, interrelated information. This very website is running en.
+
+It works by ingesting plain text files written in |TOML|, a file format that focuses on being human-readable but that can also be directly interpreted by computer programs. These files contain your node definitions and allow en to construct a human-readable website that makes your graphs' nodes browseable, searcheable and listed in relation to each other or as a shallow tree of nodes. It also serves this graph as raw data for integration with other tools that can further analyze and transform what you have written.
 
 ## Motivation
 
-en was created out of the desire to write complex, long-form descriptions of a personal worldview without being constrained or getting stuck trying to mimic the linearity of a typical philosophy book.
+en was created out of the desire to write a web of encyclopedic-style long-form texts documenting a personal worldview. It aims to remove the constraints imposed by trying to mimic the linearity of a typical nonfiction book.
 
 It's described as a "writing instrument" because it's not so much about the presentation or even the web format. While that's the medium for this particular implementation, you can notice en serves its raw data in both TOML and JSON. It's first and foremost about mapping out and structuring written thoughts.
 
-Because en is defined in simple configuration files, you can add new pages easily from a few lines and start connecting them. Instead of having to create a dedicated file or resource for each new entry you find deserving of observation, with its own beginning and end, its own "I'm empty, fill me to completion" demeanor, you can stay in the flow of your sprawling thoughts. This is meant to fit the specific wiring of minds whose thoughts spread and fork quickly and often, whether to great depth or across wide expanses.
+Because your en graph is defined in simple plain-text files, you can add new pages easily from a few lines and start connecting them. Instead of having to create a dedicated file or resource for each new entry you find deserving of observation, with its own beginning and end, its own "I'm empty, fill me to completion" demeanor, you can stay in the flow of your sprawling thoughts. This is meant to fit the specific wiring of minds whose thoughts spread and fork quickly and often, whether to great depth or across wide expanses.
+
+## What's ahead
+
+en is in its infancy. Right now, most of the work is focused on making the markup syntax more robust. Some interesting features planned include:
+
+- Multi-file graphs, including single-file node definitions with TOML frontmatter
+- Richer node connection metrics and sorting
+- Builtin and custom connection kinds with special rendering styles
+- More render formats: static website, single page and PDF/EPUB formats
+- JSON schema for language server integration
+- Full-text search
+
+If you like what you see and are curious about en's future, take a look at the |roadmap| for a more comprehensive outlook of what else is to come.
 
 ## Get started
 
-- Check the |docs| to learn how to install and use en
-- Read about the |syntax| used to create nodes
-- Glimpse into en's future in the |roadmap|
-- Visit the |data endpoints|/data| for a raw view of this very graph
-- Look under the hood in the |source code|https://codeberg.org/jutty/en repo
-- See an index of all pages in the |tree|/tree|
+See the |GetStarted| page to learn how to install and use en
 """
 
-[nodes.Documentation]
+[nodes.GetStarted]
+title = "Get Started"
 text = """
 ## Installation
 
@@ -37,7 +50,7 @@ x64 Linux binaries are available from the |git.jutty.dev package registry|https:
 %
     Platform        ! Download
     x64 Linux GNU   | |en-x64-linux-gnu|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-gnu|
-    x64 Linux musl  | |en-x64-linux-musl|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-musl|
+    x64 Linux musl  | |en-x64-linux-musl|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-musl |
 %
 
 If in doubt, it is likely your system uses the GNU libc. Regardless, the musl binary is statically compiled and should run on mostly any x64 Linux system.
@@ -46,7 +59,7 @@ Other platforms may be supported in the future depending on CI resources.
 
 ### Build from source
 
-If you are on another platform or simply paranoid, you can also build en yourself.
+If you are on another platform or simply prefer starting from source, you can also build en yourself.
 
 You will need:
 
@@ -101,7 +114,7 @@ Some special syntax is allowed inside the node text. See |Syntax| for supported 
 
 A node can have several other attributes. See |Node| for details on all of them.
 
-## Connections
+### Connections
 
 Nodes can have connections between each other. Each node page lists its outgoing and incoming connections.
 
@@ -109,12 +122,31 @@ The simplest kind of connection is achieved by creating an anchor to another nod
 
 `
 [nodes.Quark]
-text = "Quarks are subatomic particles that form |hadron|s".
+text = "Quarks are subatomic particles that form |hadron|s."
 `
 
 Here, a connection is created from the node with ID `Quark` to the node with ID `Hadron`. See |AnchorSyntax| for the various ways you can link to other nodes from within the node text itself.
 
-Even if a node is not mentioned in the node text, you can still add connections to it. For simple connections without any associated properties, you can simply add links:
+There are several different ways to connect nodes, including ones where you can add metadata to the connection itself. See |Connections| for more details.
+
+## Where to go from here
+
+- Dive deeper into the |syntax| used to write your graph
+- Glimpse into en's future in the |roadmap|
+- Visit the |data endpoints|/data| for a raw view of the graph
+- See an index of all pages in the |tree|/tree|
+- Look under the hood in the |source code|https://codeberg.org/jutty/en repo
+"""
+
+[nodes.Connections]
+text = """
+A connection is a link from one node to another. As shown in |GetStarted|, the simplest way to create them is by adding an |anchor|Syntax#Anchors| in the node text itself. However, there are other ways to create connections between nodes.
+
+## Links
+
+Even if a node is not mentioned in the node text, you can still add connections to it.
+
+For simple connections without any associated properties, you can simply add links, which are lightweight connections without any metadata aside from the automatically determined source and destination:
 
 `
 [nodes.Quark]
@@ -123,6 +155,8 @@ text = "A subatomic particle that forms hadrons."
 links = [ "Particle", "Hadron" ] `
 
 This will create two outgoing connections from Quark: to Particle and to Hadron.
+
+## Rich connections
 
 For richer connections that have their own properties, you can use the full connection syntax:
 
@@ -134,30 +168,31 @@ kind = "Satellite"
 kind = "Galaxy"
 `
 
-This will create connections from the node with ID `Earth` to the nodes with ID `Moon` and `MilkyWay` and add the "Satellite" and "Galaxy" kinds to each connection, respectively. This can be used to render connections in special ways and is reflected in the |outputs|.
-
-## Where to go from here
-
-en is in its infancy. If you are curious, you can download it and try it by using the |Syntax| docs as a reference or build the |SourceBuild|latest version| yourself to see what's new. Your bug reports are much appreciated.
-
-If you like what you see and are curious about en's future, take a look at the |roadmap| for a peek into what's to come.
+This will create connections from the node with ID `Earth` to the nodes with ID `Moon` and `MilkyWay` and add the "Satellite" and "Galaxy" kinds to each connection, respectively. This will add a corresponding CSS class with the same name to the connection when it's rendered so you can style it in special ways and is also reflected in the |output formats|outputs.
 """
 
-[nodes.docs]
-redirect = "Documentation"
-hidden = true
+[nodes.Outputs]
+text = """
+en take as its input one or more graph files containing your node definitions. It then processes your graph, looks for connections and configuration values and produces one or more outputs depending on your settings:
+
+- A browseable, live-served website (such as this one)
+- A |TOML| representation of the graph that can be used as a basis to generate other, adapted graphs
+- A JSON representation of the graph that can be further analyzed and interpreted with third-party tools
+
+The output formats are not simply a translation of the input, but enrich them. Among other things, they transpile en's |markup syntax|Syntax into HTML, add metrics about how nodes are connected and flag which missing nodes are most sought after by dangling connections.
+"""
 
 [nodes.SourceBuild]
 text = """
-An overview on building from source is available in the |Documentation| page. This page contains a more detailed and considered approach for those interested.
+An overview on building from source is available in the |Get Started|GetStarted#Build page. This page contains a more detailed and considered approach for those interested.
 
-Source builds are tested on both Debian and Alpine, meaning en should compile and run on both glibc and musl systems.
+en is developed on NixOS and builds are tested on both Debian and Alpine, meaning en should compile and run on both glibc and musl systems.
 
 ## Dependencies
 
 A Rust toolchain is required to build en itself and can be installed through |rustup|https://rustup.rs/|.
 
-For compiling en dependencies, you will also need a C toolchain: a compiler and a libc (e.g. `gcc` + `glibc` or `clang` + `musl`), which may already be installed on your system.
+For compiling the en dependencies, you will also need a C toolchain: a compiler and a libc (e.g. `gcc` + `glibc` or `clang` + `musl`), which may already be installed on your system.
 
 For the two tested systems, all you need are the following packages:
 
@@ -171,7 +206,7 @@ You may also need `curl`, `git` and `ca-certificates` depending on how you will 
 
 ## Building from a Git clone
 
-Aside from the `cargo install` approach described in |Documentation|, you can alternatively fetch the code yourself using Git, which allows you to inspect and change it before compiling:
+Aside from the `cargo install` approach described in |GetStarted|GetStarted#Build, you can alternatively fetch the code yourself using Git, which allows you to inspect and change it before compiling:
 
 `
 git clone -b v{{ en_version }} --single-branch https://codeberg.org/jutty/en
@@ -197,7 +232,7 @@ A node is defined in your graph file starting with a table header of the form:
 
 Where `ID` is an identifier of your choice.
 
-While the |TOML| specification is quite flexible regarding what characters can make up this identifier, it's recommended that you keep it simple and use only letters and numbers. See |AnchorSyntax| for more details on why.
+While the |TOML| specification is quite flexible regarding what characters can make up this identifier, it's recommended that you keep it simple. Non-English characters are fine, but characters with special meaning in |en syntax|Syntax and URL parsing might lead to unexpected results. See |AnchorSyntax| for details.
 
 ## Fields
 
@@ -207,14 +242,14 @@ Nodes can have several optional fields that alter how en interprets and displays
 - `text`: The textual content that is shown when the node is accessed
 - `redirect`: Where to redirect any attempt to access the node
 - `links`: An array of identifiers for other nodes to which this node is connected
-- `hidden`: Whether this node should be listed in the index and tree pages. This won't prevent the node from being found or linked to directly through its ID
+- `listed`: Whether this node should be listed in the index and tree pages. This won't prevent the node from being found or linked to directly through its ID
 
 ## Example
 
 `
 [nodes.Citrus]
 title = "Citrus Trees"
-hidden = false
+listed = true
 text = "Citrus is a |genus| of trees known mainly for its fruits."
 redirect = "Citric"
 links = [ "Orange", "Lemon", "Lime", "Grapefruit", ]
@@ -226,7 +261,7 @@ to = "Citric acid"
 
 ### Default values
 
-The example above has all fields in it for completeness, but all fields have default values and are therefore optional. This means that explicitly writing `hidden = false` is the same as not setting it at all.
+The example above has all fields in it for completeness, but all fields have default values and are therefore optional. This means that explicitly writing `listed = true` is the same as not setting it at all.
 
 The default values for unset fields are:
 
@@ -234,7 +269,7 @@ The default values for unset fields are:
 - `text`: An empty string (i.e. `text = ""`)
 - `redirect`: An empty string
 - `links`: An empty array (i.e. `links = []`)
-- `hidden`: `false`
+- `listed`: `true`
 """
 
 [nodes.CLI]
@@ -242,32 +277,58 @@ title = "CLI Options"
 text = """
 You can set the hostname, port and graph file path using CLI options:
 
-For the hostname, use `-h` or `--hostname`:
-
 `
-en -h localhost
-en --hostname 10.120.0.5
+en --hostname 10.0.1.2 -p 443 --graph ./graphs/my-graph.toml
 `
 
-If unspecified, the default is `0.0.0.0`.
+## Options
 
-For the port, use `-p` or `--port`:
+### Graph
 
-`
-en -p 3003
-en --port 3000
-`
+The relative or absolute path to the graph definition |TOML| file.
 
-If unspecified, the default is to use a random available port assigned by the operating system.
+*Variants:* `--graph`, `-g`
 
-For the graph path, use `-g` or `--graph`:
+*Default:* `./static/graph.toml`
+
+*Examples:*
 
 `
 en -g graph.toml
 en --g ./static/my-graph.toml
 `
 
-If unspecified, the default is `./static/graph.toml`.
+### Hostname
+
+The IP address where the en server will be accessible.
+
+*Variants:* `--hostname`, `-h`
+
+*Default:* `0.0.0.0`
+
+*Examples:*
+
+`
+en -h localhost
+en --hostname 10.120.0.5
+`
+
+### Port
+
+The port where the en server will be accessible.
+
+*Variants:* `--port`, `-p`
+
+*Default:* A random available port assigned by the operating system
+
+*Examples:*
+
+`
+en -p 3003
+en --port 3000
+`
+
+## Using multiple options
 
 You can combine these options as you wish:
 
@@ -302,6 +363,12 @@ particles|ParticlePhysics
 
 This example will render as the word "particles" pointing to a node with ID `ParticlePhysics` because the destination is not an external URL.
 
+When both sides are the same, you can simply write:
+
+`
+|ParticlePhysics|
+`
+
 An external anchor looks like this:
 
 `
@@ -316,55 +383,25 @@ If the left side contains spaces, you need a leading `|` character:
 |en docs|https://en.jutty.dev/node/Documentation
 `
 
-To make a plain address clickable, wrap it in two `|` characters:
+To make a plain address an anchor, wrap it in two `|` characters:
 
 `
 |https://en.jutty.dev|
 `
 
-### Trailing characters in anchors
-
-For internal anchors, most punctuation is automatically separated from the anchor destination so you can simply write:
-
-`
-This gem|PreciousStone, though green, was not an emerald.
-`
-
-> This gem|PreciousStone, though green, was not an emerald.
-
-However, for external anchors, you want to add a third `|` to explicitly set the end because external URLs can have all sorts of arbitrary characters.
-
 ### Node anchors
 
 Because anchors between nodes are central to en, there is special syntax to make them as fluid as possible to create without cluttering the text too much.
 
-A node ID wrapped in two `|` characters will become an anchor to that node:
+en can resolve IDs case insensitively (with priority to case-sensitive matches),  will ignore trailing punctuation and a single `s` character for plurals, and will also collapse spaces when trying to resolve an ID, so you can also write:
 
 `
-|ParticlePhysics|
+check out the en |documentation|, or look at the |example|s.
 `
 
-en can resolve IDs case insensitively (with priority to case-sensitive matches) and will also collapse spaces when trying to resolve an ID, so you can also write:
+If there is a node with id Documentation and another with id Example, they'd be linked to by the linked anchors.
 
-`
-check out the |en documentation|
-`
-
-And if an anchor with the id `enDocumentation` or any other case-insensitive combination exists, it will land on it.
-
-In summary, all of the anchors below are valid and lead to the same page:
-
-`
-|syntax|Syntax
-Syntax|syntax
-Syntax|syn tax|
-
-|Syntax|
-|syntax|
-|syn tax|
-`
-
-While flexible, this can sometimes be ambiguous. See |AnchorSyntax| for some caveats regarding anchors.
+While flexible, this can sometimes be ambiguous. See |AnchorSyntax| for more details and caveats regarding anchors.
 
 ## Formatting
 
@@ -497,18 +534,18 @@ You can still use `<` characters to force line breaks in this case.
 To add a citation to your quote block, start a line with two `-` characters:
 
 `
-> with no more communion
-> to down as morning pick-me-ups
-> to sweeten afternoon naps
-> to soothe nightmares
--- Assotto Saint, The Language of Dust
+> i sat down next to her
+> with a large frosty _bandito_
+> she gazed at the ghost of me
+> asked _“amigo, como esta”_
+-- Assotto Saint, Lady & Me
 `
 
-> with no more communion
-> to down as morning pick-me-ups
-> to sweeten afternoon naps
-> to soothe nightmares
--- Assotto Saint, The Language of Dust
+> i sat down next to her
+> with a large frosty _bandito_
+> she gazed at the ghost of me
+> asked _“amigo, como esta”_
+-- Assotto Saint, Lady & Me
 
 If you have a more complex citation, you can use multiple lines starting with `--`. All such lines will be joined together in the citation. If you need to break lines, use the `<` character at the end of a line:
 
@@ -517,7 +554,7 @@ If you have a more complex citation, you can use multiple lines starting with `-
   o mito da índole pacífica do brasileiro e o da "democracia racial".
 -- Benedita da Silva,
 -- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
--- March 3rd, 1995, <
+-- March 3rd, 1995 <
 -- International Day for the Elimination of Racial Discrimination
 `
 
@@ -525,7 +562,7 @@ If you have a more complex citation, you can use multiple lines starting with `-
   o mito da índole pacífica do brasileiro e o da "democracia racial".
 -- Benedita da Silva,
 -- |Speech on the Federal Senate|https://www25.senado.leg.br/web/atividade/pronunciamentos/-/p/pronunciamento/165765|,
--- March 3rd, 1995, <
+-- March 3rd, 1995 <
 -- International Day for the Elimination of Racial Discrimination
 
 The first URL found in your citation will be used as the blockquote element's `cite` value.
@@ -556,26 +593,48 @@ Lines starting with a `+` character will create numbered lists instead:
 + ni
 + san
 
+In both kinds of lists, you can use an uniform amount of indentation to nest the items:
+
+`
+- purple
+    - red
+    - blue
+- orange
+    - red
+    - yellow
+        - red
+        - green
+`
+
+- purple
+    - red
+    - blue
+- orange
+    - red
+    - yellow
+        - red
+        - green
+
 ### Tables
 
 Tables are blocks delimited by a sole `%` on its own line:
 
 `
 %
-     Country  !  Capital
-    Colombia  |   Bogotá
-    Belgium   |  Brussels
-    Palestine | Jerusalem
-    Zambia    |   Lusaka
+    Country    !  Capital
+    Colombia   |  Bogotá
+    Belgium    |  Brussels
+    Palestine  |  Jerusalem
+    Zambia     |  Lusaka
 %
 `
 
 %
-     Country  !  Capital
-    Colombia  |   Bogotá
+    Country   !  Capital
+    Colombia  |  Bogotá
     Belgium   |  Brussels
-    Palestine | Jerusalem
-    Zambia    |   Lusaka
+    Palestine |  Jerusalem
+    Zambia    |  Lusaka
 %
 
 Table cells are delimited by either a `!` for headers or `|` for common cells. These delimiters must be surrounded by at least one space to each side and are optional at the first and last position of each line.
@@ -665,11 +724,11 @@ Notice that |TOML| itself also handles escape codes, so to pass a backslash you 
 
 `
 [node.Double]
-text = "You need double slashes to escape an asterisk here: \\\\\\\\*"
+text = "You need double slashes here: \\\\\\\\*"
 
 [node.TripleDouble]
 text = \"""
-Just like here: \\\\\\\\*
+And here: \\\\\\\\*
 \"""
 
 [node.Single]
@@ -681,7 +740,7 @@ Here too: \\\\*
 '''
 `
 
-This has nothing to do with en's markup syntax per se, it's just a consequence of how backslashes are also special in TOML syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
+This has nothing to do with en's markup syntax _per se_, it's just a consequence of how backslashes are also special in TOML syntax. For more details, see the |TOML documentation on Strings|https://toml.io/en/v1.1.0#string|.
 
 ## Interactions with HTML
 
@@ -689,7 +748,7 @@ en will happily accept HTML code and pass it along to the browser, so you can us
 
 If you want to prevent a particular part of your text from being interpreted as HTML, you can escape it |as you normally would|https://developer.mozilla.org/en-US/docs/Glossary/Character_reference|.
 
-The fact you are using HTML does not exclude en syntax from being interpreted, although this may change in the future. Presently, you need to escape en markup syntax if you want it printed literally even inside HTML tags. This matters because en uses its syntax to create connections between your graph's nodes and makes several decisions based on these relations.
+The fact you are using HTML does not exclude en syntax from being interpreted, although this may change in the future. Presently, you need to escape en markup syntax if you want it printed literally even inside HTML tags. This matters because en |uses its syntax to create connections|AnchorSyntax| between your graph's nodes and makes several decisions based on these relations.
 """
 
 [nodes.AnchorSyntax]
@@ -699,36 +758,31 @@ en's anchor syntax can be very flexible, but some situations lead to ambiguity.
 
 In short, following these two rules should keep you out of trouble:
 
-- *Avoid special characters in your node IDs*: |TOML| allows you to use a wide range of characters in identifiers, but when writing your graph it's better keep your IDs simple
-- When needed, use full three-pipe `|text|destination|` syntax to make your anchors fully unambiguous
+- *Avoid characters with special meanings in your node IDs*: |TOML| allows you to use a wide range of characters in identifiers, but when writing your graph it's better keep your IDs free of some characters. Accents and ideograms are fine, but characters such as `#`, `&`, `:` and `/` are not because they are interpreted differently by en and URL parsers, which might lead to unexpected results
+- *Know you can be explicit to force proper evaluation*: When needed, use full three-pipe anchors, as in `|text|destination|`, to make your anchors fully unambiguous
 
-## Punctuation in destinations
+## Basic anchor
+See the |Anchors section in the Syntax page|Syntax#Anchors| for the basic anchor syntax. The following sections go into more detail on some edge cases.
 
-Consider this example:
+### Trailing characters in anchors
 
-`
-|gem|PreciousStone
-|PreciousStone|,
-`
-
-Both point to the node with ID `PreciousStone`, as they indeed _seem_ to. But if we didn't treat punctuation differently, we'd have:
+For internal anchors, most punctuation is automatically separated from the anchor destination so you can simply write:
 
 `
-|a|b
-|a|b
+This gem|PreciousStone, though green, was not an emerald.
 `
 
-For this reason, some symbols are treated specially at the trailing boundary of anchors.
+> This gem|PreciousStone, though green, was not an emerald.
 
-Punctuation won't be considered as a possible destination, so you can write the previous example and have it behave as expected.
+This is one of the reasons to avoid punctuation in your node IDs.
 
-This is one of the reasons special symbols in your node IDs can lead to trouble.
-
-These are the punctuation symbols that are treated specially:
+The punctuation symbols that are ignored at the trailing boundary of anchors are:
 
 `
 , . : ; ? ! ( ) ' " ` | _ * \\
 `
+
+For external anchors, you often must add a third `|` to explicitly set the end because external URLs can have all sorts of arbitrary characters. This is not necessary for spaces, but it is for other characters.
 
 ## Plural node anchors
 
@@ -741,10 +795,10 @@ We found three |boat|s at the marina.
 This conveniently lets you write plural words as anchors to their singular form without having to write:
 
 `
-We found three boats|boat at the marina.
+We found three boats|Boat at the marina.
 `
 
-Which is annoyting to write and also makes the text a lot noisier.
+Which is annoying to write and makes the text a lot less fluid.
 
 Unlike with punctuation, this doesn't mean you can't have a node with the ID `s`. You can, but you'll have to write your anchors to it always with a trailing pipe:
 
@@ -754,35 +808,36 @@ The |letter s|s| is important so we dedicated a whole page to it: |s|!
 
 ## Spaced node anchors
 
-Like punctuation, node IDs shouldn't have spaces. If you write a node anchor with spaces, it will be collapsed:
+If you write a node anchor with spaces, it will be collapsed:
 
 `
-This |Node Anchor| will work as if it were |Node Anchor|NodeAnchor|.
+This |Node Anchor| will work as if it were |NodeAnchor|.
 `
 
-As long as you don't have a page with the ID `NodeanchoR` and another with the ID `NodeAnchor`, this shouldn't be a problem.
+Accordingly, node IDs should not have spaces because, among other things, this feature makes it impossible to create an achor to them.
 
-Because node ID resolution redirects to a lowercase match as a fallback to an exact match, you can write:
+## Case-insensitive fallbacks
+
+Because node ID resolution redirects to a lowercase match if it can't find an exact match, you can write:
 
 `
 The next |precious stone| was stolen in 1973.
 `
 
-And the visible text will be preserved as "precious stone" but be able to point to an ID such as `PreciousStone`.
+And the visible text will still display as "precious stone" but point to an ID such as `PreciousStone`.
+
+This is not a problem if you want to refer to a specific ID that differs only in case because the case-sensitive match takes priority.
 
 ## URL detection
 
 en must differentiate node anchors from outgoing URLs:
 
 `
-|sample|Example|
-|sample|https://example.com|
-
-|Example|
-|https://example.com|
+|internal|Internal|
+|external|https://external.example.com|
 `
 
-It does this by looking at the destination and checking if it contains a `:`. That's one more reason to avoid this character in your node IDs.
+It does this by looking at the destination and checking if it contains a `/` or `:`. That's one more reason to avoid these characters in your node IDs.
 """
 
 [nodes.Graph]
@@ -798,9 +853,13 @@ en uses this concept to create a writing tool, allowing you to map out complex t
 text = """
 TOML is a configuration format that can be easily read and understood by humans and machines alike.
 
+It was chosen as en's main input format for its obvious semantics, because it's more readable, has friendlier strings compared to alternatives such as JSON and less convoluted indentation compared to YAML.
+
+One of the most valued attributes in en's design is readability. TOML provides powerful multi-line strings that can trim whitespace and literal multiline string that avoid the need for escaping. This couples well with en's own |markup syntax|Syntax.
+
 To learn more about TOML, you can visit its website at |https://toml.io|.
 
-To see the TOML declaration that translates into the rendered graph you are reading right now, visit the "TOML Graph" link on the top navigation bar.
+To see the TOML representation for the graph you are reading right now, visit the |data endpoints|/data|.
 """
 
 [nodes.Acknowledgments]
@@ -835,120 +894,172 @@ en is only possible thanks to a number of projects and people:
 
 ## Software
 
-- Neovim|https://neovim.io/
-- foot|https://codeberg.org/dnkl/foot
-- tmux|https://github.com/tmux/tmux/
-- |Debian|https://debian.org/ and its kernel|https://www.kernel.org/
+- |NixOS|https://nixos.org/|, |Debian|https://debian.org|, |Alpine|https://alpinelinux.org and their kernel|https://www.kernel.org/
 - LibreWolf|https://librewolf.net/ and its upstream |Mozilla Firefox|https://www.firefox.com/
 - InkScape|https://inkscape.org/
 """
 
+[nodes.RedirectTest]
+redirect = "Start"
+
 [nodes.Roadmap]
 text = """
-- [ ] Performance
-    - [ ] Caching
-    - [x] Move more logic from Serial to Graph submodules
-    - [x] Further centralize state
-    - [ ] Reduce O(n) calls in the formats module
-- [ ] Input syntax
-    - [ ] Improve nested formatting
-    - [ ] Invert where redirects are set
-    - [x] Formatting
-        - [x] Blockquotes
-        - [x] Tables
-        - [x] Nested formatting
-        - [x] Headers
-        - [x] Preformatted blocks
-        - [x] _Oblique_,
-        - [x] __Underline__
-        - [x] ~~Strikethrough~~
-        - [x] *Bold*
-        - [x] `Inline code`
-        - [x] Lists
-            - [x] Nested lists
-        - [x] Checkboxes
-            - [x] Move this roadmap to en
-    - [ ] Special sections
-        - [ ] Top-bound
-            - [ ] Top-bound is not included in the summary (tooltip)
-            - Sections
-                - [ ] Definition (implies metadata `has_definition`)
-                - [ ] See also (implies a kind of connection, e.g. `related`)
-                - [ ] Not to be confused with (implies a kind of connection)
-        - [ ] Contrast with (implies a kind of connection)
-        - [ ] Example (implies metadata `has_example`)
-        - [ ] Bottom-bound
-            - [ ] References/influences (implies metadata `has_references`)
-                - [ ] Aggregated from the full text content
-- [ ] Meta-awareness
-    - [x] Detached edges
-    - [ ] Most linked to nodes
-    - [ ] Most linked from nodes
-    - [ ] Most linked
-- [ ] Rendering
-    - [ ] Sorting of tree, index list and drop-down navigation
-        - [x] Alphabetic
-        - [ ] By most linked to
-        - [ ] By most linked
-    - [ ] Tree
-        - [ ] Hide tree leaves from the top level
-        - [ ] Branch deeper
-    - Customization
-        - [ ] Custom assets (favicon, CSS)
-            - [x] Drop all hardcoded assets endpoints
-        - [ ] Custom header include
-        - [x] Custom templates
-            - [ ] user-supplied loading order (e.g. through filenames)
-        - [ ] Themes
-- [x] Anchors and connections
-    - [x] Render detached anchors differently
-    - [x] Count connection to a redirect as a connection to the target
-    - [ ] Suffix-aware anchors
-        - [x] Plural anchors (`|node|s` -> `node`)
-        - [x] Ignore trailing punctuation
-        - [ ] Conjugation anchors (`|will|ed` -> `will`)
-        - [ ] Configurable suffixes
-    - [x] Spaced node anchor (`|red fox|` -> `redfox` -> `RedFox`)
-    - [x] Automatic connections from anchors
-    - [ ] `#` syntax for header ID anchors
-    - [ ] Connection kinds
-        - [ ] Mutual
-        - [ ] Category <-> Membership
-        - [ ] Opposite <-> Equivalent
-        - [ ] Contrast <-> Similar
-        - [ ] Cognate <-> Unrelated
-        - [ ] Specialization <-> Generalization
-        - [ ] Custom connection kinds
+
+## Upcoming
+
+## `v0.5.0-alpha`
+- [ ] Rich connections
+- [ ] Docs for custom assets and templates
+- [ ] Fix anchors containing `/` and `#` considered node IDs
+- [x] Fix `PreFormat` blocks rendering HTML tags
+
+<hr style="margin: 8em 0 2em;">
+
+## Backlog
+### Syntax
+- [ ] Improve nested formatting
+- [ ] Invert where redirects are set
+- [ ] Special sections
+    - Top-bound
+        - [ ] Top-bound is not included in the summary (tooltip)
+        - Sections
+            - [ ] Definition (implies metadata `has_definition`)
+            - [ ] See also (implies a kind of connection, e.g. `related`)
+            - [ ] Not to be confused with (implies a kind of connection)
+    - [ ] Contrast with (implies a kind of connection)
+    - [ ] Example (implies metadata `has_example`)
+    - Bottom-bound
+        - [ ] References/influences (implies metadata `has_references`)
+            - [ ] Aggregated from the full text content
+
+### Metrics
+- [ ] Most linked to nodes
+- [ ] Most linked from nodes
+- [ ] Most linked
+
+### Rendering
+- [ ] Sorting of tree, index list and drop-down navigation
+    - [x] Alphabetic
+    - [ ] By most linked to
+    - [ ] By most linked
+- Tree
+    - [ ] Hide tree leaves from the top level
+    - [ ] Branch deeper
+- Customization
+    - [ ] Custom assets (favicon, CSS)
+        - [x] Drop all hardcoded assets endpoints
+    - [ ] Custom header include
+    - [x] Custom templates
+        - [ ] user-supplied loading order (e.g. through filenames)
+    - [ ] Themes
+- [ ] Table of contents
+
+### Connections
+- [ ] `#` syntax for header ID anchors
+- Connection kinds
+    - [ ] Mutual
+    - [ ] Category <-> Membership
+    - [ ] Opposite <-> Equivalent
+    - [ ] Contrast <-> Similar
+    - [ ] Cognate <-> Unrelated
+    - [ ] Specialization <-> Generalization
+    - [ ] Custom connection kinds
     - [x] External anchors
-- [ ] I/O formats
-    - [ ] Output
-        - [ ] Add separate TOML endpoints for pre/postprocessed
-        - [ ] Render to filesystem
-        - [ ] Single-page rendering
-        - [x] Make error output more clean when `DEBUG` is unset
-    - [ ] Input
-        - [ ] Frontmatter format
-        - [ ] Multi-file graphs
-        - [ ] Multi-graph
-- [ ] Templating
-    - [ ] Simplify template code with includes, macros and custom functions
-    - [ ] Move compiled templates to a static ref
-        - See: |https://keats.github.io/tera/docs/#:~:text=only%20happen%20once|
-    - [ ] Reduce whitespace
-        - See: |https://keats.github.io/tera/docs/#whitespace-control|
-- [ ] Full-text search
-- [ ] Assess Option return types that should be Result
+- [ ] Suffix-aware anchors
+    - [x] Plural anchors (`|node|s` -> `node`)
+    - [x] Ignore trailing punctuation
+    - [ ] Conjugation anchors (`|will|ed` -> `will`)
+    - [ ] Configurable suffixes
+
+### I/O formats
+
+#### Input
+- [ ] Frontmatter format
+- [ ] Multi-file graphs
+- [ ] Multi-graph
+
+#### Output
+- [ ] Add separate TOML endpoints for pre/postprocessed
+- [ ] Render to filesystem
+- [ ] Single-page rendering
 - [ ] Consider printing parsing errors to console by default
 
-## Done
+### Templating
+- [ ] Simplify template code with includes, macros and custom functions
+- [ ] Move compiled templates to a static ref
+    - See: |https://keats.github.io/tera/docs/#:~:text=only%20happen%20once|
+- [ ] Reduce whitespace
+    - See: |https://keats.github.io/tera/docs/#whitespace-control|
 
-- [x] Redirects
+### Server
+- [ ] Full-text search
+
+### Documentation
+- [ ] Generate `meta.config` docs from JSON schema
+
+#### Validation
+- [ ] Finalize JSON schema
+- [ ] Add CI step with `taplo lint`
+
+### Code
+- [ ] Assess `Option` return types that should be `Result`
+
+### Performance
+- [ ] Caching
+- [ ] Reduce O(n) calls in the formats module
+
+### Done
+<details>
+<summary>Toggle to expand</summary>
+
+#### Syntax
+- Formatting
+    - [x] Blockquotes
+    - [x] Tables
+    - [x] Nested formatting
+    - [x] Headers
+    - [x] Preformatted blocks
+    - [x] _Oblique_,
+    - [x] __Underline__
+    - [x] ~~Strikethrough~~
+    - [x] *Bold*
+    - [x] `Inline code`
+    - [x] Lists
+        - [x] Nested lists
+    - [x] Checkboxes
+        - [x] Move this roadmap to en
+
+#### Connections
+- [x] Count connection to a redirect as a connection to the target
+- [x] Spaced node anchor (`|red fox|` -> `redfox` -> `RedFox`)
+- [x] Automatic connections from anchors
+
+#### I/O formats
+##### Input
+- [x] Array syntax for lightweight connections
+
+##### Output
+- [x] Make error output more clean when `DEBUG` is unset
+
+##### Metrics
+- [x] Detached edges
+
+#### Rendering
+- [x] Render detached anchors differently
 - [x] Strip/render some syntax in Tree text preview
 - [x] Drop-down navigation
-- [x] Array syntax for lightweight connections
+
+#### Server
+- [x] Redirects
 - [x] Automatic IDs
 - [x] Automatic titles
 - [x] Mismatch between TOML ID and provided ID
+
+#### Performance
+- [x] Move more logic from Serial to Graph submodules
+- [x] Further centralize state
+
+</details>
 """
 
 [meta.config]
@@ -957,6 +1068,8 @@ footer_credits = false
 error_poem = true
 node_selector = true
 navbar_search = true
+about = true
 footer_text = """
-acknowledgments|Acknowledgments • |source code|https://codeberg.org/jutty/en
+acknowledgments|Acknowledgments &bullet; |source code|https://codeberg.org/jutty/en
 """
+

@@ -18,8 +18,8 @@ pub struct Node {
     pub links: Vec<String>,
     #[serde(default)]
     pub redirect: String,
-    #[serde(default)]
-    pub hidden: bool,
+    #[serde(default = "mktrue")]
+    pub listed: bool,
 
     #[serde(default)]
     pub connections: HashMap<String, Edge>,
@@ -27,6 +27,9 @@ pub struct Node {
     #[serde(default)]
     pub stats: Stats,
 }
+
+// See: https://github.com/serde-rs/serde/issues/368
+const fn mktrue() -> bool { true }
 
 #[derive(Serialize, Deserialize, Clone, Default, Eq, PartialEq, Debug)]
 pub struct Stats {
@@ -46,7 +49,7 @@ impl Node {
             connections: HashMap::default(),
             links: vec![],
             redirect: String::default(),
-            hidden: false,
+            listed: true,
             summary: String::default(),
             stats: Stats::default(),
         }
@@ -78,8 +81,8 @@ impl std::fmt::Display for Node {
             meta_elements.push(format!("links:{links}"));
         }
 
-        if self.hidden {
-            meta_elements.push(String::from("hidden"));
+        if !self.listed {
+            meta_elements.push(String::from("unlisted"));
         }
 
         let meta = meta_elements.join(" ");
@@ -143,7 +146,7 @@ mod tests {
             )
         );
 
-        node.hidden = true;
+        node.listed = false;
 
         assert_eq!(
             format!("{node}"),
@@ -153,7 +156,7 @@ mod tests {
                     text:15l summary:{} \
                     redirect:{redirect} \
                     links:{} \
-                    hidden\
+                    unlisted\
                     ]",
                 summary.len(),
                 node.links.len(),

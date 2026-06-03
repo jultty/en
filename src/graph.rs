@@ -665,7 +665,7 @@ mod tests {
                     "title": "JSON",
                     "links": [],
                     "id": "JSON",
-                    "hidden": false,
+                    "listed": true,
                     "connections": {}
                 }
             },

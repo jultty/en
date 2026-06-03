@@ -93,7 +93,7 @@ mod tests {
 
     #[tokio::test]
     async fn docs_redirect() {
-        let response = wrap_node("docs").await;
+        let response = wrap_node("RedirectTest").await;
         assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
     }
 

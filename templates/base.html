@@ -52,8 +52,8 @@
                 <select class="node-selector" name="node">
                   <option value="">Nodes</option>
                   {% for _, node in graph.nodes %}
-                  {% if node.hidden or node.redirect %}{% continue %}{% endif %}
-                  {% if not node.hidden and not node.redirect %}
+                  {% if not node.listed or node.redirect %}{% continue %}{% endif %}
+                  {% if node.listed and not node.redirect %}
                   <option value="{{node.id}}">{{node.title}}</option>
                   {% endif %}
                   {% endfor %}

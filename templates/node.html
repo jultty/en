@@ -8,7 +8,7 @@
             <h1 class="node-title">{{ node.title }}</h1>
             <div class="labels">
                 {% if node.title != node.id %}<span class="label id-label">ID: {{ node.id }}</span>{% endif %}
-                {% if node.hidden %}<span class="label hidden-label">Hidden</span>{% endif %}
+                {% if not node.listed %}<span class="label unlisted-label">Unlisted</span>{% endif %}
                 {% if node.id == graph.root_node %}<span class="label root-label">Root</span>{% endif %}
             </div>
         </div>

@@ -6,7 +6,7 @@
     {% if graph.nodes or root_node %}
     <h1>Tree</h1>
     <ul>
-    {% if root_node and not root_node.hidden %}
+    {% if root_node and root_node.listed %}
     <li>
         <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
         <span class="label root-label">Root</span>
@@ -34,7 +34,7 @@
     {% endif %}
     {% if graph.nodes %}
     {% for id, node in graph.nodes %}
-    {% if node.hidden or (root_node and node.id == root_node.id ) %}{% continue %}{% endif %}
+    {% if not node.listed or (root_node and node.id == root_node.id ) %}{% continue %}{% endif %}
     <li>
         <a href="/node/{{node.id}}">{{node.title}}</a>
         {% if node.connections or graph.meta.config.tree_node_summary %}

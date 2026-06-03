@@ -37,7 +37,7 @@
         {% if loop.index > graph.meta.config.index_node_count %}
         {% break %}
         {% endif %}
-        {% if node.id != graph.root_node and not node.hidden and not node.redirect %}
+        {% if node.id != graph.root_node and node.listed and not node.redirect %}
         <li><a href="/node/{{node.id}}">{{node.title}}</a></li>
         {% endif %}
         {% endfor %}

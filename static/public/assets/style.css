@@ -46,28 +46,23 @@ pre {
     transition: 1000ms;
 }
 
-pre:hover {
-    box-shadow: 1px 1px 3px 2.5px #00777777;
-}
-
 code {
     padding: 3px 6px;
     margin-right: 3px;
     white-space: nowrap;
-    font-size: calc(var(--base-font-size) * 0.8);
-    box-shadow: 1px 1px 1px 1px #00000077;
     transition: 1000ms;
-}
-
-code:hover {
-    box-shadow: 1px 1px 1px 1px #00777799;
+    box-shadow: 1px 1px 0.5px 0.5px #00000077;
 }
 
 pre, code {
     background: light-dark(#e0e0e0, #333);
     font-family: mono, monospace;
-    border: solid 2px light-dark(#d0d0d0, #434343);
+    border: solid 1px light-dark(#d0d0d0, #434343);
     border-radius: 6px;
+}
+
+h1 , h2 , h3 , h4 , h5 , h6 {
+    code { font-size: calc(var(--base-font-size) * 0.6); }
 }
 
 a {
@@ -100,8 +95,7 @@ a.external {
 }
 
 a.external:hover {
-    color: light-dark(#0393b2, #74e5ff);
-    text-decoration-color: light-dark(#1ed4f1, #aeffff);
+    color: light-dark(#037cb2, #74e5ff);
     transition: 1500ms;
 }
 
@@ -150,7 +144,7 @@ span.id-label {
     border: solid 1px light-dark(#d0d0d0, #666);
 }
 
-span.hidden-label  {
+span.unlisted-label  {
     background: light-dark(#888, #000);
     color: light-dark(#eee, #969696);
     border: solid 1px light-dark(#d0d0d0, #555);

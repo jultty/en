@@ -1,0 +1,80 @@
+{
+  "$id": "https://git.jutty.dev/jutty/en/raw/branch/main/static/graph-schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Graph",
+  "description": "An en graph file",
+  "type": "object",
+  "$defs": {
+      "node": {
+
+      }
+  },
+  "properties": {
+    "root_node": {
+      "type": "string",
+      "title": "Root node ID",
+      "description": "The ID of node highlighted in the homepage as the graph root.",
+      "example": "MyNode",
+      "default": null
+    },
+    "nodes": {
+        "title": "Nodes",
+        "description": "The graph's nodes.",
+        "default": null,
+        "type": "object",
+        "additionalProperties": {
+            "type": "object",
+            "title": "Node",
+            "description": "A node object.",
+            "example": "[nodes.Earth]\ntext = \"Earth is a planet of the solar system.\"",
+            "default": null,
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "description": "The text content of this node."
+                },
+                "title": {
+                    "type": "string",
+                    "description": "The node display title, useful to make it distinct from the ID.",
+                    "default": "The node's ID."
+                },
+                "listed": {
+                    "type": "boolean",
+                    "description": "Whether this node is shown in listing pages.",
+                    "default": true
+                },
+                "redirect": {
+                    "type": "string",
+                    "description": "A node ID to where any requests for this node will be redirected.",
+                    "default": null
+                }
+            },
+            "additionalProperties": false
+        },
+        "propertyNames": {
+            "pattern": "^[^-][^!@#$%^&*;:/~| \\]\\[()\\\\]*$"
+        }
+    },
+    "meta": {
+        "type": "object",
+        "properties": {
+            "config": {
+                "type": "object",
+                "properties": {
+                    "content_language": { "type": "string" },
+                    "footer_credits": { "type": "boolean" },
+                    "error_poem": { "type": "boolean" },
+                    "node_selector": { "type": "boolean" },
+                    "navbar_search": { "type": "boolean" },
+                    "about": { "type": "boolean" },
+                    "footer_text": { "type": "string" },
+                    "acknowledgments": { "type": "string" }
+                },
+                "additionalProperties": false
+            }
+        },
+        "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -14,13 +14,6 @@ See the [Documentation](https://en.jutty.dev/node/Documentation) page for instru
 
 ## Roadmap
 
-On a high-level, here are some things that en intends to achieve at some point:
+For a high-level view of what's in the future for en, see the [What's ahead section](https://en.jutty.dev/node/Introduction/#What's) of the docs Introduction.
 
-1. Separate 'en' the server from 'en' the source-to-source translator. This would allow using en's markup syntax as a standalone compile-to-HTML language, effectively creating an "en cli" that should also have options to make it more practical to manipulate a graph, such as adding new nodes or querying your graph
-3. Multifile graphs, with _optional_ TOML frontmatter
-2. Make en more fitting to the 'note taking' use case
-3. Multigraph, with the server being capable to let the user choose which graph to render and with inter-graph connections
-4. Different rendering modes such as to a static website, to PDF or EPUB (with paper-friendly metadata)
-5. Stateful and stateless online graph editing with 'export to TOML'
-
-For a more detailed outline of what's planned for the future of en, along with what's already been completed, see the [roadmap](https://en.jutty.dev/node/Roadmap).
+For a more detailed outline of what's planned, along with what's already been completed, see the [roadmap](https://en.jutty.dev/node/Roadmap).

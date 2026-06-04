@@ -23,11 +23,13 @@ Because your en graph is defined in simple plain-text files, you can add new pag
 en is in its infancy. Right now, most of the work is focused on making the markup syntax more robust. Some interesting features planned include:
 
 - Multi-file graphs, including single-file node definitions with TOML frontmatter
-- Richer node connection metrics and sorting
-- Builtin and custom connection kinds with special rendering styles
-- More render formats: static website, single page and PDF/EPUB formats
+- Richer node connection metadata, with builtin connection kinds and special rendering styles
+- More node metrics, sorting options and full-text search
+- New render formats: static website, single page and PDF/EPUB formats with paper-friendly metadata
 - JSON schema for language server integration
-- Full-text search
+- Separating the server from the source-to-source translator, allowing en's markup syntax to be used as a standalone compile-to-HTML language
+- Adding CLI options to make it more practical to manipulate a graph, such as adding new nodes or querying your graphagarn
+- Hypergraphs, enabling cross-graph references and letting the user choose which graph to render
 
 If you like what you see and are curious about en's future, take a look at the |roadmap| for a more comprehensive view of what else is to come.
 
@@ -179,7 +181,7 @@ en take as its input one or more graph files containing your node definitions. I
 - A |TOML| representation of the graph that can be used as a basis to generate other, adapted graphs
 - A JSON representation of the graph that can be further analyzed and interpreted with third-party tools
 
-The output formats are not simply a translation of the input, but enrich them. Among other things, they transpile en's |markup syntax|Syntax into HTML, add metrics about how nodes are connected and flag which missing nodes are most sought after by dangling connections.
+The output formats are not simply a translation of the input, but enrich them. Among other things, they translate en's |markup syntax|Syntax into HTML, add metrics about how nodes are connected and flag which missing nodes are most sought after by dangling connections.
 """
 
 [nodes.SourceBuild]
@@ -907,26 +909,33 @@ text = """
 
 ## Upcoming
 
-## `v0.5.0-alpha`
+### v0.5.0-alpha
 - [ ] Docs for custom assets and templates
 - [ ] Custom kind for connections
 - [ ] Hide tree leaves from the top level
 - [x] Fix anchors containing `/` and `#` considered node IDs
 - [x] Fix `PreFormat` blocks rendering HTML tags
 
-## `v0.6.0-alpha`
+### v0.6.0-alpha
 - [ ] Custom header include
 
-## `v0.7.0-alpha`
+### v0.7.0-alpha
 - [ ] Frontmatter format
 - [ ] Multi-file graphs
 
-## `v0.8.0-alpha`
+### v0.8.0-alpha
 - [ ] Full-text search
 
-<hr style="margin: 8em 0 2em;">
+<div style="margin: 6em 0 2em;">
+
+_See |Changelog|Roadmap#Changelog| for previously released versions._
+
+<hr>
+</div>
 
 ## Backlog
+These changes are planned, but have not been assigned to an upcoming release yet.
+
 ### Syntax
 - [ ] Improve nested formatting
 - [ ] Invert where redirects are set
@@ -1064,6 +1073,15 @@ text = """
 - [x] Further centralize state
 
 </details>
+
+<hr style="margin: 6em 0 2em;">
+
+## Changelog
+
+### |v0.4.0-alpha|https://codeberg.org/jutty/en/releases/tag/v0.4.0-alpha|
+
+- Embed assets and welcome graph into the binary
+- Source custom templates and assets from `./templates` and `./static/public`
 """
 
 [meta.config]

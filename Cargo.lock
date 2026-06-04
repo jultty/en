@@ -238,7 +238,7 @@ dependencies = [
 
 [[package]]
 name = "en"
-version = "0.4.1-alpha"
+version = "0.4.0-alpha"
 dependencies = [
  "axum",
  "serde",

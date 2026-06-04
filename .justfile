@@ -51,7 +51,7 @@ alias wc := run-watch-containerized
 
 [private]
 assess-quick:
-    {{ just_cmd }} lint check test-cover-quick spell
+    {{ just_cmd }} lint check test-cover-quick spell schema-lint
 
 [private]
 assess-run-quick:
@@ -219,8 +219,8 @@ mutate-single *cargo_test_args:
 # Tag HEAD with version from Cargo.toml
 [script, group: 'assess']
 tag commit="HEAD": update
-    if [ "{{ last_tag }}" = "{{ manifest_version }}" ]; then
-        echo "Last tag {{ last_tag }} and manifest ({{ manifest_version }}) already match"
+    if [ "{{ last_local_tag }}" = "{{ manifest_version }}" ]; then
+        echo "Last tag {{ last_local_tag }} and manifest ({{ manifest_version }}) already match"
         exit
     elif [ "{{ manifest_version }}" != "{{ lockfile_version }}" ]; then
         echo "Manifest and lockfile versions don't match: update failed?"
@@ -231,15 +231,15 @@ tag commit="HEAD": update
     {{ just_cmd }} version-assess
 
 # Verify and push
-[group: 'develop']
-push: verify
+[group: 'develop', env("JUST", "1")]
+push: verify && (version-assess "true")
     git push
     git push --tags
 
 alias p := push
 
 # Push without verifying
-[group: 'develop']
+[group: 'develop', env("JUST", "1")]
 push-unsafe:
     git push --no-verify
     git push --tags --no-verify
@@ -355,16 +355,21 @@ alias v := verify
 
 # Check tag-manifest consistency
 [script, group: 'assess']
-version-assess: update
-    if
-        [ "{{ last_tag }}" != "{{ lockfile_version }}" ] \
-        || [ "{{ last_tag }}" != "{{ lockfile_version }}" ]
-    then
-        printf 'Last tag: %s\nManifest: %s\nLockfile: %s\n' \
-            "{{ last_tag }}" \
-            "{{ manifest_version }}" \
-            "{{ lockfile_version }}"
-        exit 1
+[arg("remote", long="remote", short="r", value="true")]
+version-assess remote="false": update
+    last_remote_tag=$(
+        git ls-remote --tags --sort=-creatordate origin |
+            head -n 1 | tr -d v | cut -d / -f 3
+    )
+    printf 'Local: %s\nRemote: %s\nManifest: %s\nLockfile: %s\n' \
+        "{{ last_local_tag }}" \
+        "$last_remote_tag" \
+        "{{ manifest_version }}" \
+        "{{ lockfile_version }}"
+    test "{{ last_local_tag }}" = "{{ lockfile_version }}"
+    test "{{ last_local_tag }}" = "{{ manifest_version }}"
+    if {{ if remote == "true" { "true" } else { "false" } }}; then
+        test "{{ last_local_tag }}" = "$last_remote_tag"
     fi
 
 alias va := version-assess
@@ -379,7 +384,7 @@ alias ta := todos-assess
 # Check for security advisories, unexpected licenses, allowed registries
 [group: 'assess']
 deny:
-    cargo deny check
+    cargo-deny check
 
 # Check for spelling mistakes
 [group: 'assess']
@@ -463,7 +468,7 @@ choose:
 
 alias ch := choose
 
-[script, private]
+[script, private, env("CARGO_HOME", "$HOME/.cargo")]
 ci recipe:
     su ci -c "just {{ recipe }}"
 
@@ -481,7 +486,7 @@ just_cmd_no_ts := 'just --explain --command-color green'
 watch_cmd := "watchexec -qc -r -e rs,toml,html,css --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'
 
-last_tag := `git tag --sort=-creatordate | head -1 | tr -d v`
+last_local_tag := `git tag --sort=-creatordate | head -n 1 | tr -d v`
 manifest_version := `grep "^version" Cargo.toml | cut -d \" -f 2`
 lockfile_version := ```
     grep -A 1 'name = "en"' Cargo.lock \

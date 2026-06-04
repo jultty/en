@@ -6,9 +6,9 @@ root_node = "Start"
 text = """
 ## What is en?
 
-en is a writing tool. It was designed with complex, conceptually heavy projects in mind where the relationships between terms matter and possibly have their own attributes. You can use it to write non-linear, connected textual works and have their references to which other mapped out as a |graph| of metadata-rich, interrelated information. This very website is running en.
+en is a writing tool. It was designed with complex, conceptually heavy projects, where the relationships between terms matter and possibly have their own attributes. You can use it to write non-linear, connected textual works and have their references to which other mapped out as a |graph| of metadata-rich, interrelated information. This very website is running en.
 
-It works by ingesting plain text files written in |TOML|, a file format that focuses on being human-readable but that can also be directly interpreted by computer programs. These files contain your node definitions and allow en to construct a human-readable website that makes your graphs' nodes browseable, searcheable and listed in relation to each other or as a shallow tree of nodes. It also serves this graph as raw data for integration with other tools that can further analyze and transform what you have written.
+It works by ingesting plain text files written in |TOML|, a file format that focuses on being human-readable but that can also be directly interpreted by computer programs. These files contain your node definitions and allow en to construct a human-readable website that makes your graphs' nodes browsable, searchable and listed in relation to each other or as a shallow tree of nodes. It also serves this graph as raw data for integration with other tools that can further analyze and transform what you have written.
 
 ## Motivation
 
@@ -175,7 +175,7 @@ This will create connections from the node with ID `Earth` to the nodes with ID 
 text = """
 en take as its input one or more graph files containing your node definitions. It then processes your graph, looks for connections and configuration values and produces one or more outputs depending on your settings:
 
-- A browseable, live-served website (such as this one)
+- A browsable, live-served website (such as this one)
 - A |TOML| representation of the graph that can be used as a basis to generate other, adapted graphs
 - A JSON representation of the graph that can be further analyzed and interpreted with third-party tools
 
@@ -685,7 +685,7 @@ Finally, you can precede any character with a `\\\\` to fully _escape_ that char
 
 ## Raw HTML
 
-If you need some more advanced feature that is not supported directly by en's markup snytax, you can always just write plain HTML and it will be passed along. For example, you could render a form:
+If you need some more advanced feature that is not supported directly by en's markup syntax, you can always just write plain HTML and it will be passed along. For example, you could render a form:
 
 `
 &lt;form style="text-align: center;"&gt;
@@ -814,7 +814,7 @@ If you write a node anchor with spaces, it will be collapsed:
 This |Node Anchor| will work as if it were |NodeAnchor|.
 `
 
-Accordingly, node IDs should not have spaces because, among other things, this feature makes it impossible to create an achor to them.
+Accordingly, node IDs should not have spaces because, among other things, this feature makes it impossible to create an anchor to them.
 
 ## Case-insensitive fallbacks
 
@@ -1072,4 +1072,3 @@ about = true
 footer_text = """
 acknowledgments|Acknowledgments &bullet; |source code|https://codeberg.org/jutty/en
 """
-

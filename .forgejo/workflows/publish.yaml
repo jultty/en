@@ -2,6 +2,14 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: 'Upload built assets to the git.jutty.dev package registry'
+        type: boolean
+        required: false
+        default: true
+
 jobs:
   publish:
     runs-on: docker
@@ -45,6 +53,7 @@ jobs:
         run: just shasum
 
       - name: Publish x64 glibc binary to git.jutty.dev registry
+        if: ${{ inputs.upload }}
         run: |
           version=$(./target/x86_64-unknown-linux-gnu/release/en --version)
           api_root=https://git.jutty.dev/api
@@ -55,6 +64,7 @@ jobs:
             --upload-file target/x86_64-unknown-linux-gnu/release/en $url
 
       - name: Publish x64 musl binary to git.jutty.dev registry
+        if: ${{ inputs.upload }}
         run: |
           version=$(./target/x86_64-unknown-linux-musl/release/en --version)
           api_root=https://git.jutty.dev/api

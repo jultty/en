@@ -908,9 +908,9 @@ text = """
 ## Upcoming
 
 ## `v0.5.0-alpha`
-- [ ] Rich connections
+- [ ] Custom kind for connections
 - [ ] Docs for custom assets and templates
-- [ ] Fix anchors containing `/` and `#` considered node IDs
+- [x] Fix anchors containing `/` and `#` considered node IDs
 - [x] Fix `PreFormat` blocks rendering HTML tags
 
 <hr style="margin: 8em 0 2em;">

@@ -1,8 +1,8 @@
 #:schema ./graph-schema.json
 
-root_node = "Start"
+root_node = "Introduction"
 
-[nodes.Start]
+[nodes.Introduction]
 text = """
 ## What is en?
 
@@ -29,11 +29,11 @@ en is in its infancy. Right now, most of the work is focused on making the marku
 - JSON schema for language server integration
 - Full-text search
 
-If you like what you see and are curious about en's future, take a look at the |roadmap| for a more comprehensive outlook of what else is to come.
+If you like what you see and are curious about en's future, take a look at the |roadmap| for a more comprehensive view of what else is to come.
 
 ## Get started
 
-See the |GetStarted| page to learn how to install and use en
+See the |Get Started|GetStarted| page to learn how to install and use en.
 """
 
 [nodes.GetStarted]
@@ -900,7 +900,7 @@ en is only possible thanks to a number of projects and people:
 """
 
 [nodes.RedirectTest]
-redirect = "Start"
+redirect = "Node"
 
 [nodes.Roadmap]
 text = """

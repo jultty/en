@@ -51,7 +51,7 @@ alias wc := run-watch-containerized
 
 [private]
 assess-quick:
-    {{ just_cmd }} lint check test-cover-quick
+    {{ just_cmd }} lint check test-cover-quick spell
 
 [private]
 assess-run-quick:
@@ -347,7 +347,7 @@ verify:
         exit 1
     fi
     {{ just_cmd }} \
-        todos-assess version-assess deny \
+        todos-assess version-assess spell schema-lint deny \
         format-assess lint-assess check \
         test "" cover-assess
 
@@ -381,6 +381,16 @@ alias ta := todos-assess
 deny:
     cargo deny check
 
+# Check for spelling mistakes
+[group: 'assess']
+spell:
+    typos
+
+# Lint the default and builtin graphs against the schema
+[group: 'assess']
+schema-lint:
+    test -z "$(grep -LF '#:schema ./graph-schema.json' static/*.toml)"
+    taplo lint static/*.toml
 
 # BUILD
 

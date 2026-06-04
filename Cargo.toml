@@ -268,3 +268,12 @@ zero_sized_map_values = "warn"
 negative_feature_names = "warn"
 redundant_feature_names = "warn"
 wildcard_dependencies = "warn"
+
+[package.metadata.typos.default]
+extend-ignore-re = [
+    "oficial do Brasil",
+    "Creative Commons ND",
+    "Creative Commons BY-ND",
+    "CC_BY_ND_",
+    "(?ms)^mod tests \\{.*^\\}",
+]

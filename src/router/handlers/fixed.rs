@@ -216,7 +216,7 @@ impl Asset {
 ///
 /// Defaults are found in the `fixed::DEFAULTS` map.
 ///
-/// Returns a `FallbackError` if neither is found or an I/O error ocurred.
+/// Returns a `FallbackError` if neither is found or an I/O error occurred.
 fn fallback(path: &str, graph: &Graph) -> Result<Asset, AssetError> {
     let target = format!("static/public/assets/{path}");
     let defaults: HashMap<&str, &str> = TEXTS.iter().copied().collect();
@@ -292,7 +292,7 @@ pub async fn file(
                 } else {
                     String::from(
                         "The requested file exists, but the server lacks \
-                    permission to access it or another I/O error ocurred.",
+                    permission to access it or another I/O error occurred.",
                     )
                 };
             if log::env_level() >= DEBUG {

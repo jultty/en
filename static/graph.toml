@@ -6,13 +6,13 @@ root_node = "Introduction"
 text = """
 ## What is en?
 
-en is a writing tool. It was designed with complex, conceptually heavy projects, where the relationships between terms matter and possibly have their own attributes. You can use it to write non-linear, connected textual works and have their references to which other mapped out as a |graph| of metadata-rich, interrelated information. This very website is running en.
+en is a writing tool. It was designed for complex, conceptually heavy projects, where the relationships between terms matter and possibly have their own attributes. You can use it to write non-linear, connected textual works and have their references to which other mapped out as a |graph| of metadata-rich, interrelated information. This very website is running en.
 
 It works by ingesting plain text files written in |TOML|, a file format that focuses on being human-readable but that can also be directly interpreted by computer programs. These files contain your node definitions and allow en to construct a human-readable website that makes your graphs' nodes browsable, searchable and listed in relation to each other or as a shallow tree of nodes. It also serves this graph as raw data for integration with other tools that can further analyze and transform what you have written.
 
 ## Motivation
 
-en was created out of the desire to write a web of encyclopedic-style long-form texts documenting a personal worldview. It aims to remove the constraints imposed by trying to mimic the linearity of a typical nonfiction book.
+en was created out of the desire to write a book that did not follow a linear progression. But it can be used for note-taking, studying, documentation, encyclopedic content and any other format that benefits from a focus on the connections between pages. It aims to remove the constraints imposed by trying to mimic the linearity of typical nonfiction writing.
 
 It's described as a "writing instrument" because it's not so much about the presentation or even the web format. While that's the medium for this particular implementation, you can notice en serves its raw data in both TOML and JSON. It's first and foremost about mapping out and structuring written thoughts.
 
@@ -908,10 +908,21 @@ text = """
 ## Upcoming
 
 ## `v0.5.0-alpha`
-- [ ] Custom kind for connections
 - [ ] Docs for custom assets and templates
+- [ ] Custom kind for connections
+- [ ] Hide tree leaves from the top level
 - [x] Fix anchors containing `/` and `#` considered node IDs
 - [x] Fix `PreFormat` blocks rendering HTML tags
+
+## `v0.6.0-alpha`
+- [ ] Custom header include
+
+## `v0.7.0-alpha`
+- [ ] Frontmatter format
+- [ ] Multi-file graphs
+
+## `v0.8.0-alpha`
+- [ ] Full-text search
 
 <hr style="margin: 8em 0 2em;">
 
@@ -943,12 +954,10 @@ text = """
     - [ ] By most linked to
     - [ ] By most linked
 - Tree
-    - [ ] Hide tree leaves from the top level
     - [ ] Branch deeper
 - Customization
     - [ ] Custom assets (favicon, CSS)
         - [x] Drop all hardcoded assets endpoints
-    - [ ] Custom header include
     - [x] Custom templates
         - [ ] user-supplied loading order (e.g. through filenames)
     - [ ] Themes
@@ -974,8 +983,6 @@ text = """
 ### I/O formats
 
 #### Input
-- [ ] Frontmatter format
-- [ ] Multi-file graphs
 - [ ] Multi-graph
 
 #### Output
@@ -990,9 +997,6 @@ text = """
     - See: |https://keats.github.io/tera/docs/#:~:text=only%20happen%20once|
 - [ ] Reduce whitespace
     - See: |https://keats.github.io/tera/docs/#whitespace-control|
-
-### Server
-- [ ] Full-text search
 
 ### Documentation
 - [ ] Generate `meta.config` docs from JSON schema

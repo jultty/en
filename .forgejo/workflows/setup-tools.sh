@@ -9,12 +9,21 @@ CARGO_LLVM_COV_SHA256SUM="57f491aedf7cdb261538ceb49cbb1ee9d27df7ca205a5e1a009caa
 CARGO_AUDIT_VERSION="0.22.1"
 CARGO_AUDIT_TAG="cargo-audit%2Fv$CARGO_AUDIT_VERSION"
 CARGO_AUDIT_SHA256SUM="1890badd5f15831a9af4b074399fcd21e6f7c0fe42c84e9254cdffc9f813765c"
+TAPLO_VERSION="0.10.0"
+TAPLO_SHA256SUM="8fe196b894ccf9072f98d4e1013a180306e17d244830b03986ee5e8eabeb6156"
+TYPOS_VERSION="1.47.2"
+TYPOS_SHA256SUM="7aef58932fc123b4cf4b40d86468e89a3297d80169051d7cfd13a235e05fc426"
 
 TRIPLE="x86_64-unknown-linux-gnu"
 TRIPLE_MUSL="x86_64-unknown-linux-musl"
 
 fetch() {
-    repo="$1"; tag="$2"; filename="$3"; digest="$4"; binary="$5"
+    repo="$1"
+    tag="$2"
+    filename="$3"
+    digest="$4"
+    binary="$5"
+    renamed_binary="${6:-$binary}"
 
     [ -d /tmp/tools ] || mkdir -p /tmp/tools
 
@@ -24,9 +33,19 @@ fetch() {
 
     printf '%s  %s\n' "$digest" "/tmp/$filename" > /tmp/digest
     sha256sum --check /tmp/digest
-    tar xf "/tmp/$filename" -C /tmp/tools
-    find /tmp/tools -type f -executable -name "$binary" \
-        -exec mv -v '{}' /usr/local/bin ';'
+
+    if printf '%s' "$filename" | grep -qE '\.tar\.|\.tgz$'; then
+        tar xf "/tmp/$filename" -C /tmp/tools
+    elif printf '%s' "$filename" | grep -q '\.gz$'; then
+        gunzip -c "/tmp/$filename" > "/tmp/tools/$binary"
+    else
+        echo "Fatal: can't determine how to unpack $filename"
+        exit 1
+    fi
+
+    find /tmp/tools -type f -name "$binary" \
+        -exec mv -v '{}' "/usr/local/bin/$renamed_binary" ';'
+    chmod +x "/usr/local/bin/$renamed_binary"
 }
 
 fetch casey/just "$JUST_VERSION" \
@@ -40,3 +59,11 @@ fetch taiki-e/cargo-llvm-cov "v$CARGO_LLVM_COV_VERSION" \
 fetch rustsec/rustsec "$CARGO_AUDIT_TAG" \
     "cargo-audit-$TRIPLE-v$CARGO_AUDIT_VERSION.tgz" \
     "$CARGO_AUDIT_SHA256SUM" cargo-audit
+
+fetch tamasfe/taplo "$TAPLO_VERSION" \
+    "taplo-linux-x86_64.gz" \
+    "$TAPLO_SHA256SUM" taplo-linux-x86_64 taplo
+
+fetch crate-ci/typos "v$TYPOS_VERSION" \
+    "typos-v$TYPOS_VERSION-$TRIPLE_MUSL.tar.gz" \
+    "$TYPOS_SHA256SUM" typos

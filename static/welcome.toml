@@ -1,3 +1,5 @@
+#:schema ./graph-schema.json
+
 [nodes.GettingStarted]
 title = "Getting Started"
 text = """

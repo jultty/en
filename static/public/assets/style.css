@@ -34,6 +34,7 @@ p:not(.quote-citation), section li {
 
 section p {
     line-height: 2;
+    margin: 4px 0 16px;
 }
 
 pre {
@@ -178,7 +179,7 @@ main h2 {
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 1;
-    margin: 10px 0;
+    margin: 10px 0 5px;
     overflow-wrap: break-word;
 }
 

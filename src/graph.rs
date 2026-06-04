@@ -396,7 +396,7 @@ impl Graph {
                     );
                 } else {
                     if let Some(destination) = anchor.destination()
-                        && !anchor.external()
+                        && !anchor.absolute()
                     {
                         let trimmed_destination = destination
                             .trim_start_matches("/node/")

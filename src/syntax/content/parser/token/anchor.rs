@@ -11,6 +11,7 @@ pub struct Anchor {
     node: Option<Node>,
     leading: bool,
     balanced: bool,
+    absolute: bool,
     external: bool,
 }
 
@@ -34,10 +35,17 @@ impl Anchor {
         self.balanced = balanced;
     }
 
+    pub const fn absolute(&self) -> bool { self.absolute }
+
+    pub const fn set_absolute(&mut self, absolute: bool) {
+        self.absolute = absolute;
+    }
+
     pub const fn external(&self) -> bool { self.external }
 
     pub const fn set_external(&mut self, external: bool) {
         self.external = external;
+        self.absolute = true;
     }
 
     pub const fn set_leading(&mut self, leading: bool) {
@@ -58,20 +66,27 @@ impl Anchor {
 
     fn route(&mut self) {
         self.destination = if let Some(destination) = self.destination.clone() {
-            if destination.contains(':') || destination.contains('/') {
+            if destination.contains(':') || destination.starts_with('/') {
                 Some(destination)
             } else if destination.is_empty() && self.text.is_empty() {
                 None
             } else if destination.is_empty() {
-                self.node_id = Some(self.text.clone());
+                self.node_id = Some(Self::strip_fragment(&self.text));
                 Some(format!("/node/{}", self.text))
             } else {
-                self.node_id = self.destination.clone();
+                self.node_id = self
+                    .destination
+                    .clone()
+                    .map(|d| Anchor::strip_fragment(&d));
                 Some(format!("/node/{destination}"))
             }
         } else {
             None
         }
+    }
+
+    fn strip_fragment(target: &str) -> String {
+        target.split('#').next().unwrap_or(target).to_string()
     }
 }
 
@@ -100,19 +115,31 @@ impl Parseable for Anchor {
             String::default()
         };
 
-        let classes = if self.node.is_some() {
-            String::from(r#"class="attached""#)
-        } else if !self.external {
-            String::from(r#"class="detached""#)
-        } else if self.external {
+        let classes = if self.external {
             String::from(r#"class="external""#)
+        } else if self.absolute {
+            String::from(r#"class="absolute""#)
+        } else if self.node.is_some() {
+            String::from(r#"class="attached""#)
         } else {
-            String::default()
+            String::from(r#"class="detached""#)
+        };
+
+        let text = if destination.contains('#')
+            && !self.absolute
+            && destination == &format!("/node/{}", self.text)
+        {
+            self.text
+                .split('#')
+                .next()
+                .unwrap_or(&self.text)
+                .to_string()
+        } else {
+            self.text.clone()
         };
 
         format!(
-            r#"<a {classes} title="{summary}" href="{}">{}</a>"#,
-            destination, self.text,
+            r#"<a {classes} title="{summary}" href="{destination}">{text}</a>"#
         )
     }
 

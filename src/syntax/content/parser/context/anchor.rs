@@ -34,6 +34,9 @@ pub fn parse(
             log!(VERBOSE, "End: Next lexeme is a pipe");
             buffer.text.push_str(&lexeme.text());
             candidate.set_text(&buffer.text.clone());
+            if buffer.text.starts_with('/') {
+                candidate.set_absolute(true);
+            }
         } else {
             log!(
                 VERBOSE,
@@ -84,6 +87,13 @@ pub fn parse(
                 "State: Found a pipe, but no boundary: destination follows"
             );
             candidate.set_balanced(true);
+            if lexeme.match_next_first_char('/') {
+                log!(
+                    VERBOSE,
+                    "State: Destination starts with a dash, marking as absolute"
+                );
+                candidate.set_absolute(true);
+            }
             return true;
         } else if lexeme.match_char(':') {
             log!(VERBOSE, "State: Found a colon, marking anchor as external");
@@ -205,8 +215,10 @@ mod tests {
     fn needless_three_pipe_anchor() {
         assert_eq!(
             read("|Node|Destination|"),
-            concat!(r#"<p><a class="detached" title="" "#,
-            r#"href="/node/Destination">Node</a></p>"#)
+            concat!(
+                r#"<p><a class="detached" title="" "#,
+                r#"href="/node/Destination">Node</a></p>"#
+            )
         );
     }
 
@@ -225,9 +237,11 @@ mod tests {
     fn anchor_to_node_s() {
         assert_eq!(
             read("The |letter s|s|'s node: |s|!"),
-            concat!(r#"<p>The <a class="detached" title="" "#,
+            concat!(
+                r#"<p>The <a class="detached" title="" "#,
                 r#"href="/node/s">letter s</a>'s node: "#,
-                r#"<a class="detached" title="" href="/node/s">s</a>!</p>"#)
+                r#"<a class="detached" title="" href="/node/s">s</a>!</p>"#
+            )
         );
     }
 
@@ -246,9 +260,11 @@ mod tests {
     fn leading_plural_anchor() {
         assert_eq!(
             read("Interfaces are |element|s of |system|s."),
-            concat!(r#"<p>Interfaces are <a class="detached" title="" "#,
+            concat!(
+                r#"<p>Interfaces are <a class="detached" title="" "#,
                 r#"href="/node/element">elements</a> of <a class="detached" "#,
-                r#"title="" href="/node/system">systems</a>.</p>"#)
+                r#"title="" href="/node/system">systems</a>.</p>"#
+            )
         );
     }
 
@@ -268,9 +284,11 @@ mod tests {
     fn explicit_end_of_destination() {
         assert_eq!(
             read("interactions are |basic elements|BasicElements| of systems"),
-            concat!(r#"<p>interactions are <a class="detached" title="" "#,
+            concat!(
+                r#"<p>interactions are <a class="detached" title="" "#,
                 r#"href="/node/BasicElements">basic elements</a> of "#,
-                r#"systems</p>"#)
+                r#"systems</p>"#
+            )
         );
     }
 
@@ -324,6 +342,21 @@ mod tests {
                 r#"<p><a class="detached" title="" "#,
                 r#"href="/node/element">elements</a></p>"#,
             )
+        );
+    }
+
+    #[test]
+    fn absolute_anchor() {
+        let parse_result =
+            parser::rich_read("see the |raw endpoints|/data|.", &Graph::load());
+        println!("Parsed tokens: {:#?}", parse_result.tokens);
+        assert_eq!(
+            parse_result.text.unwrap(),
+            concat!(
+                r#"<p>see the <a class="absolute" title="" "#,
+                r#"href="/data">"#,
+                r#"raw endpoints</a>.</p>"#,
+            ),
         );
     }
 

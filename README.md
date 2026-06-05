@@ -10,10 +10,10 @@ You can learn more and see what en looks like by visiting the [homepage](https:/
 
 ## Install and run
 
-See the [Documentation](https://en.jutty.dev/node/Documentation) page for instructions and how to install and start using en.
+See the [Get Started](https://en.jutty.dev/node/GetStarted) page for instructions and how to install and start using en.
 
 ## Roadmap
 
-For a high-level view of what's in the future for en, see the [What's ahead section](https://en.jutty.dev/node/Introduction/#What's) of the docs Introduction.
+For a high-level view of what's in the future for en, see the [What's ahead section](https://en.jutty.dev/node/Introduction#What's) of the docs Introduction.
 
 For a more detailed outline of what's planned, along with what's already been completed, see the [roadmap](https://en.jutty.dev/node/Roadmap).

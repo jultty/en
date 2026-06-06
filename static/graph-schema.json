@@ -6,7 +6,33 @@
   "type": "object",
   "$defs": {
       "node": {
-
+          "type": "object",
+          "title": "Node",
+          "description": "A node object.",
+          "example": "[nodes.Earth]\ntext = \"Earth is a planet of the solar system.\"",
+          "default": null,
+          "properties": {
+              "text": {
+                  "type": "string",
+                  "description": "The text content of this node."
+              },
+              "title": {
+                  "type": "string",
+                  "description": "The node display title, useful to make it distinct from the ID.",
+                  "default": "The node's ID."
+              },
+              "listed": {
+                  "type": "boolean",
+                  "description": "Whether this node is shown in listing pages.",
+                  "default": true
+              },
+              "redirect": {
+                  "type": "string",
+                  "description": "A node ID to where any requests for this node will be redirected.",
+                  "default": null
+              }
+          },
+          "additionalProperties": false
       }
   },
   "properties": {
@@ -23,33 +49,7 @@
         "default": null,
         "type": "object",
         "additionalProperties": {
-            "type": "object",
-            "title": "Node",
-            "description": "A node object.",
-            "example": "[nodes.Earth]\ntext = \"Earth is a planet of the solar system.\"",
-            "default": null,
-            "properties": {
-                "text": {
-                    "type": "string",
-                    "description": "The text content of this node."
-                },
-                "title": {
-                    "type": "string",
-                    "description": "The node display title, useful to make it distinct from the ID.",
-                    "default": "The node's ID."
-                },
-                "listed": {
-                    "type": "boolean",
-                    "description": "Whether this node is shown in listing pages.",
-                    "default": true
-                },
-                "redirect": {
-                    "type": "string",
-                    "description": "A node ID to where any requests for this node will be redirected.",
-                    "default": null
-                }
-            },
-            "additionalProperties": false
+            "$ref": "#/$defs/node"
         },
         "propertyNames": {
             "pattern": "^[^-][^!@#$%^&*;:/~| \\]\\[()\\\\]*$"

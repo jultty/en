@@ -842,6 +842,64 @@ en must differentiate node anchors from outgoing URLs:
 It does this by looking at the destination and checking if it contains a `/` or `:`. That's one more reason to avoid these characters in your node IDs.
 """
 
+[nodes.Customization]
+text = """
+You can customize several aspects of en by overriding its default templates, styles and other assets.
+
+## The `public` directory
+
+The `static/public` directory is searched by en in the current working directory and can also be |passed as a command line option|CLI. All files placed inside this directory will be served by the en server as static files. You can create directories and organize files as you see fit, and then reference them through custom templates and includes.
+
+If you place a file in a default path, it will override the default. Namely:
+
+- `static/public/assets/favicon.svg`: Website icon as seen on tabs and other UI elements
+- `static/public/assets/style.css`: Main CSS stylesheet
+- `static/public/assets/fonts/fonts.css`: Fonts CSS index mapping the default families `sans`, `serifed`, `mono`, `prose` and `title`. The `prose` family is used for paragraphs such as in the node text content, while the `sans` family is used for UI elements such as the navigation bar and footer.
+
+The en server supports a variety of file types including plain text; data formats such as CSV, TOML and JSON; various font and image formats; and document formats such as PDF and EPUB. If you want to serve a file with a mimetype that is not included among the |builtin ones|https://codeberg.org/jutty/en/src/branch/main/src/router/handlers/mime.rs|, you can use the `mimes` |configuration option|Configuration#mimes|. If you don't, the file will be served with mimetype `application/octet-stream`, which may or may not work depending on what you are actually serving and how it's being consumed.
+
+## Styles
+
+You can override the default CSS and fonts using custom CSS files.
+
+To completely override the default style, you can place your replacement at the default path as explained in the previous section.
+
+If you just want to add small customizations, this can be better accomplished by adding a CSS file as part of a custom headers include, as explained in the next section.
+
+## Templates
+
+en uses the Tera|https://keats.github.io/tera templating engine, which provides several features for creating your own templates.
+
+When starting up, en will look for a `templates` directory in the current working directory. For each template, it looks up the corresponding filename inside this directory. If it can't find one, it will fallback to a default template.
+
+For a list of templates along with their names, see the |templates directory|https://codeberg.org/jutty/en/src/branch/main/templates| in the source code repository.
+
+See the |Tera documentation|https://keats.github.io/tera/docs for a more extensive description of the available features for writing templates.
+
+### Includes
+
+Overriding an entire template can be very verbose, considering the default templates attempt to handle various edge cases.
+
+To make it easier to override the most common use cases, the following templates are consumed as "includes" in specific parts of the main templates if placed inside the `templates` directory with the suffix `.include.html`:
+
+- `header`: Included at the end of the default templates' base header
+- `post-body`: Included after the body in the default base template
+- `favicon`: Replaces the default favicon code
+- `styles`: Replaces the default CSS links
+- `footer`: Replaces the footer
+- `navigation`: Replaces the navigation bar
+- `index-header`: Replaces the block showing the title and subtitle of the website in the index page
+- `index-list`: Replaces the block showing the list of nodes in the index page
+
+For example, to override the block in the header of all pages that globally sets the CSS stylesheets, you can drop a file at `templates/styles.include.html` containing something like:
+
+`
+<link href="https://cdn.example.com/external.css" rel="stylesheet">
+<link href="/static/assets/my-styles.css" rel="stylesheet">
+`
+
+"""
+
 [nodes.Graph]
 text = """
 A graph is a data structure composed of connected (and disconnected) nodes.

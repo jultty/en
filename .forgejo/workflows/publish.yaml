@@ -135,7 +135,7 @@ jobs:
       - name: Publish x64 Windows MSVC binary to git.jutty.dev registry
         if: ${{ inputs.upload }}
         run: |
-          version=$(./target/x86_64-unknown-linux-musl/release/en --version)
+          version=$(grep '^version' Cargo.toml | cut -d '"' -f 2)
           api_root=https://git.jutty.dev/api
           url=$api_root/packages/jutty/generic/en/$version/en-x64-windows-msvc
 

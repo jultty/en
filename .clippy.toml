@@ -3,3 +3,4 @@ allow-expect-in-tests = true
 single-char-binding-names-threshold = 2
 upper-case-acronyms-aggressive = true
 allow-indexing-slicing-in-tests = true
+check-incompatible-msrv-in-tests = true

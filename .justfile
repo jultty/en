@@ -72,6 +72,17 @@ assess-run-watch-quick:
 
 alias rq := assess-run-watch-quick
 
+# Determine the Minimum Supported Rust Version
+[group: 'develop']
+msrv-find:
+    @{{ make_msrv("find", musl_target) }}
+    @{{ make_msrv("find", glibc_target) }}
+    @{{ make_msrv("find", msvc_target) }}
+
+make_msrv(command, target) := f"printf '{{ target }}: '; " + \
+    f"cargo msrv {{ command }} --target {{ target }} --output-format minimal " \
+    + f"-- {{ maybe_xwin(target) }} build --ignore-rust-version"
+
 [private]
 test-cover-quick:
     {{ cover_cmd }} --no-report -- --test 'serial_tests::' --test-threads 1
@@ -321,6 +332,8 @@ test-windows pattern="":
     -{{ xwin_test(pattern) }} --timings --doc
     -{{ xwin_test(pattern) }} --timings --lib -- --skip 'serial_tests::'
 
+xwin_test(pattern) := f"cargo-xwin test {{ pattern }} --target {{ msvc_target }}"
+
 # Run tests with unfiltered output
 [group: 'assess']
 test-output pattern="":
@@ -361,7 +374,7 @@ verify:
     fi
     {{ just_cmd }} \
         todos-assess version-assess spell schema-lint deny \
-        format-assess lint-assess check \
+        format-assess lint-assess msrv-assess check \
         test "" cover-assess
 
 alias v := verify
@@ -386,6 +399,15 @@ version-assess remote="false": update
     fi
 
 alias va := version-assess
+
+# Assess if the current Minimum Supported Rust Version is accurate
+[group: 'assess']
+msrv-assess:
+    {{ make_msrv("verify", musl_target) }}
+    {{ make_msrv("verify", glibc_target) }}
+    if rustup toolchain list | grep -q {{ msvc_target }}; then \
+        {{ make_msrv("verify", msvc_target) }}; \
+    fi
 
 # Find TODOs
 [group: 'assess']
@@ -448,6 +470,9 @@ release-build target=default_target:
         --timings --target {{ target }} --locked --release
     du -h target/{{ target }}/release/{{ with_suffix("en", target) }}
 
+maybe_xwin(target) := if target == msvc_target { "cargo-xwin" } else { "cargo" }
+with_suffix(file, target) := if target == msvc_target { f"{{ file }}.exe" } else { file }
+
 alias rb := release-build
 
 # glibc release build
@@ -473,10 +498,18 @@ alias rbw := release-build-msvc
 
 # Calculate SHA 256 hashes for release binaries
 [group: 'build']
+[script]
 shasum:
-    find target -type d -name 'release' \
-        -exec find '{}' -maxdepth 1 -type f -name en -executable ';' \
-        | xargs sha256sum
+    binaries=$(find target -type d -name 'release' \
+        -exec find '{}' -maxdepth 1 -type f \
+        -regex '.*/en\(\.exe\)?$' -executable ';' \
+    )
+    if [ -n "$binaries" ]; then
+        printf '%s\n' "$binaries" | xargs sha256sum
+    else
+        echo "Can't generate SHA-256 hashes: No release binaries found"
+        exit 1
+    fi
 
 ## META
 [default, private]
@@ -501,7 +534,7 @@ msvc_target := "x86_64-pc-windows-msvc"
 default_target := musl_target
 
 debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
-just_cmd := 'just --timestamp --explain --command-color green'
+just_cmd := 'just --timestamp --command-color green'
 just_cmd_no_ts := 'just --explain --command-color green'
 watch_cmd := "watchexec -qc -r -e rs,toml,html,css --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'
@@ -512,11 +545,6 @@ lockfile_version := ```
     grep -A 1 'name = "en"' Cargo.lock \
         | grep version | cut -d '"' -f 2
     ```
-
-## FUNCTIONS
-with_suffix(file, target) := if target == msvc_target { f"{{ file }}.exe" } else { file }
-maybe_xwin(target) := if target == msvc_target { "cargo-xwin" } else { "cargo" }
-xwin_test(pattern) := f"cargo-xwin test {{ pattern }} --target {{ msvc_target }}"
 
 ## OPTIONS
 set unstable

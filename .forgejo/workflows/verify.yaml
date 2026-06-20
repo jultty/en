@@ -4,9 +4,10 @@ on:
       - '*'
     paths:
       - src/**
-      - tests/**
-      - static/graph.toml
+      - static/graph*
+      - static/welcome.toml
       - .forgejo/**
+      - .justfile
       - Cargo.toml
       - Cargo.lock
 
@@ -25,22 +26,22 @@ jobs:
         with:
           fetch-tags: true
 
-      - name: Setup Rust toolchain
+      - name: Set up Rust toolchain
         run: |
           rustup component add llvm-tools
           rustup component add --toolchain nightly rustfmt clippy
           rustup target add x86_64-unknown-linux-gnu
           rustup target add x86_64-unknown-linux-musl
 
-      - name: Setup additional tooling
+      - name: Set up additional tooling
         run: .forgejo/workflows/setup-tools.sh
 
-      - name: Setup CI user
+      - name: Set up CI user
         run: |
           useradd -m ci && chown -R ci:ci .
           git config --global --add safe.directory "$PWD"
 
-      - name: Text matching checks
+      - name: Text matches
         run: just ci todos-assess version-assess spell
       - name: Schema lint
         run: just ci schema-lint
@@ -50,10 +51,12 @@ jobs:
         run: just ci format-assess
       - name: Lint
         run: just ci lint-assess
+      - name: MSRV
+        run: just ci msrv-assess
       - name: Cargo check
         run: just ci check
       - name: Test
         run: just ci test
-      - name: Assess test coverage
+      - name: Coverage
         run: just ci cover-assess
 

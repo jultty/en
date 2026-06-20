@@ -9,10 +9,21 @@ on:
         type: boolean
         required: false
         default: true
+      linux:
+        description: 'Build Linux binaries'
+        type: boolean
+        required: false
+        default: true
+      windows:
+        description: 'Build Windows binary'
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   publish:
     runs-on: docker
+    if: ${{ inputs.linux }}
     timeout-minutes: 20
     container:
       image: rust:slim
@@ -25,18 +36,17 @@ jobs:
         with:
           fetch-tags: true
 
-      - name: Setup Rust toolchain
+      - name: Set up Rust toolchain
         run: |
           rustup component add llvm-tools
           rustup component add --toolchain nightly rustfmt clippy
           rustup target add x86_64-unknown-linux-gnu
           rustup target add x86_64-unknown-linux-musl
-          rustup target add x86_64-pc-windows-msvc
 
-      - name: Setup additional tooling
+      - name: Set up additional tooling
         run: .forgejo/workflows/setup-tools.sh
 
-      - name: Setup CI user
+      - name: Set up CI user
         run: |
           useradd -m ci && chown -R ci:ci .
           git config --global --add safe.directory "$PWD"
@@ -49,9 +59,6 @@ jobs:
 
       - name: Build x64 Linux musl release binary
         run: just release-build-musl
-
-      - name: Build x64 Windows MSVC release binary
-        run: just release-build-msvc
 
       - name: Calculate SHA-256 hashes
         run: just shasum
@@ -77,6 +84,53 @@ jobs:
           curl -fsSL \
             --user jutty:${{ secrets.GJD_REGISTRY_TOKEN }} \
             --upload-file target/x86_64-unknown-linux-gnu/release/en $url
+
+  publish-windows:
+    runs-on: docker
+    if: ${{ inputs.windows }}
+    timeout-minutes: 20
+    container:
+      image: messense/cargo-xwin
+      env:
+        XWIN_CACHE_DIR: /tmp
+    steps:
+      - name: Install action dependencies
+        run: apt-get install --no-install-recommends --update -y nodejs curl git
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-tags: true
+
+      - name: Set up Rust toolchain
+        run: |
+          version=$(cat Cargo.toml | grep '^rust-version' | cut -d \" -f 2)
+          rustup set auto-self-update disable
+          rustup toolchain install "$version-x86_64-unknown-linux-gnu"
+          rustup default "$version-x86_64-unknown-linux-gnu"
+          rustup target add x86_64-pc-windows-msvc
+
+      - name: Set up additional tooling
+        run: .forgejo/workflows/setup-tools.sh
+
+      - name: Cache MSVC CRT and SDK
+        run: cargo-xwin cache xwin
+
+      - name: Set up CI user
+        run: |
+          useradd -m ci && chown -R ci:ci .
+          git config --global --add safe.directory "$PWD"
+
+      - name: Run Windows tests
+        run: just ci test-windows
+
+      - name: Build x64 Windows MSVC release binary
+        run: |
+          rm -v /usr/bin/clang
+          just release-build-msvc
+
+      - name: Calculate SHA-256 hashes
+        run: just shasum
 
       - name: Publish x64 Windows MSVC binary to git.jutty.dev registry
         if: ${{ inputs.upload }}

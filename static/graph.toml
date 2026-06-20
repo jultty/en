@@ -4,11 +4,18 @@ root_node = "Introduction"
 
 [nodes.Introduction]
 text = """
+
+<small>
+_Eager to jump right in? Head straight to |GetStarted|_.
+</small>
+
 ## What is en?
 
-en is a writing tool. It was designed for complex, conceptually heavy projects, where the relationships between terms matter and possibly have their own attributes. You can use it to write non-linear, connected textual works and have their references to which other mapped out as a |graph| of metadata-rich, interrelated information. This very website is running en.
+en is a writing tool. It was designed for complex, conceptually heavy projects, where the relationships between terms matter and possibly have their own attributes. This very website is running en. You can use it to write non-linear, connected textual works and have their references to which other mapped out as a |graph| of metadata-rich, interrelated information.
 
-It works by ingesting plain text files written in |TOML|, a file format that focuses on being human-readable but that can also be directly interpreted by computer programs. These files contain your node definitions and allow en to construct a human-readable website that makes your graphs' nodes browsable, searchable and listed in relation to each other or as a shallow tree of nodes. It also serves this graph as raw data for integration with other tools that can further analyze and transform what you have written.
+It works by ingesting plain text files written in |TOML|, a file format that focuses on being human-readable but that can also be directly interpreted by computer programs. en also features its own |markup language|Syntax that was designed to be readable and as unobstructive as possible to the flow of writing.
+
+These files contain your node definitions and allow en to construct a human-readable website that makes your graphs' nodes browsable, searchable and listed in relation to each other or as a shallow |tree of nodes|/tree|. It also serves this graph as |raw data|/data for integration with other tools that can further analyze and transform what you have written.
 
 ## Motivation
 
@@ -20,16 +27,16 @@ Because your en graph is defined in simple plain-text files, you can add new pag
 
 ## What's ahead
 
-en is in its infancy. Right now, most of the work is focused on making the markup syntax more robust. Some interesting features planned include:
+en is in its infancy. Right now, most of the work is focused on making the markup language more robust. Some interesting planned features include:
 
-- Multi-file graphs, including single-file node definitions with TOML frontmatter
+- Multi-file graphs, including single-node `.en` files with TOML frontmatter
 - Richer node connection metadata, with builtin connection kinds and special rendering styles
 - More node metrics, sorting options and full-text search
-- New render formats: static website, single page and PDF/EPUB formats with paper-friendly metadata
 - JSON schema for language server integration
 - Separating the server from the source-to-source translator, allowing en's markup syntax to be used as a standalone compile-to-HTML language
-- Adding CLI options to make it more practical to manipulate a graph, such as adding new nodes or querying your graphagarn
+- Adding CLI options to make it more practical to manipulate a graph, such as adding new nodes or querying your graph
 - Hypergraphs, enabling cross-graph references and letting the user choose which graph to render
+- Other rendering formats, such as static websites, single page HTML and PDF/EPUB with paper-friendly metadata
 
 If you like what you see and are curious about en's future, take a look at the |roadmap| for a more comprehensive view of what else is to come.
 
@@ -50,12 +57,15 @@ The easiest way to get started is by downloading a pre-built binary.
 x64 Linux binaries are available from the |git.jutty.dev package registry|https://git.jutty.dev/jutty/-/packages/generic/en|:
 
 %
-    Platform        ! Download
-    x64 Linux GNU   | |en-x64-linux-gnu|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-gnu|
-    x64 Linux musl  | |en-x64-linux-musl|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-musl |
+    Platform         ! Download
+    x64 Linux GNU    | |en-x64-linux-gnu|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-gnu|
+    x64 Linux musl   | |en-x64-linux-musl|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-linux-musl |
+    x64 Windows MSVC | |en-x64-windows-msvc|https://git.jutty.dev/api/packages/jutty/generic/en/{{ en_version }}/en-x64-windows-msvc |
 %
 
 If in doubt, it is likely your system uses the GNU libc. Regardless, the musl binary is statically compiled and should run on mostly any x64 Linux system.
+
+Windows builds are best-effort|https://en.wikipedia.org/wiki/Best-effort_delivery|, cross-compiled, mostly tested only through Wine and not tested on CI.
 
 Other platforms may be supported in the future depending on CI resources.
 
@@ -1072,8 +1082,10 @@ These changes are planned, but have not been assigned to an upcoming release yet
 - [ ] Finalize JSON schema
 - [ ] Add CI step with `taplo lint`
 
-### Code
+### Internals
+
 - [ ] Assess `Option` return types that should be `Result`
+- [ ] Replace CI tooling setup script with a nix shell
 
 ### Performance
 - [ ] Caching

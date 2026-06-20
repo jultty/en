@@ -301,12 +301,25 @@ alias c := check
 # Run tests
 [group: 'assess']
 test pattern="":
-    cargo test {{ pattern}} --timings -- --test-threads=1 'serial_tests::'
-    cargo test {{ pattern}} --timings --bin en
-    cargo test {{ pattern}} --timings --doc
-    cargo test {{ pattern}} --timings --lib -- --skip 'serial_tests::'
+    cargo test {{ pattern }} --timings -- --test-threads=1 'serial_tests::'
+    cargo test {{ pattern }} --timings --bin en
+    cargo test {{ pattern }} --timings --doc
+    cargo test {{ pattern }} --timings --lib -- --skip 'serial_tests::'
+    {{ if which("wine") == "" {
+        "echo Skipping Windows tests: wine not found"
+    } else {
+        just_cmd + " test-windows"
+    } }}
 
 alias t := test
+
+# Run Windows tests using wine
+[group: 'assess']
+test-windows pattern="":
+    -{{ xwin_test(pattern) }} --timings -- --test-threads=1 'serial_tests::'
+    -{{ xwin_test(pattern) }} --timings --bin en
+    -{{ xwin_test(pattern) }} --timings --doc
+    -{{ xwin_test(pattern) }} --timings --lib -- --skip 'serial_tests::'
 
 # Run tests with unfiltered output
 [group: 'assess']
@@ -431,8 +444,9 @@ alias bm := build-musl
 # Release build
 [group: 'build']
 release-build target=default_target:
-    cargo build --timings --target {{ target }} --locked --release
-    du -h target/{{ target }}/release/en
+    {{ maybe_xwin(target) }} build \
+        --timings --target {{ target }} --locked --release
+    du -h target/{{ target }}/release/{{ with_suffix("en", target) }}
 
 alias rb := release-build
 
@@ -450,6 +464,13 @@ release-build-musl:
 
 alias rbm := release-build-musl
 
+# MSVC release build
+[group: 'build']
+release-build-msvc:
+    {{ just_cmd }} release-build {{ msvc_target }}
+
+alias rbw := release-build-msvc
+
 # Calculate SHA 256 hashes for release binaries
 [group: 'build']
 shasum:
@@ -458,7 +479,6 @@ shasum:
         | xargs sha256sum
 
 ## META
-
 [default, private]
 default:
     @just --list --unsorted --justfile {{justfile()}}
@@ -473,11 +493,11 @@ ci recipe:
     su ci -c "just {{ recipe }}"
 
 ## VARIABLES
-
 export CARGO_TERM_COLOR := 'always'
 
 musl_target := "x86_64-unknown-linux-musl"
 glibc_target := "x86_64-unknown-linux-gnu"
+msvc_target := "x86_64-pc-windows-msvc"
 default_target := musl_target
 
 debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
@@ -493,7 +513,11 @@ lockfile_version := ```
         | grep version | cut -d '"' -f 2
     ```
 
-## OPTIONS
+## FUNCTIONS
+with_suffix(file, target) := if target == msvc_target { f"{{ file }}.exe" } else { file }
+maybe_xwin(target) := if target == msvc_target { "cargo-xwin" } else { "cargo" }
+xwin_test(pattern) := f"cargo-xwin test {{ pattern }} --target {{ msvc_target }}"
 
+## OPTIONS
 set unstable
 set lazy

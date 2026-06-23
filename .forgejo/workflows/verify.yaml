@@ -4,12 +4,10 @@ on:
       - '*'
     paths:
       - src/**
-      - static/graph*
-      - static/welcome.toml
+      - static/*
       - .forgejo/**
       - .justfile
-      - Cargo.toml
-      - Cargo.lock
+      - Cargo.*
 
 jobs:
   verify:
@@ -18,45 +16,36 @@ jobs:
     container:
       image: rust:slim
     steps:
-      - name: Install action dependencies
-        run: apt-get install --no-install-recommends --update -y nodejs curl git
+      - name: Set up action dependencies
+        run: |
+          apt-get install --no-install-recommends --update -y nodejs git nix
+          echo experimental-features = nix-command flakes >> /etc/nix/nix.conf
+          nix profile install nixpkgs#just # trixie is on nix 2.26
 
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-tags: true
 
-      - name: Set up Rust toolchain
-        run: |
-          rustup component add llvm-tools
-          rustup component add --toolchain nightly rustfmt clippy
-          rustup target add x86_64-unknown-linux-gnu
-          rustup target add x86_64-unknown-linux-musl
-
-      - name: Set up additional tooling
-        run: .forgejo/workflows/setup-tools.sh
+      - name: Cleanup checkout action dependencies
+        run: apt-get purge -y nodejs git
 
       - name: Set up CI user
+        run: useradd -m ci && chown -R ci /nix .
+
+      - name: Set up Rust toolchain
         run: |
-          useradd -m ci && chown -R ci:ci .
-          git config --global --add safe.directory "$PWD"
+          rust_version=$(grep '^rust-version' Cargo.toml | cut -d \" -f 2)
 
-      - name: Text matches
-        run: just ci todos-assess version-assess spell
-      - name: Schema lint
-        run: just ci schema-lint
-      - name: Deny
-        run: just ci deny
-      - name: Format
-        run: just ci format-assess
-      - name: Lint
-        run: just ci lint-assess
-      - name: MSRV
-        run: just ci msrv-assess
-      - name: Cargo check
-        run: just ci check
-      - name: Test
-        run: just ci test
-      - name: Coverage
-        run: just ci cover-assess
+          su ci -c "
+            rustup default '$rust_version'
+            rustup toolchain install nightly
+            rustup component add llvm-tools
+            rustup component add --toolchain nightly rustfmt clippy
+            rustup target add \
+              x86_64-unknown-linux-musl \
+              x86_64-unknown-linux-gnu
+          "
 
+      - name: Assess
+        run: /root/.nix-profile/bin/just ci-nix "$PATH" verify

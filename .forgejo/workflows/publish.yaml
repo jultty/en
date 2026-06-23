@@ -28,40 +28,48 @@ jobs:
     container:
       image: rust:slim
     steps:
-      - name: Install action dependencies
-        run: apt-get install --no-install-recommends --update -y nodejs curl git
+      - name: Set up action dependencies
+        run: |
+          apt-get install --no-install-recommends --update -y nodejs git nix
+          echo experimental-features = nix-command flakes >> /etc/nix/nix.conf
+          nix profile install nixpkgs#just # trixie is on nix 2.26
 
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-tags: true
 
-      - name: Set up Rust toolchain
-        run: |
-          rustup component add llvm-tools
-          rustup component add --toolchain nightly rustfmt clippy
-          rustup target add x86_64-unknown-linux-gnu
-          rustup target add x86_64-unknown-linux-musl
-
-      - name: Set up additional tooling
-        run: .forgejo/workflows/setup-tools.sh
+      - name: Cleanup checkout action dependencies
+        run: apt-get purge -y nodejs git
 
       - name: Set up CI user
-        run: |
-          useradd -m ci && chown -R ci:ci .
-          git config --global --add safe.directory "$PWD"
+        run: useradd -m ci && chown -R ci /nix .
 
-      - name: Run all assessments
-        run: just ci verify
+      - name: Set up Rust toolchain
+        run: |
+          rust_version=$(sed -nE 's/^rust-version = "(.*)"$/\1/p' Cargo.toml)
+
+          su ci -c "
+            rustup default '$rust_version'
+            rustup toolchain install nightly
+            rustup component add llvm-tools
+            rustup component add --toolchain nightly rustfmt clippy
+            rustup target add \
+              x86_64-unknown-linux-musl \
+              x86_64-unknown-linux-gnu
+          "
+
+      - name: Assess
+        run: /root/.nix-profile/bin/just ci-nix "$PATH" verify
 
       - name: Build x64 Linux glibc release binary
-        run: just release-build-gnu
+        run: /root/.nix-profile/bin/just ci-nix "$PATH" release-build-gnu
 
       - name: Build x64 Linux musl release binary
-        run: just release-build-musl
+        run: /root/.nix-profile/bin/just ci-nix "$PATH" release-build-musl
 
       - name: Calculate SHA-256 hashes
-        run: just shasum
+        run: /root/.nix-profile/bin/just ci-nix "$PATH" shasum
 
       - name: Publish x64 Linux musl binary to git.jutty.dev registry
         if: ${{ inputs.upload }}
@@ -95,42 +103,44 @@ jobs:
         XWIN_CACHE_DIR: /tmp
     steps:
       - name: Install action dependencies
-        run: apt-get install --no-install-recommends --update -y nodejs curl git
+        run: |
+          apt-get install --no-install-recommends --update -y nodejs git nix
+          echo experimental-features = nix-command flakes >> /etc/nix/nix.conf
+          nix profile install nixpkgs#just # trixie is on nix 2.26
 
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-tags: true
 
+      - name: Cleanup checkout action dependencies
+        run: apt-get purge -y nodejs git
+
+      - name: Set up CI user
+        run: useradd -m ci && chown -R ci /nix .
+
       - name: Set up Rust toolchain
         run: |
-          version=$(cat Cargo.toml | grep '^rust-version' | cut -d \" -f 2)
-          rustup set auto-self-update disable
-          rustup toolchain install "$version-x86_64-unknown-linux-gnu"
-          rustup default "$version-x86_64-unknown-linux-gnu"
-          rustup target add x86_64-pc-windows-msvc
+          rust_version=$(grep '^rust-version' Cargo.toml | cut -d \" -f 2)
 
-      - name: Set up additional tooling
-        run: .forgejo/workflows/setup-tools.sh
+          su ci -c "
+            rustup default '$rust_version'
+            rustup target add x86_64-pc-windows-msvc
+          "
 
       - name: Cache MSVC CRT and SDK
         run: cargo-xwin cache xwin
 
-      - name: Set up CI user
-        run: |
-          useradd -m ci && chown -R ci:ci .
-          git config --global --add safe.directory "$PWD"
-
       - name: Run Windows tests
-        run: just ci test-windows
+        run: /root/.nix-profile/bin/just ci-nix "$PATH" test-windows
 
       - name: Build x64 Windows MSVC release binary
         run: |
           rm -v /usr/bin/clang
-          just release-build-msvc
+          /root/.nix-profile/bin/just ci-nix "$PATH" release-build-msvc
 
       - name: Calculate SHA-256 hashes
-        run: just shasum
+        run: /root/.nix-profile/bin/just shasum
 
       - name: Publish x64 Windows MSVC binary to git.jutty.dev registry
         if: ${{ inputs.upload }}

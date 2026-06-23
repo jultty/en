@@ -34,25 +34,37 @@
         devShells = forAllSystems (system:
             let
                 pkgs = nixpkgsFor.${system};
-                base = with pkgs; [
-                    rustup
-                    just
-                    watchexec
-                    cargo-deny
-                    cargo-llvm-cov
-                    cargo-mutants
-                    cargo-msrv
-                    typos
-                    taplo
-                ];
-            in {
-                default = pkgs.mkShell { buildInputs = base; };
-                cross = pkgs.mkShell {
-                    buildInputs = with pkgs; base ++ [
+                sets = with pkgs; rec {
+                    base = [
+                        cargo-deny
+                        cargo-llvm-cov
+                        cargo-msrv
+                        git
+                        just
+                        rustup
+                        taplo
+                        typos
+                    ];
+                    cross = base ++ [
                         cargo-xwin
                         wine
                     ];
+                    dev = [
+                        cargo-mutants
+                        watchexec
+                    ];
+                    edit = dev ++ [
+                        neovim
+                        tmux
+                    ];
                 };
+            in with sets; {
+                default = pkgs.mkShell { buildInputs = base; };
+                cross = pkgs.mkShell { buildInputs = cross; };
+                dev = pkgs.mkShell { buildInputs = base ++ dev; };
+                cross-dev = pkgs.mkShell { buildInputs = cross ++ dev; };
+                edit = pkgs.mkShell { buildInputs = edit; };
+                cross-edit = pkgs.mkShell { buildInputs = cross ++ edit; };
             }
         );
 

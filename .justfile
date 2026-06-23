@@ -81,7 +81,7 @@ msrv-find:
 
 make_msrv(command, target) := f"printf '{{ target }}: '; " + \
     f"cargo msrv {{ command }} --target {{ target }} --output-format minimal " \
-    + f"-- {{ maybe_xwin(target) }} build --ignore-rust-version"
+    + f"-- {{ xwin_if(target) }} build --ignore-rust-version"
 
 [private]
 test-cover-quick:
@@ -310,17 +310,17 @@ check:
 alias c := check
 
 # Run tests
-[group: 'assess']
+[group: 'assess', script]
 test pattern="":
     cargo test {{ pattern }} --timings -- --test-threads=1 'serial_tests::'
     cargo test {{ pattern }} --timings --bin en
     cargo test {{ pattern }} --timings --doc
     cargo test {{ pattern }} --timings --lib -- --skip 'serial_tests::'
-    {{ if which("wine") == "" {
-        "echo Skipping Windows tests: wine not found"
-    } else {
-        just_cmd + " test-windows"
-    } }}
+    if command -v wine >/dev/null; then
+        {{ just_cmd }} test-windows
+    else
+        echo "Skipping Windows tests: wine not found"
+    fi
 
 alias t := test
 
@@ -383,17 +383,15 @@ alias v := verify
 [script, group: 'assess']
 [arg("remote", long="remote", short="r", value="true")]
 version-assess remote="false": update
-    last_remote_tag=$(
-        git ls-remote --tags --sort=-creatordate origin |
-            head -n 1 | tr -d v | cut -d / -f 3
-    )
-    printf 'Local: %s\nRemote: %s\nManifest: %s\nLockfile: %s\n' \
-        "{{ last_local_tag }}" \
-        "$last_remote_tag" \
-        "{{ manifest_version }}" \
-        "{{ lockfile_version }}"
+    echo "Local: {{ last_local_tag }}"
+    echo "Remote: {{ last_remote_tag }}"
+    echo "Manifest: {{ manifest_version }}"
+    echo "Lockfile: {{ lockfile_version }}"
+    echo "Flake: {{ flake_version }}"
+
     test "{{ last_local_tag }}" = "{{ lockfile_version }}"
     test "{{ last_local_tag }}" = "{{ manifest_version }}"
+    test "{{ last_local_tag }}" = "{{ flake_version }}"
     if {{ if remote == "true" { "true" } else { "false" } }}; then
         test "{{ last_local_tag }}" = "$last_remote_tag"
     fi
@@ -466,14 +464,21 @@ alias bm := build-musl
 # Release build
 [group: 'build']
 release-build target=default_target:
-    {{ maybe_xwin(target) }} build \
+    df -h; df -ih
+    {{ xwin_if(target) }} build \
         --timings --target {{ target }} --locked --release
     du -h target/{{ target }}/release/{{ with_suffix("en", target) }}
 
-maybe_xwin(target) := if target == msvc_target { "cargo-xwin" } else { "cargo" }
+xwin_if(target) := if target == msvc_target { "cargo-xwin" } else { "cargo" }
 with_suffix(file, target) := if target == msvc_target { f"{{ file }}.exe" } else { file }
 
 alias rb := release-build
+
+# Release build of all targets
+[group: 'build']
+release-build-all: release-build-musl release-build-gnu release-build-msvc
+
+alias rba := release-build-all
 
 # glibc release build
 [group: 'build']
@@ -521,9 +526,21 @@ choose:
 
 alias ch := choose
 
-[script, private, env("CARGO_HOME", "$HOME/.cargo")]
-ci recipe:
-    su ci -c "just {{ recipe }}"
+[script, private]
+ci recipes:
+    su ci -c "{{ just_cmd }} -f '{{ justfile() }}' {{ recipes }}"
+
+[script, private]
+ci-nix path recipes:
+    ENV_PATH="{{ path }}" su ci -c "
+        nix --experimental-features 'nix-command flakes' \
+            develop "path:{{ justfile_directory() }}" --command \
+                {{ just_cmd }} -f '{{ justfile() }}' {{ recipes }}
+    "
+
+[private]
+smoke:
+    echo OK
 
 ## VARIABLES
 export CARGO_TERM_COLOR := 'always'
@@ -534,18 +551,23 @@ msvc_target := "x86_64-pc-windows-msvc"
 default_target := musl_target
 
 debug_vars := 'DEBUG=${DEBUG:-} DEBUG_FILTER=${DEBUG_FILTER:-} RUST_BACKTRACE=${RUST_BACKTRACE:-} RUSTFLAGS=${RUSTFLAGS:-}'
-just_cmd := 'just --timestamp --command-color green'
-just_cmd_no_ts := 'just --explain --command-color green'
+just_cmd := just_cmd_no_ts + ' --timestamp'
+just_cmd_no_ts := just_executable() + ' --command-color green'
 watch_cmd := "watchexec -qc -r -e rs,toml,html,css --color always -- "
 cover_cmd := 'cargo llvm-cov --color always --ignore-filename-regex "main\.rs|log\.rs"'
 
 last_local_tag := `git tag --sort=-creatordate | head -n 1 | tr -d v`
+last_remote_tag := ```
+    git ls-remote --tags --sort=-creatordate origin |
+        head -n 1 | tr -d v | cut -d / -f 3
+```
 manifest_version := `grep "^version" Cargo.toml | cut -d \" -f 2`
 lockfile_version := ```
     grep -A 1 'name = "en"' Cargo.lock \
         | grep version | cut -d '"' -f 2
-    ```
+```
+flake_version := `grep '^ *version = "' flake.nix | cut -d \" -f 2`
 
 ## OPTIONS
-set unstable
+set unstable # TODO remove this once all used features are stabilized
 set lazy

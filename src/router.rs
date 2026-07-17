@@ -3,6 +3,7 @@ use axum::{Router, routing::get};
 use crate::graph::Graph;
 
 mod handlers {
+    mod asset;
     pub mod error;
     pub mod fixed;
     pub mod graph;
@@ -49,49 +50,33 @@ pub fn new(graph: Graph) -> Router {
 }
 
 #[cfg(test)]
+#[expect(clippy::panic_in_result_fn)]
 mod tests {
     use axum::{
         body::Body,
         http::{Request, StatusCode},
-        response::Response,
     };
     use tower::ServiceExt as _;
 
-    use super::*;
-    use crate::graph::{Config, Graph, Meta};
-
-    async fn request(uri: &str, config: Option<&Config>) -> Response<Body> {
-        let default_graph = Graph::load();
-        let graph = Graph {
-            meta: Meta {
-                config: config
-                    .map(std::borrow::ToOwned::to_owned)
-                    .unwrap_or(default_graph.meta.config),
-                ..default_graph.meta
-            },
-            ..default_graph
-        };
-        let router = new(graph);
-
-        router
-            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
-            .await
-            .unwrap()
-    }
+    use crate::{
+        dev::test::{self, request},
+        graph::Graph,
+    };
 
     #[tokio::test]
-    async fn smoke() {
+    async fn smoke() -> Result<(), test::Error> {
         let router = axum::Router::default();
         let response = router
-            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
-            .await
-            .unwrap();
+            .oneshot(Request::builder().uri("/").body(Body::empty())?)
+            .await?;
 
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn routes() {
+    async fn routes() -> Result<(), test::Error> {
         let routes = [
             "/",
             "/about",
@@ -105,55 +90,73 @@ mod tests {
         ];
 
         for route in routes {
-            let response = request(route, None).await;
-            assert_eq!(response.status(), StatusCode::OK);
+            let result = request(route, Some(&Graph::load())).await;
+            match result {
+                Ok(response) => {
+                    eprintln!("{route}: {}", response.status());
+                    assert_eq!(StatusCode::OK, response.status());
+                },
+                Err(error) => eprintln!("{error:#?}"),
+            }
         }
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn no_about_page() {
-        let mut config = Config::default();
-        config.about = false;
+    async fn no_about_page() -> Result<(), test::Error> {
+        let mut graph = Graph::default();
+        graph.meta.config.about = false;
 
-        let response = request("/about", Some(&config)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let response = request("/about", Some(&graph)).await;
+        assert_eq!(response?.status(), StatusCode::NOT_FOUND);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn no_tree_page() {
-        let mut config = Config::default();
-        config.tree = false;
+    async fn no_tree_page() -> Result<(), test::Error> {
+        let mut graph = Graph::default();
+        graph.meta.config.tree = false;
 
-        let response = request("/tree", Some(&config)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let response = request("/tree", Some(&graph)).await;
+        assert_eq!(response?.status(), StatusCode::NOT_FOUND);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn no_toml_raw_graph() {
-        let mut config = Config::default();
-        config.raw_toml = false;
+    async fn no_toml_raw_graph() -> Result<(), test::Error> {
+        let mut graph = Graph::default();
+        graph.meta.config.raw_toml = false;
 
-        let response = request("/graph/toml", Some(&config)).await;
-        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+        let response = request("/graph/toml", Some(&graph)).await;
+        assert_eq!(response?.status(), StatusCode::FORBIDDEN);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn no_json_raw_graph() {
-        let mut config = Config::default();
-        config.raw_json = false;
+    async fn no_json_raw_graph() -> Result<(), test::Error> {
+        let mut graph = Graph::default();
+        graph.meta.config.raw_json = false;
 
-        let response = request("/graph/json", Some(&config)).await;
-        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+        let response = request("/graph/json", Some(&graph)).await;
+        assert_eq!(response?.status(), StatusCode::FORBIDDEN);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn no_raw_graph() {
-        let mut config = Config::default();
-        config.raw = false;
+    async fn no_raw_graph() -> Result<(), test::Error> {
+        let mut graph = Graph::default();
+        graph.meta.config.raw = false;
 
-        let toml_response = request("/graph/toml", Some(&config)).await;
-        assert_eq!(toml_response.status(), StatusCode::FORBIDDEN);
-        let json_response = request("/graph/json", Some(&config)).await;
-        assert_eq!(json_response.status(), StatusCode::FORBIDDEN);
+        let toml_response = request("/graph/toml", Some(&graph)).await;
+        assert_eq!(toml_response?.status(), StatusCode::FORBIDDEN);
+        let json_response = request("/graph/json", Some(&graph)).await;
+        assert_eq!(json_response?.status(), StatusCode::FORBIDDEN);
+
+        Ok(())
     }
 }

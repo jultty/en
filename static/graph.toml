@@ -969,9 +969,6 @@ en is only possible thanks to a number of projects and people:
 - InkScape|https://inkscape.org/
 """
 
-[nodes.RedirectTest]
-redirect = "Node"
-
 [nodes.Roadmap]
 text = """
 
@@ -1153,6 +1150,11 @@ These changes are planned, but have not been assigned to an upcoming release yet
 - Embed assets and welcome graph into the binary
 - Source custom templates and assets from `./templates` and `./static/public`
 """
+
+[nodes.RedirectTest]
+listed = false
+redirect = "Node"
+text = "This node is used by the test suite and should not be changed."
 
 [meta.config]
 content_language = "en"

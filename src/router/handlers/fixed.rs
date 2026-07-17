@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::ErrorKind, string::FromUtf8Error};
+use std::{collections::HashMap, io::ErrorKind};
 
 use axum::{
     body::Body,
@@ -13,7 +13,11 @@ use crate::{
     prelude::*,
     router::{
         GlobalState,
-        handlers::{self, error, mime},
+        handlers::{
+            self,
+            asset::{Asset, AssetError, AssetErrorKind},
+            error, mime,
+        },
     },
 };
 
@@ -86,130 +90,6 @@ fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
     }
 }
 
-#[derive(Debug)]
-#[expect(clippy::upper_case_acronyms)]
-pub enum AssetErrorKind {
-    NotFound,
-    IO,
-    UTF8,
-    Unknown,
-}
-
-#[derive(Debug)]
-pub struct AssetError {
-    pub path: String,
-    pub kind: AssetErrorKind,
-    pub io_error: Option<std::io::Error>,
-    pub utf8_error: Option<FromUtf8Error>,
-}
-
-impl AssetError {
-    fn new(
-        path: &str,
-        kind: AssetErrorKind,
-        io_error: Option<std::io::Error>,
-        utf8_error: Option<FromUtf8Error>,
-    ) -> AssetError {
-        AssetError {
-            path: String::from(path),
-            kind,
-            io_error,
-            utf8_error,
-        }
-    }
-}
-
-impl From<FromUtf8Error> for AssetError {
-    fn from(error: FromUtf8Error) -> AssetError {
-        AssetError::new("", AssetErrorKind::UTF8, None, Some(error))
-    }
-}
-
-impl From<String> for AssetError {
-    fn from(string: String) -> AssetError {
-        AssetError::new(&string, AssetErrorKind::Unknown, None, None)
-    }
-}
-
-impl std::fmt::Display for AssetError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut message = match self.kind {
-            AssetErrorKind::IO => {
-                format!(
-                    "File {} was found, but it could not be loaded",
-                    self.path
-                )
-            },
-            AssetErrorKind::NotFound => {
-                String::from("The file was not found in the searched path")
-            },
-            AssetErrorKind::UTF8 => String::from(
-                "UTF8 decoding error: is the file properly encoded?",
-            ),
-            AssetErrorKind::Unknown => {
-                String::from("An unknown error happened.")
-            },
-        };
-
-        if let Some(error) = &self.io_error {
-            message = format!(
-                "{message}\n\
-                The following I/O error has happened: \n{error:?}"
-            );
-        }
-
-        if let Some(error) = &self.utf8_error {
-            message = format!(
-                "{message}\n\
-                The following encoding error has happened: \n{error:?}"
-            );
-        }
-
-        write!(f, "{message}")
-    }
-}
-
-#[derive(Debug)]
-struct Asset {
-    blob: Option<Vec<u8>>,
-    text: Option<String>,
-    mime: mime::Mime,
-}
-
-impl Asset {
-    fn new(blob: &[u8], mime: mime::Mime) -> Result<Asset, AssetError> {
-        match mime.kind() {
-            mime::Kind::Text => Ok(Asset {
-                text: Some(String::from_utf8(blob.to_vec())?),
-                blob: None,
-                mime,
-            }),
-            mime::Kind::Font | mime::Kind::Image | mime::Kind::Blob => {
-                Ok(Asset {
-                    text: None,
-                    blob: Some(blob.to_vec()),
-                    mime,
-                })
-            },
-        }
-    }
-
-    fn from_str(str: &str, mime: mime::Mime) -> Asset {
-        match mime.kind() {
-            mime::Kind::Text => Asset {
-                text: Some(String::from(str)),
-                blob: None,
-                mime,
-            },
-            mime::Kind::Font | mime::Kind::Image | mime::Kind::Blob => Asset {
-                text: None,
-                blob: Some(String::from(str).into_bytes()),
-                mime,
-            },
-        }
-    }
-}
-
 /// Given a relative path, returns the file contents or a default fallback.
 ///
 /// The `path` argument is relative to the `static/public` directory.
@@ -218,18 +98,14 @@ impl Asset {
 ///
 /// Returns a `FallbackError` if neither is found or an I/O error occurred.
 fn fallback(path: &str, graph: &Graph) -> Result<Asset, AssetError> {
-    let target = format!("static/public/assets/{path}");
+    let target = format!("static/public/{path}");
     let defaults: HashMap<&str, &str> = TEXTS.iter().copied().collect();
     let fonts: HashMap<&str, &'static Font> = FONTS.iter().copied().collect();
     let mime = mime::Mime::guess(path);
 
     match std::fs::read(&target) {
         // A matching file exists on disk and is accessible
-        Ok(content) => Ok(Asset {
-            blob: Some(content),
-            text: None,
-            mime,
-        }),
+        Ok(content) => Ok(Asset::new(&content, mime)?),
         Err(io_error) => {
             // A matching file does not exist on disk
             if io_error.kind() == ErrorKind::NotFound {
@@ -751,9 +627,11 @@ mod tests {
 mod serial_tests {
     use std::{fs, os::unix::fs::PermissionsExt as _, path::PathBuf};
 
+    use axum::http::StatusCode;
+
     use super::*;
     use crate::{
-        dev::test::{Directories, Error},
+        dev::test::{Directories, Error, request},
         router::handlers::mime::Mime,
     };
 
@@ -761,8 +639,7 @@ mod serial_tests {
     fn io_asset_error() -> Result<(), Error> {
         let dirs = Directories::setup("io_asset_error")?;
 
-        let assets = dirs.assets.clone();
-        let file = assets.join("unreadable.png");
+        let file = dirs.assets.join("unreadable.png");
 
         fs::write(&file, [1, 0, 1])?;
         let mut permissions = fs::metadata(&file)?.permissions();
@@ -772,7 +649,8 @@ mod serial_tests {
         let new_permissions = fs::metadata(&file)?.permissions();
         assert_eq!(new_permissions.mode() & 0o777, 0o200);
 
-        let error = fallback("unreadable.png", &Graph::default()).unwrap_err();
+        let error =
+            fallback("assets/unreadable.png", &Graph::default()).unwrap_err();
 
         assert!(matches!(&error.kind, AssetErrorKind::IO));
         assert!(
@@ -787,8 +665,7 @@ mod serial_tests {
     fn target_file_exists() -> Result<(), Error> {
         let dirs = Directories::setup("target_file_exists")?;
 
-        let assets = dirs.assets.clone();
-        let file = assets.join("asset.woff2");
+        let file = dirs.public.join("asset.woff2");
 
         fs::write(&file, [1, 0, 1])?;
         let asset = fallback("asset.woff2", &Graph::default()).unwrap();
@@ -803,10 +680,8 @@ mod serial_tests {
     fn default_font_found_if_serving_enabled() -> Result<(), Error> {
         let dirs = Directories::setup("font_found_if_serving_enabled")?;
 
-        let assets = dirs.assets.clone();
-        let relative_font_path =
-            PathBuf::from(FONTS[0].0.replace("assets/", ""));
-        let font_path = assets.join(&relative_font_path);
+        let relative_font_path = PathBuf::from(FONTS[0].0);
+        let font_path = dirs.assets.join(&relative_font_path);
         let font_dir = font_path.parent().expect("failed getting font dir");
 
         println!("{font_dir:?}");
@@ -832,20 +707,20 @@ mod serial_tests {
     fn custom_font_found_if_serving_enabled() -> Result<(), Error> {
         let dirs = Directories::setup("font_found_if_serving_enabled")?;
 
-        let assets = dirs.assets.clone();
-        let relative_font_path = "fonts/custom.ttf";
-        let font_path = assets.join(relative_font_path);
-        let font_dir = font_path.parent().unwrap();
+        let font_dir = dirs.assets.join("fonts");
+        let font_path = font_dir.join("custom.ttf");
 
+        eprintln!("Creating directory {font_dir:?}");
         fs::create_dir_all(font_dir)?;
+        eprintln!("Writing to {font_path:?}");
         fs::write(&font_path, [1, 0, 1])?;
         let graph = Graph::from_serial(
             "[meta.config]\nserve_fonts = true",
             &Format::TOML,
         )
         .expect("failed instantiating graph");
-        let asset =
-            fallback(relative_font_path, &graph).expect("fallback failed");
+        let asset = fallback("assets/fonts/custom.ttf", &graph)
+            .expect("fallback failed");
 
         assert!(asset.text.is_none());
         assert!(asset.blob.is_some());
@@ -858,10 +733,9 @@ mod serial_tests {
     fn font_not_found_if_serving_disabled() -> Result<(), Error> {
         let dirs = Directories::setup("target_file_exists")?;
 
-        let assets = dirs.assets.clone();
         let relative_font_path =
             PathBuf::from(FONTS[0].0.replace("assets/", ""));
-        let font_path = assets.join(&relative_font_path);
+        let font_path = dirs.assets.join(&relative_font_path);
         let font_dir = font_path.parent().unwrap();
 
         fs::create_dir_all(font_dir)?;
@@ -873,6 +747,33 @@ mod serial_tests {
         .unwrap();
         let error = fallback(font_path.to_str().unwrap(), &graph).unwrap_err();
         assert!(matches!(error.kind, AssetErrorKind::NotFound));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn custom_file_is_served() -> Result<(), Error> {
+        let dirs = Directories::setup("custom_file_is_served")?;
+
+        let file1 = dirs.public.join("file1.txt");
+        let subdir = dirs.public.join("subdir");
+        let file2 = subdir.join("file2.txt");
+
+        fs::create_dir_all(subdir)?;
+        fs::write(file1, "eff90_1")?;
+        fs::write(file2, "eff90_2")?;
+
+        let asset1 = fallback("file1.txt", &Graph::default()).unwrap();
+        let asset2 = fallback("subdir/file2.txt", &Graph::default()).unwrap();
+
+        assert!(matches!(asset1.mime, Mime::Txt));
+        assert!(matches!(asset2.mime, Mime::Txt));
+
+        let response1 = request("/static/file1.txt", None).await?;
+        let response2 = request("/static/subdir/file2.txt", None).await?;
+
+        assert_eq!(response1.status(), StatusCode::OK);
+        assert_eq!(response2.status(), StatusCode::OK);
 
         Ok(())
     }

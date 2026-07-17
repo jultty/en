@@ -12,6 +12,7 @@ pub struct Arguments {
     pub hostname: String,
     pub port: u16,
     pub graph_path: PathBuf,
+    pub public: PathBuf,
     pub flags: Flags,
 }
 
@@ -38,6 +39,7 @@ impl Default for Arguments {
             hostname: String::from("0.0.0.0"),
             port: 0,
             graph_path: PathBuf::from("./static/graph.toml"),
+            public: PathBuf::from("./static/public"),
             flags: Flags::default(),
         }
     }
@@ -68,17 +70,23 @@ fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
         if let Some(argument) = arg.first()
             && let Some(parameter) = arg.get(1)
         {
-            if *argument == "-h" || *argument == "--hostname" {
-                out_args.hostname = String::from(*parameter);
-            } else if *argument == "-p" || *argument == "--port" {
-                out_args.port = parameter.parse().unwrap_or(out_args.port);
-            } else if *argument == "-g" || *argument == "--graph" {
-                out_args.graph_path = PathBuf::from(parameter);
-            } else {
-                if FIRST_PARSE.load(Ordering::SeqCst) {
-                    log!(WARN, "Dropped unrecognized argument {argument}");
-                    FIRST_PARSE.store(false, Ordering::SeqCst);
-                }
+            match *argument {
+                "-h" | "--hostname" => {
+                    out_args.hostname = String::from(*parameter)
+                },
+                "-p" | "--port" => {
+                    out_args.port = parameter.parse().unwrap_or(out_args.port)
+                },
+                "-g" | "--graph" => {
+                    out_args.graph_path = PathBuf::from(parameter)
+                },
+                "--public" => out_args.public = PathBuf::from(parameter),
+                _ => {
+                    if FIRST_PARSE.load(Ordering::SeqCst) {
+                        log!(WARN, "Dropped unrecognized argument {argument}");
+                        FIRST_PARSE.store(false, Ordering::SeqCst);
+                    }
+                },
             }
         } else {
             panic!("Argument {arg:?} has no corresponding value")
@@ -93,12 +101,9 @@ mod tests {
 
     #[test]
     fn address() {
-        let args = Arguments {
-            hostname: String::from("localhost"),
-            port: 3007,
-            graph_path: PathBuf::default(),
-            flags: Flags::default(),
-        };
+        let mut args = Arguments::default();
+        args.hostname = String::from("localhost");
+        args.port = 3007;
 
         assert_eq!(args.make_address(), "localhost:3007");
     }
@@ -134,6 +139,20 @@ mod tests {
         assert_eq!(args.graph_path, payload);
     }
 
+    #[test]
+    fn public_dir() {
+        let defaults = Arguments::default();
+
+        let payload = PathBuf::from("/tmp/");
+        let args = parse(
+            &defaults,
+            &[
+                String::from("--public"),
+                payload.to_str().unwrap().to_string(),
+            ],
+        );
+        assert_eq!(args.public, payload);
+    }
     #[test]
     fn empty() {
         let defaults = Arguments::default();

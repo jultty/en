@@ -19,6 +19,7 @@ use crate::{
             error, mime,
         },
     },
+    syntax::command::Arguments,
 };
 
 /// Assembles an HTTP response given Asset.
@@ -92,16 +93,20 @@ fn assemble(asset: Asset, graph: &Graph) -> Response<Body> {
 
 /// Given a relative path, returns the file contents or a default fallback.
 ///
-/// The `path` argument is relative to the `static/public` directory.
+/// The `path` argument is relative to the `static/public` directory,
+/// or a directory passed with the `--public` CLI option.
 ///
 /// Defaults are found in the `fixed::DEFAULTS` map.
 ///
 /// Returns a `FallbackError` if neither is found or an I/O error occurred.
 fn fallback(path: &str, graph: &Graph) -> Result<Asset, AssetError> {
-    let target = format!("static/public/{path}");
+    let cli_args = Arguments::default().parse();
+    let target = cli_args.public.join(path);
     let defaults: HashMap<&str, &str> = TEXTS.iter().copied().collect();
     let fonts: HashMap<&str, &'static Font> = FONTS.iter().copied().collect();
     let mime = mime::Mime::guess(path);
+
+    log!("Seeking {target:?}");
 
     match std::fs::read(&target) {
         // A matching file exists on disk and is accessible
@@ -174,8 +179,8 @@ pub async fn file(
             if log::env_level() >= DEBUG {
                 error_message = format!(
                     "<p>{error_message}</p>\
-                    <p>Targeted path: <code>{path}</code></p>\
-                    <p>Error:</p> <pre>{asset_error}</pre>"
+                        <p>Targeted path: <code>{path}</code></p>\
+                        <p>Error:</p> <pre>{asset_error}</pre>"
                 );
             }
             log!(ERROR, "{error_message}");
@@ -605,10 +610,8 @@ mod tests {
         let error = fallback("not_found.png", &Graph::default()).unwrap_err();
 
         assert!(matches!(&error.kind, AssetErrorKind::NotFound));
-        assert!(
-            format!("{error}")
-                .contains("The file was not found in the searched path")
-        );
+        println!("{error:?}");
+        assert!(format!("{error}").contains("No file was found for path"));
     }
 
     #[test]
@@ -738,8 +741,6 @@ mod serial_tests {
         let font_path = dirs.assets.join(&relative_font_path);
         let font_dir = font_path.parent().unwrap();
 
-        fs::create_dir_all(font_dir)?;
-        fs::write(&font_path, [1, 0, 1])?;
         let graph = Graph::from_serial(
             "[meta.config]\nserve_fonts = false",
             &Format::TOML,

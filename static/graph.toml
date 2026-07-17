@@ -287,11 +287,13 @@ The default values for unset fields are:
 [nodes.CLI]
 title = "CLI Options"
 text = """
-You can set the hostname, port and graph file path using CLI options:
+You set several en options using CLI arguments. For example, to set the hostname, port and graph file path:
 
 `
 en --hostname 10.0.1.2 -p 443 --graph ./graphs/my-graph.toml
 `
+
+This page contains a full reference for all available arguments.
 
 ## Options
 
@@ -340,6 +342,35 @@ en -p 3003
 en --port 3000
 `
 
+### Public directory path
+
+Where to look for files to serve from the `/static` endpoint. See |Customization| for details.
+
+*Variants:* `--public`
+
+*Default:* `./static/public`
+
+*Examples:*
+
+`
+en --public files/static
+en --public /var/www/static
+`
+
+Note that any files contained in the directory passed as a parameter to `--public` will be exposed over the network to whatever clients can reach the en server.
+
+### Version
+
+Prints the en version for the binary being executed.
+
+*Variants:* `--version`, `-v`
+
+*Examples:*
+
+`
+en --version
+`
+
 ## Using multiple options
 
 You can combine these options as you wish:
@@ -351,6 +382,27 @@ en --g ./graph.toml -p 1312
 `
 
 If an option is specified more than once, the last use will override any previous ones.
+"""
+
+[nodes.Configuration]
+text = """
+en can be configured using the `meta.config` table of your graph file.
+
+For example, the following configuration:
+
+`
+    [meta.config]
+    node_selector = true
+    navbar_search = true
+`
+
+If placed in your graph file, would enable the top-right node selector and search dialogs.
+
+The current set of configuration options is rapidly changing during this phase of development, and as such is not being extensively documented here. It can still be seen in the |code repository|https://codeberg.org/jutty/en/src/branch/main/src/graph/meta.rs|, along with the default values.
+
+The following entries are described here for need of more extensive explanation regarding their usage.
+
+## `mimes`
 """
 
 [nodes.Syntax]
@@ -858,13 +910,36 @@ You can customize several aspects of en by overriding its default templates, sty
 
 ## The `public` directory
 
-The `static/public` directory is searched by en in the current working directory and can also be |passed as a command line option|CLI. All files placed inside this directory will be served by the en server as static files. You can create directories and organize files as you see fit, and then reference them through custom templates and includes.
+The `static/public` directory is searched by en in the current working directory and can also be |passed as a command line option|CLI#Public|. All files placed inside this directory will be served by the en server as static files at the `/static` endpoint. You can create directories and organize files as you see fit, and then reference them through custom templates and includes. For example, say you have the following file structure:
 
-If you place a file in a default path, it will override the default. Namely:
+`
+en
+└── static
+    ├── graph.toml
+    └── public
+        ├── data.txt
+        ├── custom-dir
+        │   └── nested.jpg
+        └── assets
+            ├── style.css
+            └── custom-font.woff2
+`
+
+In this case, en will:
+
+- Find your graph in the default `static/graph.toml` location, without any CLI options needed
+- Serve `data.txt` at `/static/data.txt` (e.g. `https://domain.com/static/data.txt`)
+- Serve `nested-file.jpg` at `/static/custom-dir/nested.jpg`
+- Override the default CSS file with the custom `assets/style.css` by serving it at the default `/static/assets/style.css`
+- Serve `custom-font.woff2` at `/static/assets/custom-font.woff2`
+
+These are the default file locations you can override:
 
 - `static/public/assets/favicon.svg`: Website icon as seen on tabs and other UI elements
 - `static/public/assets/style.css`: Main CSS stylesheet
 - `static/public/assets/fonts/fonts.css`: Fonts CSS index mapping the default families `sans`, `serifed`, `mono`, `prose` and `title`. The `prose` family is used for paragraphs such as in the node text content, while the `sans` family is used for UI elements such as the navigation bar and footer.
+
+You can see the original file contents in the |code repository|https://codeberg.org/jutty/en/src/branch/main/static/public|.
 
 The en server supports a variety of file types including plain text; data formats such as CSV, TOML and JSON; various font and image formats; and document formats such as PDF and EPUB. If you want to serve a file with a mimetype that is not included among the |builtin ones|https://codeberg.org/jutty/en/src/branch/main/src/router/handlers/mime.rs|, you can use the `mimes` |configuration option|Configuration#mimes|. If you don't, the file will be served with mimetype `application/octet-stream`, which may or may not work depending on what you are actually serving and how it's being consumed.
 
@@ -1039,6 +1114,7 @@ These changes are planned, but have not been assigned to an upcoming release yet
 
 ### Connections
 - [ ] `#` syntax for header ID anchors
+    - [ ] Multi-word ID anchors
 - Connection kinds
     - [ ] Mutual
     - [ ] Category <-> Membership

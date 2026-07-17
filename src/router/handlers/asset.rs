@@ -103,7 +103,7 @@ impl std::fmt::Display for AssetError {
                 )
             },
             AssetErrorKind::NotFound => {
-                String::from("The file was not found in the searched path")
+                format!("No file was found for path \"{}\"", self.path)
             },
             AssetErrorKind::UTF8 => String::from(
                 "UTF8 decoding error: is the file properly encoded?",

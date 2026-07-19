@@ -9,16 +9,19 @@ if podman container exists "$tag"; then
     podman stop --time 3 "$tag"
 fi
 
-if [ "$suffix" = 'debian-dev' ]; then
-    cp -v ../target/x86_64-unknown-linux-gnu/debug/en en
-elif [ "$suffix" = 'alpine-dev' ]; then
-    cp -v ../target/x86_64-unknown-linux-musl/debug/en en
-fi
+case "$suffix" in
+    *-dev)
+        rsync -a \
+        --exclude /target \
+        --exclude .git \
+        --exclude /containers \
+        .. dev-src
+esac
 
 podman build \
     --tag "$tag" \
     -f "Containerfile.$suffix" "$@"
 
-if [ -f en ]; then
-    rm -v en
+if [ -d dev-src ]; then
+    rm -r dev-src
 fi

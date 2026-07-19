@@ -1,13 +1,32 @@
-FROM docker.io/library/rust:alpine
+FROM alpine:3.24 as build
 MAINTAINER Juno Takano juno@jutty.dev
+ENV REPO_URL=https://codeberg.org/jutty/en
 ENV DEBUG=debug
 
-# Install
-COPY en /usr/local/bin/en
+# Setup tooling
+RUN apk add curl git
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Fetch source
+COPY dev-src /src
+
+# Build
+WORKDIR /src
+RUN apk add gcc musl-dev
+RUN /root/.cargo/bin/cargo build --locked --release
 
 # Describe
-RUN sha256sum $(which en)
+RUN apk add file musl-utils
+RUN <<EOF
+    target/release/en --version
+    echo sha256sum $(sha256sum target/release/en)
+    file target/release/en
+    ldd target/release/en
+EOF
 
 # Launch
+FROM scratch
 WORKDIR /root
-CMD ["en", "-p", "80"]
+COPY --from=build /src/target/release/en /usr/local/bin/en
+EXPOSE 80/tcp
+CMD [ "en", "-p", "80" ]

@@ -1,13 +1,33 @@
-FROM debian:stable-slim
-MAINTAINER Juno Takano juno@jutty.dev
+FROM debian:trixie-slim as build
+LABEL org.opencontainers.image.authors="Juno Takano <juno@jutty.dev>"
+ENV REPO_URL=https://codeberg.org/jutty/en
 ENV DEBUG=debug
 
-# Install
-COPY en /usr/local/bin/en
+# Setup tooling
+RUN apt-get update
+RUN apt-get -y install --no-install-recommends curl ca-certificates git
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Fetch source
+COPY dev-src /src
+
+# Build
+WORKDIR /src
+RUN apt-get -y install --no-install-recommends gcc libc6-dev
+RUN /root/.cargo/bin/cargo build --locked --release
 
 # Describe
-RUN sha256sum $(which en)
+RUN apt-get -y install --no-install-recommends file gnulib
+RUN <<EOF
+    target/release/en --version
+    file target/release/en
+    echo sha256sum $(sha256sum target/release/en)
+    ldd target/release/en
+EOF
 
 # Launch
+FROM debian:trixie-slim
 WORKDIR /root
-CMD ["en", "-p", "80"]
+COPY --from=build /src/target/release/en /usr/local/bin/en
+EXPOSE 80/tcp
+CMD [ "en", "-p", "80" ]

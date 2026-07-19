@@ -1,37 +1,38 @@
-FROM debian:stable-slim
-MAINTAINER Juno Takano juno@jutty.dev
-ENV DEBUG=debug
+FROM debian:trixie-slim as build
+LABEL org.opencontainers.image.authors="Juno Takano <juno@jutty.dev>"
+ENV REPO_URL=https://codeberg.org/jutty/en
 
 # Setup tooling
-RUN apt-get -y --update install --no-install-recommends \
-    curl ca-certificates gcc libc6-dev git file
+RUN apt-get update
+RUN apt-get -y install --no-install-recommends curl ca-certificates git
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-# Install
+# Fetch source
 RUN <<EOF
-    REPO_URL=https://codeberg.org/jutty/en
-    LAST_TAG=$(
-        git ls-remote --tags "$REPO_URL" \
-        | grep refs/tags \
-        | sed 's/.*refs\/tags\///' \
-        | sort -V \
-        | tail -n 1
-    )
+    LAST_TAG=$(git ls-remote --tags "$REPO_URL" | grep refs/tags \
+        | sed 's/.*refs\/tags\///' | sort -V | tail -n 1)
     git config --global advice.detachedHead false
-    echo "Selected tag: $LAST_TAG"
-    git clone --verbose -b "$LAST_TAG" \
-        --depth 1 --single-branch --no-tags \
-        "$REPO_URL" /build
+    git clone --verbose -b "$LAST_TAG" --depth 1 \
+        --single-branch --no-tags "$REPO_URL" /src
 EOF
-RUN <<EOF
-    cd /build && /root/.cargo/bin/cargo build --locked --release
-    mv /build/target/release/en /usr/local/bin/en
-    rm -rf /build
-EOF
+
+# Build
+WORKDIR /src
+RUN apt-get -y install --no-install-recommends gcc libc6-dev
+RUN /root/.cargo/bin/cargo build --locked --release
 
 # Describe
-RUN file $(which en) && sha256sum $(which en)
+RUN apt-get -y install --no-install-recommends file gnulib
+RUN <<EOF
+    target/release/en --version
+    echo sha256sum $(sha256sum target/release/en)
+    file target/release/en
+    ldd target/release/en
+EOF
 
 # Launch
+FROM debian:trixie-slim
 WORKDIR /root
-CMD ["en", "-p", "80"]
+COPY --from=build /src/target/release/en /usr/local/bin/en
+EXPOSE 80/tcp
+CMD [ "en", "-p", "80" ]

@@ -393,7 +393,7 @@ version-assess remote="false": update
     test "{{ last_local_tag }}" = "{{ manifest_version }}"
     test "{{ last_local_tag }}" = "{{ flake_version }}"
     if {{ if remote == "true" { "true" } else { "false" } }}; then
-        test "{{ last_local_tag }}" = "$last_remote_tag"
+        test "{{ last_local_tag }}" = "{{ last_remote_tag }}"
     fi
 
 alias va := version-assess

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
@@ -57,6 +59,8 @@ pub struct Config {
     #[serde(default = "mktrue")]
     pub index_search: bool,
     #[serde(default)]
+    pub mime: HashMap<String, String>,
+    #[serde(default)]
     node_selector: bool,
     #[serde(default)]
     navbar_search: bool,
@@ -96,6 +100,7 @@ impl Default for Config {
             index_node_list: true,
             index_root_node: true,
             index_search: true,
+            mime: HashMap::new(),
             node_selector: true,
             navbar_search: true,
             raw: true,

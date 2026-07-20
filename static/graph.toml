@@ -402,7 +402,19 @@ The current set of configuration options is rapidly changing during this phase o
 
 The following entries are described here for need of more extensive explanation regarding their usage.
 
-## `mimes`
+## `mime`
+
+You can add custom mimetype bindings to a filename extension when serving static files.
+
+Suppose en did not already provide built-in support for WebP and SVG images. You could still serve them by setting their mimetypes in your graph file:
+
+`
+    [meta.config]
+    mime = { webp = "image/webp", svg = "image/svg+xml" }
+`
+
+For details on how to serve custom static assets, see |Customization|.
+
 """
 
 [nodes.Syntax]
@@ -941,7 +953,7 @@ These are the default file locations you can override:
 
 You can see the original file contents in the |code repository|https://codeberg.org/jutty/en/src/branch/main/static/public|.
 
-The en server supports a variety of file types including plain text; data formats such as CSV, TOML and JSON; various font and image formats; and document formats such as PDF and EPUB. If you want to serve a file with a mimetype that is not included among the |builtin ones|https://codeberg.org/jutty/en/src/branch/main/src/router/handlers/mime.rs|, you can use the `mimes` |configuration option|Configuration#mimes|. If you don't, the file will be served with mimetype `application/octet-stream`, which may or may not work depending on what you are actually serving and how it's being consumed.
+The en server supports a variety of file types including plain text; data formats such as CSV, TOML and JSON; various font and image formats; and document formats such as PDF and EPUB. If you want to serve a file with a mimetype that is not included among the |builtin ones|https://codeberg.org/jutty/en/src/branch/main/src/router/handlers/mime.rs|, you can use the `mime` |configuration option|Configuration#mime|. If you don't, the file will be served with mimetype `application/octet-stream`, which may or may not work depending on what you are actually serving and how it's being consumed.
 
 ## Styles
 

@@ -68,7 +68,26 @@
                     "navbar_search": { "type": "boolean" },
                     "about": { "type": "boolean" },
                     "footer_text": { "type": "string" },
-                    "acknowledgments": { "type": "string" }
+                    "acknowledgments": { "type": "string" },
+                    "mime": {
+                        "title": "Custom mimetypes",
+                        "description": "Table containing a file extension as the key and a mimetype as the value.",
+                        "example": "[mime.txt]\nwebp = \"image/webp\"",
+                        "default": null,
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "title": "Mimetype",
+                            "description": "The mimetype string representation.",
+                            "example": "text/plain",
+                            "default": null,
+                            "pattern": "^[^ ]+$"
+                        },
+                        "propertyNames": {
+                            "pattern": "^[^\\. ]+$"
+                        }
+                    }
+
                 },
                 "additionalProperties": false
             }

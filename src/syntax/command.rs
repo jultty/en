@@ -72,13 +72,13 @@ fn parse(defaults: &Arguments, args: &[String]) -> Arguments {
         {
             match *argument {
                 "-h" | "--hostname" => {
-                    out_args.hostname = String::from(*parameter)
+                    out_args.hostname = String::from(*parameter);
                 },
                 "-p" | "--port" => {
-                    out_args.port = parameter.parse().unwrap_or(out_args.port)
+                    out_args.port = parameter.parse().unwrap_or(out_args.port);
                 },
                 "-g" | "--graph" => {
-                    out_args.graph_path = PathBuf::from(parameter)
+                    out_args.graph_path = PathBuf::from(parameter);
                 },
                 "--public" => out_args.public = PathBuf::from(parameter),
                 _ => {

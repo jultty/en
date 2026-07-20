@@ -104,7 +104,7 @@ fn fallback(path: &str, graph: &Graph) -> Result<Asset, AssetError> {
     let target = cli_args.public.join(path);
     let defaults: HashMap<&str, &str> = TEXTS.iter().copied().collect();
     let fonts: HashMap<&str, &'static Font> = FONTS.iter().copied().collect();
-    let mime = mime::Mime::guess(path);
+    let mime = mime::Mime::from_extension(path, graph);
 
     log!("Seeking {target:?}");
 
@@ -739,7 +739,6 @@ mod serial_tests {
         let relative_font_path =
             PathBuf::from(FONTS[0].0.replace("assets/", ""));
         let font_path = dirs.assets.join(&relative_font_path);
-        let font_dir = font_path.parent().unwrap();
 
         let graph = Graph::from_serial(
             "[meta.config]\nserve_fonts = false",

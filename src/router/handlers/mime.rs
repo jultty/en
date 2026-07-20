@@ -1,3 +1,5 @@
+use crate::graph::Graph;
+
 #[derive(Debug, Clone)]
 pub enum Mime {
     Txt,
@@ -21,6 +23,7 @@ pub enum Mime {
     Js,
     Pdf,
     Epub,
+    Custom(String),
     Unknown,
 }
 
@@ -55,31 +58,31 @@ impl From<&str> for Mime {
 
 impl From<Mime> for String {
     fn from(mime: Mime) -> String {
-        let s = match mime {
-            Mime::Txt => "text/plain",
-            Mime::Csv => "text/csv",
-            Mime::Css => "text/css",
-            Mime::Ttf => "font/ttf",
-            Mime::Otf => "font/otf",
-            Mime::Woff => "font/woff",
-            Mime::Woff2 => "font/woff2",
-            Mime::Svg => "image/svg+xml",
-            Mime::Ico => "image/x-icon",
-            Mime::Jpeg => "image/jpeg",
-            Mime::Png => "image/png",
-            Mime::Apng => "image/apng",
-            Mime::Gif => "image/gif",
-            Mime::Webp => "image/webp",
-            Mime::Avif => "image/avif",
-            Mime::Toml => "application/toml",
-            Mime::Xml => "application/xml",
-            Mime::Json => "application/json",
-            Mime::Js => "text/javascript",
-            Mime::Pdf => "application/pdf",
-            Mime::Epub => "application/epub+zip",
-            Mime::Unknown => "application/octet-stream",
-        };
-        String::from(s)
+        match mime {
+            Mime::Txt => "text/plain".into(),
+            Mime::Csv => "text/csv".into(),
+            Mime::Css => "text/css".into(),
+            Mime::Ttf => "font/ttf".into(),
+            Mime::Otf => "font/otf".into(),
+            Mime::Woff => "font/woff".into(),
+            Mime::Woff2 => "font/woff2".into(),
+            Mime::Svg => "image/svg+xml".into(),
+            Mime::Ico => "image/x-icon".into(),
+            Mime::Jpeg => "image/jpeg".into(),
+            Mime::Png => "image/png".into(),
+            Mime::Apng => "image/apng".into(),
+            Mime::Gif => "image/gif".into(),
+            Mime::Webp => "image/webp".into(),
+            Mime::Avif => "image/avif".into(),
+            Mime::Toml => "application/toml".into(),
+            Mime::Xml => "application/xml".into(),
+            Mime::Json => "application/json".into(),
+            Mime::Js => "text/javascript".into(),
+            Mime::Pdf => "application/pdf".into(),
+            Mime::Epub => "application/epub+zip".into(),
+            Mime::Unknown => "application/octet-stream".into(),
+            Mime::Custom(value) => value,
+        }
     }
 }
 
@@ -91,12 +94,20 @@ pub enum Kind {
 }
 
 impl Mime {
-    /// Guesses the mimetype given the extension of a filename or path.
+    /// Returns a mimetypegiven a filename extension and a graph. The graph
+    /// is used to read custom mimetypes from the configuration.
     ///
     /// Only considers the last dot-delimited fragment of `path`.
-    pub fn guess(path: &str) -> Mime {
+    pub fn from_extension(path: &str, graph: &Graph) -> Mime {
         if let Some(pair) = path.rsplit_once('.') {
-            Mime::from(pair.1)
+            #[expect(clippy::wildcard_enum_match_arm)]
+            match Mime::from(pair.1) {
+                Mime::Unknown => match graph.meta.config.mime.get(pair.1) {
+                    Some(custom) => Mime::Custom(custom.clone()),
+                    None => Mime::Unknown,
+                },
+                other => other,
+            }
         } else {
             Mime::Unknown
         }
@@ -113,7 +124,7 @@ impl Mime {
             Txt | Csv | Css | Toml | Xml | Json | Js | Svg => Kind::Text,
             Ttf | Otf | Woff | Woff2 => Kind::Font,
             Ico | Jpeg | Png | Apng | Gif | Webp | Avif => Kind::Image,
-            Pdf | Epub | Unknown => Kind::Blob,
+            Pdf | Epub | Custom(_) | Unknown => Kind::Blob,
         }
     }
 }
@@ -124,7 +135,10 @@ mod tests {
 
     #[test]
     fn smoke() {
-        let m = Mime::guess("/home/jane/top/inner/kitty.png");
+        let m = Mime::from_extension(
+            "/home/jane/top/inner/kitty.png",
+            &Graph::default(),
+        );
         assert_eq!(String::from(m), "image/png");
     }
 
@@ -156,13 +170,34 @@ mod tests {
         ];
 
         for (file, mime) in pairs {
-            assert_eq!(String::from(Mime::guess(file)), mime);
+            assert_eq!(
+                String::from(Mime::from_extension(file, &Graph::default())),
+                mime
+            );
         }
     }
 
     #[test]
     fn unknown() {
-        let u = Mime::guess("x");
+        let u = Mime::from_extension("x", &Graph::default());
         assert!(matches!(u, Mime::Unknown));
+    }
+
+    #[test]
+    #[expect(clippy::shadow_unrelated, unused)]
+    fn custom() {
+        let payload = String::from("mime/custom");
+        let graph = Graph::from_serial(
+            &format!(
+                "[meta.config]\n\
+                mime = {{ custom = \"{payload}\" }}"
+            ),
+            &crate::graph::Format::TOML,
+        )
+        .unwrap();
+        assert!(matches!(
+            Mime::from_extension("file.custom", &graph),
+            Mime::Custom(payload),
+        ));
     }
 }

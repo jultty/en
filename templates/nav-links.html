@@ -1,0 +1,10 @@
+<ul id="nav-anchors">
+    <li><a href="/">Index</a></li>
+    {% if graph.meta.config.about %}
+    <li><a href="/about">About</a></li>
+    {% endif %}
+    {% if graph.meta.config.tree %}
+    <li><a href="/tree">Tree</a></li>
+    {% endif %}
+    <li><a href="/data">Data</a></li>
+</ul>

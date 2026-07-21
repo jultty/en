@@ -1,0 +1,10 @@
+<nav id="nav-main">
+    <!-- The nav-main-spread div below centers contents when the navigation controls are disabled. -->
+    <div {% if graph.meta.config.node_selector or graph.meta.config.navbar_search %}id="nav-main-spread"{% endif %}>
+        {% include "nav-start.include.html" %}
+        {% include "nav-links.html" %}
+        {% include "nav-controls.html" %}
+    </div>
+    {% include "nav-end.include.html" %}
+    <hr>
+</nav>

@@ -961,7 +961,7 @@ You can override the default CSS and fonts using custom CSS files.
 
 To completely override the default style, you can place your replacement at the default path as explained in the previous section.
 
-If you just want to add small customizations, this can be better accomplished by adding a CSS file as part of a custom headers include, as explained in the next section.
+If you just want to add small customizations, this can be better accomplished by adding a CSS file as part of a custom head include, as explained in the next section.
 
 ## Templates
 
@@ -969,26 +969,26 @@ en uses the Tera|https://keats.github.io/tera templating engine, which provides 
 
 When starting up, en will look for a `templates` directory in the current working directory. For each template, it looks up the corresponding filename inside this directory. If it can't find one, it will fallback to a default template.
 
-For a list of templates along with their names, see the |templates directory|https://codeberg.org/jutty/en/src/branch/main/templates| in the source code repository.
+Several parts of the layout, such as the index page's header, the top navigation bar and the footer, live in dedicated small templates to simplify overriding them without having to touch core functionality such as navigation controls.
 
-See the |Tera documentation|https://keats.github.io/tera/docs for a more extensive description of the available features for writing templates.
+For a list of templates along with their names and default structure, see the |templates directory|https://codeberg.org/jutty/en/src/branch/main/templates| in the source code repository.
+
+See the |Tera documentation|https://keats.github.io/tera/ for a more extensive description of the available features for writing templates.
 
 ### Includes
 
-Overriding an entire template can be very verbose, considering the default templates attempt to handle various edge cases.
+Overriding a template can be overkill if you simply would like to _add_ a few lines to it.
 
-To make it easier to override the most common use cases, the following templates are consumed as "includes" in specific parts of the main templates if placed inside the `templates` directory with the suffix `.include.html`:
+To make it easier to extend the defaults for the most common use cases, the following templates are consumed as "includes" in specific parts of the main templates if placed inside the `templates` directory with the suffix `.include.html`:
 
-- `header`: Included at the end of the default templates' base header
-- `post-body`: Included after the body in the default base template
-- `favicon`: Replaces the default favicon code
-- `styles`: Replaces the default CSS links
-- `footer`: Replaces the footer
-- `navigation`: Replaces the navigation bar
-- `index-header`: Replaces the block showing the title and subtitle of the website in the index page
-- `index-list`: Replaces the block showing the list of nodes in the index page
+- `head-end`: Included at the end of the default templates' base `head` element
+- `body-after`: Included after the body in the default base template
+- `footer-start`: Included inside the footer, just after the `<hr>`
+- `footer-end`: Included inside the footer, just before the closing `</footer>`
+- `nav-start`: Included inside the top navigation bar, after the opening `<nav>` and a spacer. The spacer is meant to keep the contents left-aligned if the right-aligned navigation controls (node selector and search) are enabled.
+- `nav-end`: Included inside the top navigation bar, just before the `<hr>`, which itself is followed by the closing `</nav>`
 
-For example, to override the block in the header of all pages that globally sets the CSS stylesheets, you can drop a file at `templates/styles.include.html` containing something like:
+For example, to put an extra CSS link inside the `head` of all pages, you can drop a file at `templates/head.include.html` containing something like:
 
 `
 <link href="https://cdn.example.com/external.css" rel="stylesheet">

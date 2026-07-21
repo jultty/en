@@ -13,7 +13,7 @@ Now that you know how to run it, tell en how to find your graph file by adding a
 en --graph my_graph.toml
 `
 
-Alternatively, you can also add a `static` directory next to the en binary with a `graph.toml` file in it.
+If a graph is not given as shown above, en will look in the current working directory for a directory named `static` containing a `graph.toml` file.
 
 To learn how to write your first graph and everything else about en, check out the |documentation|https://en.jutty.dev|.
 """

@@ -1,0 +1,34 @@
+{% if graph.meta.config.footer or graph.meta.config.serve_fonts %}
+<footer>
+    <hr>
+    {% include "footer-start.include.html" %}
+    <div>
+    {% if graph.meta.config.footer_text %}{{ graph.meta.config.footer_text | safe }}{% endif %}
+    {% if graph.meta.config.footer_text and (graph.meta.config.footer_credits or graph.meta.config.footer_date) %}
+    {% endif %}
+    {% if graph.meta.config.footer_credits %}
+    <cite>made with <a href="https://en.jutty.dev">en</a>, a non-linear writing instrument</cite>
+    {% endif %}
+    {% if graph.meta.config.footer_credits and graph.meta.config.footer_date %}
+    <br/>
+    {% endif %}
+    {% if graph.meta.config.footer_date %}
+    <span>
+    built
+    <time>
+        {{ now(utc=true) | date(format="%Y-%m-%d %H:%M") }} UTC
+    </time>
+    {% endif %}
+    {% if graph.meta.config.serve_fonts %}
+    &bullet;
+    <a href="/legal">legal</a>
+    {% endif %}
+    {% if graph.meta.config.footer_version %}
+    &bullet;
+    en v{{en_version}}
+    {% endif %}
+    </span>
+    </div>
+    {% include "footer-end.include.html" %}
+</footer>
+{% endif %}

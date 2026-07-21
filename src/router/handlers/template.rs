@@ -106,14 +106,58 @@ impl std::fmt::Display for RenderingError {
 
 static DEFAULTS: &[(&str, &str)] = &[
     ("base.html", include_str!("../../../templates/base.html")),
-    ("index.html", include_str!("../../../templates/index.html")),
     ("about.html", include_str!("../../../templates/about.html")),
-    ("legal.html", include_str!("../../../templates/legal.html")),
     ("data.html", include_str!("../../../templates/data.html")),
     ("empty.html", include_str!("../../../templates/empty.html")),
     ("error.html", include_str!("../../../templates/error.html")),
+    ("index.html", include_str!("../../../templates/index.html")),
+    ("legal.html", include_str!("../../../templates/legal.html")),
     ("node.html", include_str!("../../../templates/node.html")),
     ("tree.html", include_str!("../../../templates/tree.html")),
+    (
+        "body-after.include.html",
+        include_str!("../../../templates/body-after.include.html"),
+    ),
+    (
+        "footer-end.include.html",
+        include_str!("../../../templates/footer-end.include.html"),
+    ),
+    (
+        "footer-start.include.html",
+        include_str!("../../../templates/footer-start.include.html"),
+    ),
+    (
+        "footer.html",
+        include_str!("../../../templates/footer.html"),
+    ),
+    (
+        "head-end.include.html",
+        include_str!("../../../templates/head-end.include.html"),
+    ),
+    (
+        "index-header.html",
+        include_str!("../../../templates/index-header.html"),
+    ),
+    (
+        "nav-bar.html",
+        include_str!("../../../templates/nav-bar.html"),
+    ),
+    (
+        "nav-controls.html",
+        include_str!("../../../templates/nav-controls.html"),
+    ),
+    (
+        "nav-end.include.html",
+        include_str!("../../../templates/nav-end.include.html"),
+    ),
+    (
+        "nav-links.html",
+        include_str!("../../../templates/nav-links.html"),
+    ),
+    (
+        "nav-start.include.html",
+        include_str!("../../../templates/nav-start.include.html"),
+    ),
 ];
 
 fn read_template(name: &str, path: PathBuf) -> Result<String, std::io::Error> {

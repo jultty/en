@@ -1,0 +1,9 @@
+<h1>{%if graph.meta.config.site_title %}{{ graph.meta.config.site_title }}{% else %}en{%endif%}</h1>
+<p>
+<i>
+    {% if graph.meta.config.site_description %}
+    {{graph.meta.config.site_description}}
+    {% else %}
+    A non-linear writing instrument.
+    {% endif %}
+</i>

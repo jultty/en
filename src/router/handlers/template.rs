@@ -546,14 +546,14 @@ mod tests {
 #[cfg(test)]
 #[expect(clippy::panic_in_result_fn)]
 mod serial_tests {
-    use std::{ffi::OsStr, os::unix::ffi::OsStrExt as _};
-
     use super::*;
     use crate::dev::test::{Directories, Error};
 
     #[test]
-    #[cfg_attr(not(unix), ignore)]
+    #[cfg(unix)]
     fn invalid_utf8_template_filename() -> Result<(), Error> {
+        use std::{ffi::OsStr, os::unix::ffi::OsStrExt as _};
+
         let dirs = Directories::setup("encoding")?;
 
         let invalid_name = OsStr::from_bytes(&[0xff, 0xfe, 0x80]);
@@ -565,6 +565,28 @@ mod serial_tests {
 
         let error_message = err.to_string();
         assert!(error_message.contains("not valid unicode"));
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn invalid_utf8_template_filename_windows() -> Result<(), Error> {
+        use std::{ffi::OsString, os::windows::prelude::*};
+
+        let dirs = Directories::setup("encoding")?;
+
+        let invalid_name =
+            OsString::from_wide(&[0x0066, 0x006f, 0x006f, 0xd800]);
+        let file_path = dirs.templates.join(invalid_name.as_os_str());
+
+        // Windows will not even create this invalid UTF-16 path
+        let result = fs::write(file_path.clone(), b"");
+
+        assert!(!fs::exists(file_path).unwrap());
+
+        let error_string = result.err().unwrap().to_string();
+        assert!(error_string.contains("File not found"));
 
         Ok(())
     }

@@ -24,7 +24,7 @@ impl Directories {
     /// - Several I/O possibilities from working directory changing failures
     pub fn setup(root_directory: &str) -> Result<Directories, Error> {
         let original = env::current_dir()?;
-        let test = original.join(format!("target/mocks/{root_directory}"));
+        let test = original.join("target").join("mocks").join(root_directory);
         let templates = test.join("templates");
         let public = test.join("static").join("public");
         let assets = public.join("assets");
@@ -249,9 +249,15 @@ mod serial_tests {
         let error = dirs.unwrap_err();
         println!("{error}");
         assert!(error.message.contains("Failed creation of directory"));
-        assert!(
-            format!("{error}")
-                .contains("file name contained an unexpected NUL byte")
-        );
+
+        let expected_error_display_message = if cfg!(unix) {
+            "file name contained an unexpected NUL byte"
+        } else if cfg!(windows) {
+            "strings passed to WinAPI cannot contain NULs"
+        } else {
+            panic!("Test is running on an unsupported platform");
+        };
+
+        assert!(format!("{error}").contains(expected_error_display_message));
     }
 }

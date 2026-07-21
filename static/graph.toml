@@ -1062,9 +1062,9 @@ text = """
 ## Upcoming
 
 ### v0.5.0-alpha
-- [ ] Docs for custom assets and templates
 - [ ] Custom kind for connections
 - [ ] Hide tree leaves from the top level
+- [x] Docs for custom assets and templates
 - [x] Fix anchors containing `/` and `#` considered node IDs
 - [x] Fix `PreFormat` blocks rendering HTML tags
 

@@ -327,10 +327,10 @@ alias t := test
 # Run Windows tests using wine
 [group: 'assess']
 test-windows pattern="":
-    -{{ xwin_test(pattern) }} --timings -- --test-threads=1 'serial_tests::'
-    -{{ xwin_test(pattern) }} --timings --bin en
-    -{{ xwin_test(pattern) }} --timings --doc
-    -{{ xwin_test(pattern) }} --timings --lib -- --skip 'serial_tests::'
+    {{ xwin_test(pattern) }} --timings -- --test-threads=1 'serial_tests::'
+    {{ xwin_test(pattern) }} --timings --bin en
+    {{ xwin_test(pattern) }} --timings --doc
+    {{ xwin_test(pattern) }} --timings --lib -- --skip 'serial_tests::'
 
 xwin_test(pattern) := f"cargo-xwin test {{ pattern }} --target {{ msvc_target }}"
 

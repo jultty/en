@@ -1062,14 +1062,13 @@ text = """
 ## Upcoming
 
 ### v0.5.0-alpha
-- [ ] Custom kind for connections
 - [ ] Hide tree leaves from the top level
 - [x] Docs for custom assets and templates
 - [x] Fix anchors containing `/` and `#` considered node IDs
 - [x] Fix `PreFormat` blocks rendering HTML tags
 
 ### v0.6.0-alpha
-- [ ] Custom header include
+- [ ] Custom connection kinds
 
 ### v0.7.0-alpha
 - [ ] Frontmatter format

@@ -14,6 +14,6 @@ See the [Get Started](https://en.jutty.dev/node/GetStarted) page for instruction
 
 ## Roadmap
 
-For a high-level view of what's in the future for en, see the [What's ahead section](https://en.jutty.dev/node/Introduction#What's) of the docs Introduction.
+For a high-level view of what's in the future for en, see the ["What's ahead" section](https://en.jutty.dev/node/Introduction#What's) of the docs' Introduction.
 
 For a more detailed outline of what's planned, along with what's already been completed, see the [roadmap](https://en.jutty.dev/node/Roadmap).

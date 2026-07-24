@@ -5,7 +5,7 @@
 {%- block body %}
     {% include "index-header.html" %}
     {% if graph.nodes %}
-    {% if graph.meta.config.navbar_search %}
+    {% if graph.meta.config.index_search %}
     <form method="post">
         <input type="text" name="node" required/>
         <input type="submit" value="Find"/>

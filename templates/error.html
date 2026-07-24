@@ -4,7 +4,7 @@
     <h1>
         {{ title | default(value="Unknown error") }}
     </h1>
-    {{ message | default(value="No message provided.") | linebreaksbr | safe }}
+    {{ message | default(value="No message provided.") | safe }}
     {% if graph.meta.config.error_poem %}
     <hr>
     <div id="error-poem">

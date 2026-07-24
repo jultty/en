@@ -323,22 +323,22 @@ fn emergency_wrap(error: &tera::Error, message: &str) -> String {
             </style>\n\
         </head>\n\
         <body>\n\
-            <h2><strong>en Early Pre-Templating Error</strong></h2>\n\
+            <h2><strong>Early Pre-Templating Error</strong></h2>\n\
             {message_element}\n\
-            <pre>\n\
-            {error:#?}\n\
-            </pre>\n\
             <p>This error may indicate a malformed or missing template.</p>\n\
             <p>If you haven't modified templates, please consider \
                 <a href=\"https://codeberg.org/jutty/en/issues\">\
                     reporting it</a>, including:\
             </p>\n\
             <ul>\n\
-                <li>The error message above</li>\n\
                 <li>en version: <code>{}</code></li>\n\
                 <li>If possible, your graph file's <code>[meta.config]</code> \
-                values and definition for this page.</li>\n\
+                values and definition for this page</li>\n\
+                <li>The error message below:</li>\n\
             </ul>\n\
+            <pre>\n\
+            {error:#?}\n\
+            </pre>\n\
         </body>\n\
         </html>\n\
     ",

@@ -25,7 +25,7 @@
         {% endif %}
         {% if graph.nodes and graph.meta.config.index_node_list %}
         <ul>
-        {% for _, node in graph.nodes %}
+        {% for node in sorted_nodes %}
         {% if loop.index > graph.meta.config.index_node_count %}
         {% break %}
         {% endif %}

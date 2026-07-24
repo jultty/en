@@ -10,7 +10,15 @@ use crate::{
 };
 
 pub async fn index(State(state): State<GlobalState>) -> Response<Body> {
-    handlers::template::with_graph("index", state).await
+    let mut sorted_nodes: Vec<&Node> = state.graph.nodes.values().collect();
+    sorted_nodes.sort_unstable_by_key(|node| node.stats.outgoing);
+    sorted_nodes.reverse();
+
+    let mut context = tera::Context::default();
+    context.insert("graph", &state.graph);
+    context.insert("sorted_nodes", &sorted_nodes);
+
+    handlers::template::with_context("index", &context, 500, None, false)
 }
 
 pub async fn about(State(state): State<GlobalState>) -> Response<Body> {

@@ -222,6 +222,48 @@ impl Graph {
     }
 
     fn gather_stats(&mut self) {
+        let iterator = self.nodes.iter_mut();
+        for (key, node) in iterator {
+            let incoming_edges_sum: u32 = match self.incoming.get(key) {
+                Some(v) => match v.len().try_into() {
+                    Ok(n) => n,
+                    Err(error) => {
+                        log!(
+                            WARN,
+                            "Node {} total incoming connections \
+                                limited to maximum value {}: {}",
+                            key,
+                            u32::MAX,
+                            error,
+                        );
+                        u32::MAX
+                    },
+                },
+                None => 0,
+            };
+
+            let outgoing_edges_sum: u32 =
+                match node.connections.keys().count().try_into() {
+                    Ok(n) => n,
+                    Err(error) => {
+                        log!(
+                            WARN,
+                            "Node {} total outgoing connections \
+                            limited to maximum value {}: {}",
+                            key,
+                            u32::MAX,
+                            error,
+                        );
+                        u32::MAX
+                    },
+                };
+
+            node.stats = node::Stats {
+                outgoing: outgoing_edges_sum,
+                incoming: incoming_edges_sum,
+            };
+        }
+
         let detached = self.stats.detached.values();
         self.stats.detached_total = detached.sum();
     }

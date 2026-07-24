@@ -3,58 +3,28 @@
 {% block title %}Tree{% endblock title %}
 
 {%- block body %}
-    {% if graph.nodes or root_node %}
+    {% if graph.nodes %}
     <h1>Tree</h1>
     <ul>
-    {% if root_node and root_node.listed %}
-    <li>
-        <a href="/node/{{root_node.id}}">{{root_node.title}}</a>
-        <span class="label root-label">Root</span>
-        {% if root_node.connections or graph.meta.config.tree_node_summary %}
-        <ul>
-            {% if graph.meta.config.tree_node_summary %}
-            <li class="tree-node-summary">
-                    {{root_node.summary}}
-            </li>
-            {% endif %}
-            {% if root_node.connections %}
-            {% if graph.meta.config.tree_node_summary %}<li><strong>Connections</strong>
-                <ul>{% endif %}
-                {% for _, connection in root_node.connections %}
-                {% if not connection.detached %}
-                    <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
-                {% endif %}
-                {% endfor %}
-                {% if graph.meta.config.tree_node_summary %}</ul>
-            </li>{% endif %}
-            {% endif %}
-        </ul>
-        {% endif %}
-    </li>
-    {% endif %}
     {% if graph.nodes %}
-    {% for id, node in graph.nodes %}
-    {% if not node.listed or (root_node and node.id == root_node.id ) %}{% continue %}{% endif %}
+    {% for pair in tree %}
+    {% set node = pair.node %}
+    {% set edges = pair.edges %}
+    {% if not node.listed %}{% continue %}{% endif %}
     <li>
         <a href="/node/{{node.id}}">{{node.title}}</a>
-        {% if node.connections or graph.meta.config.tree_node_summary %}
+        {% if edges or graph.meta.config.tree_node_summary %}
         <ul>
             {% if graph.meta.config.tree_node_summary %}
-            <li class="tree-node-summary">
-                    {{node.summary}}
-            </li>
+            <li class="tree-node-summary">{{node.summary}}</li>
             {% endif %}
-            {% if node.connections %}
             {% if graph.meta.config.tree_node_summary %}<li><strong>Connections</strong>
                 <ul>{% endif %}
-                {% for _, connection in node.connections %}
-                {% if not connection.detached %}
-                    <li><a href="/node/{{connection.to}}">{{connection.to}}</a></li>
-                {% endif %}
+                {% for edge in edges %}
+                    <li><a href="/node/{{edge.id}}">{{edge.title}}</a></li>
                 {% endfor %}
                 {% if graph.meta.config.tree_node_summary %}</ul>
             </li>{% endif %}
-            {% endif %}
         </ul>
         {% endif %}
     </li>

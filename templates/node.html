@@ -21,7 +21,7 @@
         <div class="connections-container">
         {% if node.connections %}
         <div class="connections-outgoing">
-        <h3 class="connections-title">Outgoing</h3>
+        <h3 class="connections-title">Outgoing {{ node.stats.outgoing }}</h3>
         <ul>
             {% for _, connection in node.connections %}
             {% if connection.detached %}
@@ -44,7 +44,7 @@
         {% endif %}
         {% if incoming %}
         <div class="connections-incoming">
-        <h3>Incoming</h3>
+        <h3>Incoming {{ node.stats.incoming }}</h3>
         <ul>
             {% for connection in incoming %}
             <li>

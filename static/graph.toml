@@ -1062,6 +1062,7 @@ text = """
 ## Upcoming
 
 ### v0.5.0-alpha
+- [ ] Fix unescaped HTML in block and inline preformats
 - [x] Hide tree leaves from the top level
 - [x] Docs for custom assets and templates
 - [x] Fix anchors containing `/` and `#` considered node IDs

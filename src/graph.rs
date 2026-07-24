@@ -85,8 +85,7 @@ impl Graph {
     ///
     /// Returns a graph with an error message if any errors are propagated.
     pub fn load() -> Graph {
-        let result = Graph::load_file(None);
-        match result {
+        match Graph::load_file(None) {
             Ok(graph) => graph,
             Err(error) => {
                 if error.not_found {
